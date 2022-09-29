@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Would you like to know more?</title>
+</head>
+<body>
+<h1>Would you like to know more?</h1>
+<form>
+    {#  { form.hidden_tag() } #}
+    <table>
+        <tr>
+            <td>{{ form.k.label }}</td>
+            <td>
+                {% for subfield in form.k %}
+                    {{ subfield }}{{ subfield.label }}
+                {% endfor %}
+            </td>
+        </tr><tr>
+            <td>{{ form.c.label }}</td>
+            <td>{{ form.c(size=100) }}</td>
+        </tr><tr>
+            <td>{{ form.h.label }}</td>
+            <td>{{ form.h(size=100) }}</td>
+{#         </tr><tr>
+            <td>{{ form.f.label }}</td>
+            <td>
+                {% for subfield in form.f %}
+                    {{ subfield }}{{ subfield.label }}
+                {% endfor %}
+            </td> #}
+        </tr><tr>
+            <td></td>
+            <td>{{ form.submit() }}</td>
+        </tr>
+    </table>
+    <h2>Image</h2>
+    <a href="img?{{ svg_args|safe }}">SVG</a>
+    <h2>Preview</h2>
+    <img src="img?{{ img_args|safe }}"> <br>
+</form>
+</body>
+</html>
