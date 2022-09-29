@@ -20,7 +20,7 @@ def img():
     if kind == "tb":
         qr = generate.generate_tb(content, width=width)
     else:
-        qr = generate.generate_bot(content, head, width=width)
+        qr = generate.generate_bot(content, width=width, head=head)
 
     if fmt == "png":
         return send_file(generate.drawing_to_png_stream(qr), mimetype="image/png")

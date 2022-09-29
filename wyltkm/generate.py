@@ -2,6 +2,7 @@ import io
 
 import qrcode
 import qrcode.image.svg
+import svgwrite
 from reportlab.graphics.renderSVG import SVGCanvas, draw
 from reportlab.graphics.renderPM import drawToFile
 from svglib.svglib import svg2rlg
@@ -18,6 +19,17 @@ def generate_qr(text):
     stream.seek(0)
     qr = svg2rlg(stream)
     return qr
+
+
+def generate_head(text):
+    d = svgwrite.Drawing("head.svg", (100, 15))
+    p = d.add(d.g(font_size="12px"))
+    t = d.text(text, (50, 15), style="text-anchor:middle")
+    p.add(t)
+    d.save()
+    # TODO: dispose the need to use a file
+    head = svg2rlg("head.svg")
+    return head
 
 
 def resize_to_width(d, w):
@@ -83,10 +95,18 @@ def generate_tb(content, *, width=None):
     return d
 
 
-def generate_bot(content, text, *, width=None):
+def generate_bot(content, *, head=None, width=None):
     if width is None:
         width = 1000
-    top_space = width * 0.05
+    if head is None:
+        head_space = 0.0
+        head_height = 0.0
+    else:
+        head_space = width * 0.05
+        head = generate_head(head)
+        resize_to_width(head, width)
+        head_height = head.height
+
     bot_space = width * 0.05
 
     qr = generate_qr(content)
@@ -97,7 +117,10 @@ def generate_bot(content, text, *, width=None):
 
     move(qr, 0, bot.height + bot_space)
 
-    d = Drawing(width, qr.height + bot.height + bot_space)
+    d = Drawing(width, qr.height + bot.height + bot_space + head_space + head_height)
+    if head is not None:
+        move(head, 0, bot.height + bot_space + qr.height + head_space)
+        d.add(head)
     d.add(qr)
     d.add(bot)
     return d
