@@ -1,42 +1,65 @@
 import os
+import urllib.parse
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, send_file
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, RadioField, IntegerField
 
-from . import img
 from . import generate
-from . import index
 
 
-def create_app(test_config=None):
-    # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-    )
+class ConfigForm(FlaskForm):
+    """Form used for configuring the qr-code to create."""
+    k = RadioField("Kind", choices=[
+        ("b", "bottom"),
+        ("tb", "top/bottom"),
+    ], default="b")
+    c = StringField("Content")
+    h = StringField("Heading")
+    f = RadioField("Format", choices=[
+        ("svg", "SVG"),
+        ("png", "PNG"),
+    ], default="svg")
+    w = IntegerField("Width")
+    submit = SubmitField("generate")
 
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
+
+app = Flask(__name__)
+app.config["SECRET_KEY"] = os.urandom(32)
+
+
+@app.route("/")
+def index():
+    """View for index page, that shows the form and preview for qr codes."""
+    form = ConfigForm(request.args)
+    svg_args = {k: v for k, v in request.args.items() if k in ["k", "c", "h"]}
+    img_args = {k: v for k, v in request.args.items() if k in ["k", "c", "h"]}
+    img_args["f"] = "png"
+    img_args["w"] = 300
+    return render_template("index.html",
+                           form=form,
+                           img_args=urllib.parse.urlencode(img_args),
+                           svg_args=urllib.parse.urlencode(svg_args),
+                           )
+
+
+@app.route("/img")
+def img_route():
+    """View that creates images containing qr codes."""
+    content = request.args.get("c", "WOULD YOU LIKE TO KNOW MORE?")
+    head = request.args.get("h")
+    fmt = request.args.get("f", "svg")
+    width = request.args.get("w")
+    if width is not None:
+        width = int(width)
+
+    kind = request.args.get("k", "b")
+    if kind == "tb":
+        qr = generate.generate_tb(content, width=width)
     else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
+        qr = generate.generate_bot(content, width=width, head=head)
 
-    # ensure the instance folder exists
-    #try:
-    #    os.makedirs(app.instance_path)
-    #except OSError:
-    #    pass
-
-    # a simple page that says hello
-    @app.route("/")
-    def hello():
-        return index.index()
-        # return render_template("index.html")
-
-    # from . import img
-
-    @app.route("/img")
-    def img_route():
-        return img.img()
-
-    return app
+    if fmt == "png":
+        return send_file(generate.drawing_to_png_stream(qr), mimetype="image/png")
+    else:
+        return send_file(generate.drawing_to_svg_stream(qr), mimetype="image/svg+xml")

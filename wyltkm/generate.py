@@ -22,13 +22,17 @@ def generate_qr(text):
 
 
 def generate_head(text):
-    d = svgwrite.Drawing("head.svg", (100, 15))
-    p = d.add(d.g(font_size="12px"))
-    t = d.text(text, (50, 15), style="text-anchor:middle")
+    d = svgwrite.Drawing("head.svg", (100, 13))
+    p = d.add(d.g(font_size="15px"))
+    t = d.text(text, (50, 13), style="text-anchor:middle")
     p.add(t)
-    d.save()
-    # TODO: dispose the need to use a file
-    head = svg2rlg("head.svg")
+    stream = io.StringIO()
+    d.write(stream)
+    stream.seek(0)
+    mem = io.BytesIO()
+    mem.write(stream.getvalue().encode())
+    mem.seek(0)
+    head = svg2rlg(mem)
     return head
 
 
@@ -58,7 +62,6 @@ def drawing_to_svg_stream(d):
 
     mem = io.BytesIO()
     mem.write(stream.getvalue().encode())
-    # seeking was necessary. Python 3.5.2, Flask 0.12.2
     mem.seek(0)
     return mem
 
