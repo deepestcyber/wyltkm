@@ -1,4 +1,5 @@
 import io
+import importlib.resources
 
 import qrcode
 import qrcode.image.svg
@@ -82,10 +83,12 @@ def generate_tb(content, *, width=None):
     qr = generate_qr(content)
     resize_to_width(qr, width)
 
-    top = svg2rlg("static/wyltkm-first-line.svg")
+    f = importlib.resources.open_text(__package__, "wyltkm-first-line.svg")
+    top = svg2rlg(f)
     resize_to_width(top, width)
 
-    bot = svg2rlg("static/wyltkm-second-line.svg")
+    f = importlib.resources.open_text(__package__, "wyltkm-second-line.svg")
+    bot = svg2rlg(f)
     resize_to_width(bot, width)
 
     move(top, 0, qr.height + bot.height + bot_space + top_space)
@@ -115,7 +118,8 @@ def generate_bot(content, *, head=None, width=None):
     qr = generate_qr(content)
     resize_to_width(qr, width)
 
-    bot = svg2rlg("static/wyltkm-two-lines.svg")
+    f = importlib.resources.open_text(__package__, "wyltkm-two-lines.svg")
+    bot = svg2rlg(f)
     resize_to_width(bot, width)
 
     move(qr, 0, bot.height + bot_space)

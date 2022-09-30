@@ -1,4 +1,4 @@
-## 0.1.1 – 2022
+## 0.1.1 – 2022-09-30
 ### Fixed
 - Parse for kind raw in /img.
 - Fix paths in MANIFEST.in.
