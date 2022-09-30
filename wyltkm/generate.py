@@ -10,9 +10,9 @@ from reportlab.graphics.shapes import Drawing
 
 
 def generate_qr(text):
-    # factory = qrcode.image.svg.SvgPathImage
+    factory = qrcode.image.svg.SvgPathImage
     # factory = qrcode.image.svg.SvgImage
-    factory = qrcode.image.svg.SvgFragmentImage
+    # factory = qrcode.image.svg.SvgFragmentImage
     img = qrcode.make(text, image_factory=factory, border=0)
     stream = io.BytesIO()
     img.save(stream)
@@ -127,3 +127,37 @@ def generate_bot(content, *, head=None, width=None):
     d.add(qr)
     d.add(bot)
     return d
+
+
+def generate_raw(content, *, head=None, width=None):
+    if width is None:
+        width = 1000
+    if head is None:
+        head_space = 0.0
+        head_height = 0.0
+    else:
+        head_space = width * 0.05
+        head = generate_head(head)
+        resize_to_width(head, width)
+        head_height = head.height
+
+    qr = generate_qr(content)
+    resize_to_width(qr, width)
+
+    d = Drawing(width, qr.height + head_space + head_height)
+    if head is not None:
+        move(head, 0, qr.height + head_space)
+        d.add(head)
+    d.add(qr)
+    return d
+
+
+def generate(content, **kwargs):
+    kind = kwargs.get("kind")
+    if kind == "b":
+        return generate_bot(content, **kwargs)
+    elif kind == "tb":
+        return generate_tb(content, **kwargs)
+    else:
+        return generate_raw(content, **kwargs)
+    pass

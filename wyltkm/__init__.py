@@ -11,6 +11,7 @@ from . import generate
 class ConfigForm(FlaskForm):
     """Form used for configuring the qr-code to create."""
     k = RadioField("Kind", choices=[
+        ("r", "raw"),
         ("b", "bottom"),
         ("tb", "top/bottom"),
     ], default="b")
@@ -48,8 +49,12 @@ def img_route():
     """View that creates images containing qr codes."""
     content = request.args.get("c", "WOULD YOU LIKE TO KNOW MORE?")
     head = request.args.get("h")
+    if head == "":
+        head = None
     fmt = request.args.get("f", "svg")
     width = request.args.get("w")
+    if width == "":
+        width = None
     if width is not None:
         width = int(width)
 
