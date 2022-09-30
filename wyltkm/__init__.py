@@ -61,6 +61,8 @@ def img_route():
     kind = request.args.get("k", "b")
     if kind == "tb":
         qr = generate.generate_tb(content, width=width)
+    elif kind == "r":
+        qr = generate.generate_raw(content, width=width, head=head)
     else:
         qr = generate.generate_bot(content, width=width, head=head)
 
