@@ -83,11 +83,12 @@ def generate_tb(content, *, width=None):
     qr = generate_qr(content)
     resize_to_width(qr, width)
 
-    f = importlib.resources.open_text(__package__, "wyltkm-first-line.svg")
+    from . import res
+    f = importlib.resources.open_text(res, "wyltkm-first-line.svg")
     top = svg2rlg(f)
     resize_to_width(top, width)
 
-    f = importlib.resources.open_text(__package__, "wyltkm-second-line.svg")
+    f = importlib.resources.open_text(res, "wyltkm-second-line.svg")
     bot = svg2rlg(f)
     resize_to_width(bot, width)
 
@@ -118,7 +119,8 @@ def generate_bot(content, *, head=None, width=None):
     qr = generate_qr(content)
     resize_to_width(qr, width)
 
-    f = importlib.resources.open_text(__package__, "wyltkm-two-lines.svg")
+    from . import res
+    f = importlib.resources.open_text(res, "wyltkm-two-lines.svg")
     bot = svg2rlg(f)
     resize_to_width(bot, width)
 
