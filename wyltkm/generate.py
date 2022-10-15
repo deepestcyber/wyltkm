@@ -175,6 +175,8 @@ def generate_qr(text, factory=None):
 
 def text_to_rlg(font, text, color):
     svg_src = font.text(text, color=color, halign="center").svg()
+    # remove broken empty auto-closing path that break PNG generation
+    svg_src = svg_src.replace('<path d="Z " />', '')
     stream = io.StringIO()
     stream.write(svg_src)
     stream.seek(0)
@@ -273,7 +275,7 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
         resize_to_width(bot_img, content_width)
         move(bot_img, border_width, total_height)
         total_height += bot_img.height
-        bot_space = square_width * 4
+        bot_space = square_width * 3
         total_height += bot_space
 
     resize_to_width(qr, content_width)
@@ -282,7 +284,7 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
 
     if top_img:
         resize_to_width(top_img, content_width)
-        total_height += 4 * square_width
+        total_height += 2 * square_width
         move(top_img, border_width, total_height)
         total_height += top_img.height
 

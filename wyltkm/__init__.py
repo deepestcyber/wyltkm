@@ -77,7 +77,7 @@ class ConfigForm(FlaskForm):
             ("4", "Yes"),
             ("0", "No"),
         ],
-        default="4",
+        default="0",
     )
     f = RadioField("Format", choices=[
         ("svg", "SVG"),
@@ -108,6 +108,7 @@ def index():
                            form=form,
                            img_args=urllib.parse.urlencode(img_args),
                            svg_args=urllib.parse.urlencode(svg_args),
+                           APP_INFO=APP_INFO,
                            )
 
 
@@ -122,6 +123,7 @@ def exp():
                            form=form,
                            img_args=urllib.parse.urlencode(img_args),
                            svg_args=urllib.parse.urlencode(svg_args),
+                           APP_INFO=APP_INFO,
                            )
 
 

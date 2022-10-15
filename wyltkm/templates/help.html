@@ -1,13 +1,10 @@
-<!doctype html>
-<html lang="en">
-<head>
-<title>Would you like to know more?</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>Would you like to know more about &quot;Would you like to know more?&quot;?</h1>
-<a href="/">QR-Code</a> &ndash; <a href="/exp">All parameters</a> &ndash; <a href="/help">Help</a>
+{% block header %}
+    <h1>Would you like to know more about &quot;Would you like to know more?&quot;?</h1>
+{% endblock %}
 
+{% block content %}
 <h2>What is this?</h2>
 <p>
     <i>WYLTKM?</i> is a generator for QR-Codes. It was created for the Makerspace
@@ -56,5 +53,4 @@
     The program is written for this special purpose, so it might not fit anyone else's needs. But feel
     free to take a lock, create a fork, or participate by opening pull requests.
 </p>
-</body>
-</html>
+{% endblock %}

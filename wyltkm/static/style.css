@@ -1,0 +1,14 @@
+html {
+    font-family: Helvetica, sans-serif;
+}
+form.cf h4 {
+    margin-bottom: 0;
+}
+div.preview {
+    margin-top:5ex;
+}
+div.preview img {
+}
+footer {
+    border-top:1px solid black;
+}

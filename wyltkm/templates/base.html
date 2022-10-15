@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<title>Would you like to know more?</title>
+<header>{% block header %}{% endblock %}</header>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<nav>
+<a href="/">QR-Code</a> &ndash; <a href="/exp">All parameters</a> &ndash; <a href="/help">Help</a>
+</nav>
+
+<section class="content">
+    {% block content %}{% endblock %}
+</section>
+
+<footer>
+    WYLTKM v{{ APP_INFO.version }}
+    &ndash;
+    <a href="{{ APP_INFO.source }}">Source</a>
+    &ndash;
+    <a href="{{ APP_INFO.info }}">More information (German)</a>
+</footer>
+</html>

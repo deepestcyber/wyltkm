@@ -1,12 +1,11 @@
-<!doctype html>
-<html lang="en">
-<head>
-<title>Would you like to know even more?</title>
-</head>
-<body>
-<h1>Would you like to know more?</h1>
-<form>
-    {#  { form.hidden_tag() } #}
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>Would you like to know even more?</h1>
+{% endblock %}
+
+{% block content %}
+<form class="cf">
     <h4>{{ form.t.label }}</h4>
 {% for subfield in form.t %}
     {{ subfield }}{{ subfield.label }}
@@ -42,15 +41,15 @@
     <h4>{{ form.w.label }}</h4>
     {{ form.w }}
 
-    <p>{{ form.submit }}</p>
-
-
-    <h2>Image</h2>
-    <a href="img?{{ svg_args|safe }}">SVG</a>
-    <h2>Preview</h2>
-    <p><i>The PNG preview might be broken, but the SVG should be fine.</i></p>
-    <img src="img?{{ img_args|safe }}"> <br>
-    <br>
+    <p>{{ form.preview }} {{ form.svg }}</p>
 </form>
-</body>
-</html>
+
+<div class="preview">
+    <h2>Preview</h2>
+    <img src="img?{{ img_args|safe }}"> <br>
+    <p>
+        <i>The PNG preview might be broken, but the SVG should be fine.</i><br>
+    </p>
+    <br>
+</div>
+{% endblock %}

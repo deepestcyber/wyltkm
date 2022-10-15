@@ -1,3 +1,4 @@
 graft wyltkm/templates
 graft wyltkm/res
+graft wyltkm/style
 global-exclude *.pyc
