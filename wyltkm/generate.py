@@ -164,10 +164,6 @@ class Roundy(qrcode.image.svg.SvgFragmentImage):
 def generate_qr(text, factory=None):
     if factory is None:
         factory = qrcode.image.svg.SvgPathImage
-    # factory = qrcode.image.svg.SvgImage
-    # factory = qrcode.image.svg.SvgFragmentImage
-    # factory = NotJustDots
-    # factory = Roundy
     img = qrcode.make(text, image_factory=factory, border=0)
     bots = img.width
     stream = io.BytesIO()
@@ -194,8 +190,10 @@ def get_font(what):
     ziafont.config.svg2 = False
     if what == "p":
         font_path = "/home/kratenko/git/wyltkm/tinker/PhutureODCBlack.ttf"
+        font_path = "PhutureODCBlack.ttf"
     elif what == "a":
         font_path = "/home/kratenko/git/wyltkm/tinker/AgencyFB-Bold.ttf"
+        font_path = "AgencyFB-Bold.ttf"
     else:
         font_path = None
 
@@ -265,7 +263,7 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
 
     # Generate Top image:
     top_img = None
-    if top_text and top != "e":
+    if top_text and top != "b":
         font = get_font(top)
         top_img = text_to_rlg(font, top_text, text_color)
 
