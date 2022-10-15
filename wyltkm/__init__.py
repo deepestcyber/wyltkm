@@ -7,6 +7,12 @@ from wtforms import StringField, SubmitField, RadioField, IntegerField, TextArea
 
 from . import generate
 
+APP_INFO = {
+    "version": "0.1.2",
+    "source": "https://github.com/deepestcyber/wyltkm",
+    "info": "https://wiki.attraktor.org/Would_you_like_to_know_more%3F",
+}
+
 
 class ConfigForm(FlaskForm):
     """Form used for configuring the qr-code to create."""
@@ -22,17 +28,24 @@ class ConfigForm(FlaskForm):
     tt = TextAreaField(
         "Top text",
         default="",
+        description="The text to render above the QR-Code.",
+        render_kw={"cols": 50, "rows": 4, },
     )
 
     q = RadioField(
-        "QR-Code Type",
+        "QR-Code Style",
         choices=[
             ("s", "simple"),
             ("a", "Attraktor"),
         ],
         default="a",
     )
-    c = StringField("Content")
+    c = StringField(
+        "Content",
+        default="https://wiki.attraktor.org",
+        description="The data inside the QR-Code; typically a URL.",
+        render_kw={"size": 50},
+    )
 
     b = RadioField(
         "Bottom",
@@ -71,11 +84,17 @@ class ConfigForm(FlaskForm):
         ("png", "PNG"),
     ], default="svg")
     w = IntegerField("Width", default=250)
-    submit = SubmitField("generate")
+    preview = SubmitField("preview")
+    svg = SubmitField("SVG", render_kw={"formaction": "img"})
 
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
+
+
+@app.route("/help")
+def help():
+    return render_template("help.html", APP_INFO=APP_INFO)
 
 
 @app.route("/")
@@ -92,24 +111,37 @@ def index():
                            )
 
 
+@app.route("/exp")
+def exp():
+    """View for index page, that shows the form and preview for qr codes."""
+    form = ConfigForm(request.args)
+    svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
+    img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
+    img_args["f"] = "png"
+    return render_template("exp.html",
+                           form=form,
+                           img_args=urllib.parse.urlencode(img_args),
+                           svg_args=urllib.parse.urlencode(svg_args),
+                           )
+
+
 @app.route("/img")
 def img_route():
     """View that creates images containing qr codes."""
-    content = request.args.get("c", "WOULD YOU LIKE TO KNOW MORE?")
-    fmt = request.args.get("f", "svg")
+    form = ConfigForm(request.args)
 
     qr = generate.generate(
-        content,
-        width=request.args.get("w", 250),
-        top=request.args.get("t"),
-        top_text=request.args.get("tt"),
-        bot=request.args.get("b"),
-        bot_text=request.args.get("bt"),
-        kind=request.args.get("q"),
-        color=request.args.get("C"),
-        border=request.args.get("B"),
+        form.c.data,
+        width=form.w.data,
+        top=form.t.data,
+        top_text=form.tt.data,
+        bot=form.b.data,
+        bot_text=form.bt.data,
+        kind=form.q.data,
+        color=form.C.data,
+        border=form.B.data,
     )
-    if fmt == "png":
+    if form.f.data == "png":
         return send_file(generate.drawing_to_png_stream(qr), mimetype="image/png")
     else:
         return send_file(generate.drawing_to_svg_stream(qr), mimetype="image/svg+xml")
