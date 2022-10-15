@@ -58,6 +58,14 @@ class ConfigForm(FlaskForm):
         ],
         default="a",
     )
+    B = RadioField(
+        "Border",
+        choices=[
+            ("4", "Yes"),
+            ("0", "No"),
+        ],
+        default="4",
+    )
     f = RadioField("Format", choices=[
         ("svg", "SVG"),
         ("png", "PNG"),
@@ -74,8 +82,8 @@ app.config["SECRET_KEY"] = os.urandom(32)
 def index():
     """View for index page, that shows the form and preview for qr codes."""
     form = ConfigForm(request.args)
-    svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w"]}
-    img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w"]}
+    svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
+    img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
     img_args["f"] = "png"
     return render_template("index.html",
                            form=form,
@@ -90,7 +98,7 @@ def img_route():
     content = request.args.get("c", "WOULD YOU LIKE TO KNOW MORE?")
     fmt = request.args.get("f", "svg")
 
-    qr = generate.gen_new(
+    qr = generate.generate(
         content,
         width=request.args.get("w", 250),
         top=request.args.get("t"),
@@ -99,6 +107,7 @@ def img_route():
         bot_text=request.args.get("bt"),
         kind=request.args.get("q"),
         color=request.args.get("C"),
+        border=request.args.get("B"),
     )
     if fmt == "png":
         return send_file(generate.drawing_to_png_stream(qr), mimetype="image/png")

@@ -206,15 +206,15 @@ def get_font(what):
     return font
 
 
-def gen_new(content, *, width=None, top=None, top_text=None, bot=None, bot_text=None, kind=None, color=None):
+def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text=None, kind=None, color=None,
+             border=None):
     from . import res
     if width is None:
         width = 250
     else:
         width = int(width)
 
-    total_height = 0
-
+    # select color schema
     if color == "a":
         text_color_name = "dark"
         text_color = DARK_GRAY
@@ -228,20 +228,25 @@ def gen_new(content, *, width=None, top=None, top_text=None, bot=None, bot_text=
         outer_circle_color = "black"
         inner_circle_color = "black"
 
-    # QR-Code
+    # Generate QR-Code image:
     if kind == "a":
         factory = Roundy
         factory.outer_circle_color = outer_circle_color
         factory.inner_circle_color = inner_circle_color
         factory.dots_color = dots_color
-        qr, stops = generate_qr(content, factory=factory)
+        qr, qr_squares = generate_qr(content, factory=factory)
     else:
-        qr, stops = generate_qr(content)
-    square_width = width / stops
+        qr, qr_squares = generate_qr(content)
+    if border == "4":
+        total_squares = qr_squares + 8
+    else:
+        total_squares = qr_squares
+    square_width = width / total_squares
+    content_width = square_width * qr_squares
+    border_width = (total_squares - qr_squares) * square_width / 2
 
-    # Bottom
+    # Generate Bottom image:
     bot_img = None
-    bot_space = 0
     if bot == "au":
         f = importlib.resources.open_text(res, f"wyltkm-agency-upper-{text_color_name}.svg")
         bot_img = svg2rlg(f)
@@ -258,26 +263,32 @@ def gen_new(content, *, width=None, top=None, top_text=None, bot=None, bot_text=
         font = get_font("p")
         bot_img = text_to_rlg(font, bot_text, text_color)
 
-    if bot_img:
-        resize_to_width(bot_img, width)
-        total_height += bot_img.height
-        bot_space = square_width * 4
-    total_height += bot_space
-
-    resize_to_width(qr, width)
-    move(qr, 0, total_height)
-    total_height += qr.height
-
-    # Top
+    # Generate Top image:
     top_img = None
     if top_text and top != "e":
         font = get_font(top)
-        top_space = square_width * 4
         top_img = text_to_rlg(font, top_text, text_color)
-        resize_to_width(top_img, width)
-        total_height += top_space
-        move(top_img, 0, total_height)
+
+    # Connect all parts:
+    total_height = border_width
+    if bot_img:
+        resize_to_width(bot_img, content_width)
+        move(bot_img, border_width, total_height)
+        total_height += bot_img.height
+        bot_space = square_width * 4
+        total_height += bot_space
+
+    resize_to_width(qr, content_width)
+    move(qr, border_width, total_height)
+    total_height += qr.height
+
+    if top_img:
+        resize_to_width(top_img, content_width)
+        total_height += 4 * square_width
+        move(top_img, border_width, total_height)
         total_height += top_img.height
+
+    total_height += border_width
 
     d = Drawing(width, total_height)
     d.add(qr)

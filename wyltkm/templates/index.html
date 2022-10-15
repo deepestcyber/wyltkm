@@ -34,6 +34,11 @@
     {{ subfield }}{{ subfield.label }}
 {% endfor %}
 
+    <h4>{{ form.B.label }}</h4>
+{% for subfield in form.B %}
+    {{ subfield }}{{ subfield.label }}
+{% endfor %}
+
     <p>{{ form.submit }}</p>
 
 
