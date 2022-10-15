@@ -1,4 +1,4 @@
 graft wyltkm/templates
 graft wyltkm/res
-graft wyltkm/style
+graft wyltkm/static
 global-exclude *.pyc
