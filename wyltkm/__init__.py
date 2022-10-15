@@ -3,25 +3,66 @@ import urllib.parse
 
 from flask import Flask, render_template, request, send_file
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, RadioField, IntegerField
+from wtforms import StringField, SubmitField, RadioField, IntegerField, TextAreaField
 
 from . import generate
 
 
 class ConfigForm(FlaskForm):
     """Form used for configuring the qr-code to create."""
-    k = RadioField("Kind", choices=[
-        ("r", "raw"),
-        ("b", "bottom"),
-        ("tb", "top/bottom"),
-    ], default="b")
+    t = RadioField(
+        "Top type",
+        choices=[
+            ("b", "empty"),
+            ("a", "Text (Agency)"),
+            ("p", "Text (Phuture)")
+        ],
+        default="a",
+    )
+    tt = TextAreaField(
+        "Top text",
+        default="",
+    )
+
+    q = RadioField(
+        "QR-Code Type",
+        choices=[
+            ("s", "simple"),
+            ("a", "Attraktor"),
+        ],
+        default="a",
+    )
     c = StringField("Content")
-    h = StringField("Heading")
+
+    b = RadioField(
+        "Bottom",
+        choices=[
+            ("b", "empty"),
+            ("a", "Text (Agency)"),
+            ("p", "Text (Phuture)"),
+            ("au", "WYLTNM? (Agency, upper case)"),
+            ("al", "WYLTNM? (Agency, lower case)"),
+            ("pu", "WYLTNM? (Phuture, upper case)"),
+        ],
+        default="au",
+    )
+    bt = TextAreaField(
+        "Bottom Text",
+        default="",
+    )
+    C = RadioField(
+        "Colour",
+        choices=[
+            ("a", "Attraktor"),
+            ("b", "Black/White")
+        ],
+        default="a",
+    )
     f = RadioField("Format", choices=[
         ("svg", "SVG"),
         ("png", "PNG"),
     ], default="svg")
-    w = IntegerField("Width")
+    w = IntegerField("Width", default=250)
     submit = SubmitField("generate")
 
 
@@ -33,10 +74,9 @@ app.config["SECRET_KEY"] = os.urandom(32)
 def index():
     """View for index page, that shows the form and preview for qr codes."""
     form = ConfigForm(request.args)
-    svg_args = {k: v for k, v in request.args.items() if k in ["k", "c", "h"]}
-    img_args = {k: v for k, v in request.args.items() if k in ["k", "c", "h"]}
+    svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w"]}
+    img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w"]}
     img_args["f"] = "png"
-    img_args["w"] = 300
     return render_template("index.html",
                            form=form,
                            img_args=urllib.parse.urlencode(img_args),
@@ -48,24 +88,18 @@ def index():
 def img_route():
     """View that creates images containing qr codes."""
     content = request.args.get("c", "WOULD YOU LIKE TO KNOW MORE?")
-    head = request.args.get("h")
-    if head == "":
-        head = None
     fmt = request.args.get("f", "svg")
-    width = request.args.get("w")
-    if width == "":
-        width = None
-    if width is not None:
-        width = int(width)
 
-    kind = request.args.get("k", "b")
-    if kind == "tb":
-        qr = generate.generate_tb(content, width=width)
-    elif kind == "r":
-        qr = generate.generate_raw(content, width=width, head=head)
-    else:
-        qr = generate.generate_bot(content, width=width, head=head)
-
+    qr = generate.gen_new(
+        content,
+        width=request.args.get("w", 250),
+        top=request.args.get("t"),
+        top_text=request.args.get("tt"),
+        bot=request.args.get("b"),
+        bot_text=request.args.get("bt"),
+        kind=request.args.get("q"),
+        color=request.args.get("C"),
+    )
     if fmt == "png":
         return send_file(generate.drawing_to_png_stream(qr), mimetype="image/png")
     else:

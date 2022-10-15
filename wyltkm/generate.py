@@ -1,8 +1,10 @@
 import io
 import importlib.resources
+import os.path
 
 import qrcode
 import qrcode.image.svg
+from qrcode.image.svg import ET
 import svgwrite
 from reportlab.graphics.renderSVG import SVGCanvas, draw
 from reportlab.graphics.renderPM import drawToFile
@@ -10,31 +12,280 @@ from svglib.svglib import svg2rlg
 from reportlab.graphics.shapes import Drawing
 
 
-def generate_qr(text):
-    factory = qrcode.image.svg.SvgPathImage
+class NotJustDots(qrcode.image.svg.SvgFragmentImage):
+    """
+    Standalone SVG image builder
+
+    Creates a QR-code image as a standalone SVG document.
+    """
+    background = None
+
+    def _add_corner(self, svg, x, y):
+        svg.append(
+            ET.Element(
+                "circle", cx=self.units(x), cy=self.units(y),
+                r=self.units(self.box_size * 1.5),
+            )
+        )
+        svg.append(
+            ET.Element(
+                "circle", cx=self.units(x), cy=self.units(y),
+                r=self.units(self.box_size * 3),
+                stroke="black",
+                fill="none",
+                **{"stroke-width": self.units(self.box_size)},
+            )
+        )
+
+    def _svg(self, tag='svg', **kwargs):
+        svg = super()._svg(tag=tag, **kwargs)
+        svg.set("xmlns", self._SVG_namespace)
+        if self.background:
+            svg.append(
+                ET.Element(
+                    'rect', fill=self.background, x='0', y='0', width='100%',
+                    height='100%'))
+        # tl
+        self._add_corner(svg, x=self.box_size * (self.border + 3.5), y=self.box_size * (self.border + 3.5))
+        self._add_corner(svg, x=self.box_size * (self.width + self.border - 3.5), y=self.box_size * (self.border + 3.5))
+        self._add_corner(svg, x=self.box_size * (self.border + 3.5), y=self.box_size * (self.width + self.border - 3.5))
+        return svg
+
+    def drawrect(self, row, col):
+        x, y = self.pixel_box(row, col)[0]
+        x += self.box_size/2
+        y += self.box_size/2
+
+        corner = None
+        if row < 7 and col < 7:
+            corner = "ul"
+        elif row < 7 and col >= self.width - 7:
+            corner = "ur"
+        elif row >= self.width - 7 and col < 7:
+            corner = "lr"
+
+        elem = None
+        if corner is None:
+            elem = ET.Element(
+                "circle", cx=self.units(x), cy=self.units(y),
+                r=self.units(self.box_size/2),
+            )
+        if elem is not None:
+            self._img.append(elem)
+
+    def _write(self, stream):
+        ET.ElementTree(self._img).write(stream, encoding="UTF-8",
+                                        xml_declaration=True)
+
+
+BLUE = "#67b8dc"
+DARK_GRAY = "#4b4b4d"
+LIGHT_GREY = "#9b9c9e"
+
+
+class Roundy(qrcode.image.svg.SvgFragmentImage):
+    """
+    Standalone SVG image builder
+
+    Creates a QR-code image as a standalone SVG document.
+    """
+    background = None
+    inner_circle_color = "black"
+    outer_circle_color = "black"
+    dots_color = "black"
+
+    def _add_corner(self, svg, x, y):
+        svg.append(
+            ET.Element(
+                "rect",
+                x=self.units(x - self.box_size * 1.5),
+                y=self.units(y - self.box_size * 1.5),
+                width=self.units(self.box_size * 3),
+                height=self.units(self.box_size * 3),
+                rx=self.units(self.box_size),
+                fill=self.inner_circle_color,
+            )
+        )
+        svg.append(
+            ET.Element(
+                "rect",
+                x=self.units(x - self.box_size * 3),
+                y=self.units(y - self.box_size * 3),
+                width=self.units(self.box_size * 6),
+                height=self.units(self.box_size * 6),
+                rx=self.units(self.box_size),
+                stroke=self.outer_circle_color,
+                fill="none",
+                **{"stroke-width": self.units(self.box_size)},
+            )
+        )
+
+    def _svg(self, tag='svg', **kwargs):
+        svg = super()._svg(tag=tag, **kwargs)
+        svg.set("xmlns", self._SVG_namespace)
+        if self.background:
+            svg.append(
+                ET.Element(
+                    'rect', fill=self.background, x='0', y='0', width='100%',
+                    height='100%'))
+        # tl
+        self._add_corner(svg, x=self.box_size * (self.border + 3.5), y=self.box_size * (self.border + 3.5))
+        self._add_corner(svg, x=self.box_size * (self.width + self.border - 3.5), y=self.box_size * (self.border + 3.5))
+        self._add_corner(svg, x=self.box_size * (self.border + 3.5), y=self.box_size * (self.width + self.border - 3.5))
+        return svg
+
+    def drawrect(self, row, col):
+        x, y = self.pixel_box(row, col)[0]
+
+        corner = None
+        if row < 7 and col < 7:
+            corner = "ul"
+        elif row < 7 and col >= self.width - 7:
+            corner = "ur"
+        elif row >= self.width - 7 and col < 7:
+            corner = "lr"
+
+        elem = None
+        if corner is None:
+            elem = ET.Element(
+                "rect", x=self.units(x), y=self.units(y),
+                width=self.unit_size, height=self.unit_size,
+                rx=self.units(3),
+                fill=self.dots_color,
+            )
+        if elem is not None:
+            self._img.append(elem)
+
+    def _write(self, stream):
+        ET.ElementTree(self._img).write(stream, encoding="UTF-8",
+                                        xml_declaration=True)
+
+
+def generate_qr(text, factory=None):
+    if factory is None:
+        factory = qrcode.image.svg.SvgPathImage
     # factory = qrcode.image.svg.SvgImage
     # factory = qrcode.image.svg.SvgFragmentImage
+    # factory = NotJustDots
+    # factory = Roundy
     img = qrcode.make(text, image_factory=factory, border=0)
+    bots = img.width
     stream = io.BytesIO()
     img.save(stream)
     stream.seek(0)
     qr = svg2rlg(stream)
-    return qr
+    return qr, bots
 
 
-def generate_head(text):
-    d = svgwrite.Drawing("head.svg", (100, 13))
-    p = d.add(d.g(font_size="15px"))
-    t = d.text(text, (50, 13), style="text-anchor:middle")
-    p.add(t)
+def text_to_rlg(font, text, color):
+    svg_src = font.text(text, color=color, halign="center").svg()
     stream = io.StringIO()
-    d.write(stream)
+    stream.write(svg_src)
     stream.seek(0)
     mem = io.BytesIO()
     mem.write(stream.getvalue().encode())
     mem.seek(0)
-    head = svg2rlg(mem)
-    return head
+    rlg = svg2rlg(mem)
+    return rlg
+
+
+def get_font(what):
+    import ziafont
+    ziafont.config.svg2 = False
+    if what == "p":
+        font_path = "/home/kratenko/git/wyltkm/tinker/PhutureODCBlack.ttf"
+    elif what == "a":
+        font_path = "/home/kratenko/git/wyltkm/tinker/AgencyFB-Bold.ttf"
+    else:
+        font_path = None
+
+    if font_path and os.access(font_path, os.R_OK):
+        font = ziafont.Font(font_path)
+    else:
+        font = ziafont.Font()
+    return font
+
+
+def gen_new(content, *, width=None, top=None, top_text=None, bot=None, bot_text=None, kind=None, color=None):
+    from . import res
+    if width is None:
+        width = 250
+    else:
+        width = int(width)
+
+    total_height = 0
+
+    if color == "a":
+        text_color_name = "dark"
+        text_color = DARK_GRAY
+        dots_color = LIGHT_GREY
+        outer_circle_color = BLUE
+        inner_circle_color = DARK_GRAY
+    else:
+        text_color_name = "black"
+        text_color = "black"
+        dots_color = "black"
+        outer_circle_color = "black"
+        inner_circle_color = "black"
+
+    # QR-Code
+    if kind == "a":
+        factory = Roundy
+        factory.outer_circle_color = outer_circle_color
+        factory.inner_circle_color = inner_circle_color
+        factory.dots_color = dots_color
+        qr, stops = generate_qr(content, factory=factory)
+    else:
+        qr, stops = generate_qr(content)
+    square_width = width / stops
+
+    # Bottom
+    bot_img = None
+    bot_space = 0
+    if bot == "au":
+        f = importlib.resources.open_text(res, f"wyltkm-agency-upper-{text_color_name}.svg")
+        bot_img = svg2rlg(f)
+    elif bot == "al":
+        f = importlib.resources.open_text(res, f"wyltkm-agency-lower-{text_color_name}.svg")
+        bot_img = svg2rlg(f)
+    elif bot == "pu":
+        f = importlib.resources.open_text(res, f"wyltkm-phuture-upper-{text_color_name}.svg")
+        bot_img = svg2rlg(f)
+    elif bot == "a":
+        font = get_font("a")
+        bot_img = text_to_rlg(font, bot_text, text_color)
+    elif bot == "p":
+        font = get_font("p")
+        bot_img = text_to_rlg(font, bot_text, text_color)
+
+    if bot_img:
+        resize_to_width(bot_img, width)
+        total_height += bot_img.height
+        bot_space = square_width * 4
+    total_height += bot_space
+
+    resize_to_width(qr, width)
+    move(qr, 0, total_height)
+    total_height += qr.height
+
+    # Top
+    top_img = None
+    if top_text and top != "e":
+        font = get_font(top)
+        top_space = square_width * 4
+        top_img = text_to_rlg(font, top_text, text_color)
+        resize_to_width(top_img, width)
+        total_height += top_space
+        move(top_img, 0, total_height)
+        total_height += top_img.height
+
+    d = Drawing(width, total_height)
+    d.add(qr)
+    if top_img:
+        d.add(top_img)
+    if bot_img:
+        d.add(bot_img)
+    return d
 
 
 def resize_to_width(d, w):
@@ -72,98 +323,3 @@ def drawing_to_png_stream(d):
     drawToFile(d, stream, "PNG")
     stream.seek(0)
     return stream
-
-
-def generate_tb(content, *, width=None):
-    if width is None:
-        width = 1000
-    top_space = width * 0.05
-    bot_space = width * 0.05
-
-    qr = generate_qr(content)
-    resize_to_width(qr, width)
-
-    from . import res
-    f = importlib.resources.open_text(res, "wyltkm-first-line.svg")
-    top = svg2rlg(f)
-    resize_to_width(top, width)
-
-    f = importlib.resources.open_text(res, "wyltkm-second-line.svg")
-    bot = svg2rlg(f)
-    resize_to_width(bot, width)
-
-    move(top, 0, qr.height + bot.height + bot_space + top_space)
-    move(qr, 0, bot.height + bot_space)
-
-    d = Drawing(width, qr.height + top.height + bot.height + bot_space + top_space)
-    d.add(qr)
-    d.add(top)
-    d.add(bot)
-    return d
-
-
-def generate_bot(content, *, head=None, width=None):
-    if width is None:
-        width = 1000
-    if head is None:
-        head_space = 0.0
-        head_height = 0.0
-    else:
-        head_space = width * 0.05
-        head = generate_head(head)
-        resize_to_width(head, width)
-        head_height = head.height
-
-    bot_space = width * 0.05
-
-    qr = generate_qr(content)
-    resize_to_width(qr, width)
-
-    from . import res
-    f = importlib.resources.open_text(res, "wyltkm-two-lines.svg")
-    bot = svg2rlg(f)
-    resize_to_width(bot, width)
-
-    move(qr, 0, bot.height + bot_space)
-
-    d = Drawing(width, qr.height + bot.height + bot_space + head_space + head_height)
-    if head is not None:
-        move(head, 0, bot.height + bot_space + qr.height + head_space)
-        d.add(head)
-    d.add(qr)
-    d.add(bot)
-    return d
-
-
-def generate_raw(content, *, head=None, width=None):
-    if width is None:
-        width = 1000
-    if head is None:
-        head_space = 0.0
-        head_height = 0.0
-    else:
-        head_space = width * 0.05
-        head = generate_head(head)
-        resize_to_width(head, width)
-        head_height = head.height
-
-    qr = generate_qr(content)
-    resize_to_width(qr, width)
-
-    d = Drawing(width, qr.height + head_space + head_height)
-    if head is not None:
-        move(head, 0, qr.height + head_space)
-        d.add(head)
-    d.add(qr)
-    return d
-
-
-def generate(content, **kwargs):
-    kind = kwargs.get("kind")
-    if kind == "b":
-        return generate_bot(content, **kwargs)
-    elif kind == "tb":
-        return generate_tb(content, **kwargs)
-    else:
-        return generate_raw(content, **kwargs)
-    pass

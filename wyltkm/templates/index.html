@@ -7,38 +7,42 @@
 <h1>Would you like to know more?</h1>
 <form>
     {#  { form.hidden_tag() } #}
-    <table>
-        <tr>
-            <td>{{ form.k.label }}</td>
-            <td>
-                {% for subfield in form.k %}
-                    {{ subfield }}{{ subfield.label }}
-                {% endfor %}
-            </td>
-        </tr><tr>
-            <td>{{ form.c.label }}</td>
-            <td>{{ form.c(size=100) }}</td>
-        </tr><tr>
-            <td>{{ form.h.label }}</td>
-            <td>{{ form.h(size=100) }}</td>
-{#         </tr><tr>
-            <td>{{ form.f.label }}</td>
-            <td>
-                {% for subfield in form.f %}
-                    {{ subfield }}{{ subfield.label }}
-                {% endfor %}
-            </td> #}
-        </tr><tr>
-            <td></td>
-            <td>{{ form.submit() }}</td>
-        </tr>
-    </table>
+    <h4>{{ form.t.label }}</h4>
+{% for subfield in form.t %}
+    {{ subfield }}{{ subfield.label }}
+{% endfor %}
+    <h4>{{ form.tt.label }}</h4>
+    {{ form.tt }}
+
+    <h4>{{ form.c.label }}</h4>
+    {{ form.c }}
+
+    <h4>{{ form.q.label }}</h4>
+{% for subfield in form.q %}
+    {{ subfield }}{{ subfield.label }}
+{% endfor %}
+
+    <h4>{{ form.b.label }}</h4>
+{% for subfield in form.b %}
+    {{ subfield }}{{ subfield.label }}
+{% endfor %}
+    <h4>{{ form.bt.label }}</h4>
+    {{ form.bt }}
+
+    <h4>{{ form.C.label }}</h4>
+{% for subfield in form.C %}
+    {{ subfield }}{{ subfield.label }}
+{% endfor %}
+
+    <p>{{ form.submit }}</p>
+
+
     <h2>Image</h2>
     <a href="img?{{ svg_args|safe }}">SVG</a>
     <h2>Preview</h2>
+    <p><i>The PNG preview might be broken, but the SVG should be fine.</i></p>
     <img src="img?{{ img_args|safe }}"> <br>
     <br>
-    <i>The PNG preview might be broken, but the SVG should be fine.</i><br>
 </form>
 </body>
 </html>
