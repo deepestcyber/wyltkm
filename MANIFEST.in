@@ -1,4 +1,5 @@
 graft wyltkm/templates
 graft wyltkm/res
 graft wyltkm/static
+include wyltkm/static/favicon.ico
 global-exclude *.pyc
