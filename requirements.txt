@@ -5,3 +5,5 @@ svgwrite~=1.4.3
 reportlab~=3.6.11
 svglib~=1.4.1
 ziafont~=0.4
+CairoSVG~=2.5.2
+setuptools~=60.2.0

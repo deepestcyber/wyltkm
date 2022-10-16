@@ -8,7 +8,7 @@ from wtforms import StringField, SubmitField, RadioField, IntegerField, TextArea
 from . import generate
 
 APP_INFO = {
-    "version": "0.1.3",
+    "version": "0.1.4",
     "source": "https://github.com/deepestcyber/wyltkm",
     "info": "https://wiki.attraktor.org/Would_you_like_to_know_more%3F",
 }
@@ -79,13 +79,10 @@ class ConfigForm(FlaskForm):
         ],
         default="0",
     )
-    f = RadioField("Format", choices=[
-        ("svg", "SVG"),
-        ("png", "PNG"),
-    ], default="svg")
     w = IntegerField("Width", default=250)
     preview = SubmitField("preview")
     svg = SubmitField("SVG", render_kw={"formaction": "img"})
+    png = SubmitField("PNG", render_kw={"formaction": "img"})
 
 
 app = Flask(__name__)
@@ -118,7 +115,7 @@ def exp():
     form = ConfigForm(request.args)
     svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
     img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
-    img_args["f"] = "png"
+    img_args["png"] = "PNG"
     return render_template("exp.html",
                            form=form,
                            img_args=urllib.parse.urlencode(img_args),
@@ -143,7 +140,7 @@ def img_route():
         color=form.C.data,
         border=form.B.data,
     )
-    if form.f.data == "png":
+    if form.png.data:
         return send_file(generate.drawing_to_png_stream(qr), mimetype="image/png")
     else:
         return send_file(generate.drawing_to_svg_stream(qr), mimetype="image/svg+xml")

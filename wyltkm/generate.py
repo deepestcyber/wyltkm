@@ -5,11 +5,10 @@ import os.path
 import qrcode
 import qrcode.image.svg
 from qrcode.image.svg import ET
-import svgwrite
 from reportlab.graphics.renderSVG import SVGCanvas, draw
-from reportlab.graphics.renderPM import drawToFile
 from svglib.svglib import svg2rlg
 from reportlab.graphics.shapes import Drawing
+from cairosvg import svg2png
 
 
 class NotJustDots(qrcode.image.svg.SvgFragmentImage):
@@ -331,6 +330,6 @@ def drawing_to_svg_stream(d):
 
 def drawing_to_png_stream(d):
     stream = io.BytesIO()
-    drawToFile(d, stream, "PNG")
+    svg2png(file_obj=drawing_to_svg_stream(d), write_to=stream)
     stream.seek(0)
     return stream

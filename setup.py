@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='wyltkm',
-    version='0.1.3',
+    version='0.1.4',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -13,5 +13,6 @@ setup(
         'svgwrite',
         'svglib',
         'ziafont',
+        'cairosvg',
     ],
 )
