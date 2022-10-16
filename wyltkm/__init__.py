@@ -8,7 +8,7 @@ from wtforms import StringField, SubmitField, RadioField, IntegerField, TextArea
 from . import generate
 
 APP_INFO = {
-    "version": "0.1.2",
+    "version": "0.1.3",
     "source": "https://github.com/deepestcyber/wyltkm",
     "info": "https://wiki.attraktor.org/Would_you_like_to_know_more%3F",
 }
