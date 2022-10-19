@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.6 - 2022-10-20
+### Changed
+- Switch question and info icons to use circle.
+- Make switch to advanced parameters to keep values.
+### Added
+- Rocket Icon introduced for "Project".
+
 ## 0.1.5 - 2022-10-19
 ### Added
 - Experimental support for Icons inside QR-Code

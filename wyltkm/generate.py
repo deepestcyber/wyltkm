@@ -262,7 +262,10 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
 
     # icon
     empty_square = True
-    if icon == "tool":
+    if icon == "project":
+        f = importlib.resources.open_text(res, f"rocket-{icon_color_name}.svg")
+        icon_img = svg2rlg(f)
+    elif icon == "tool":
         f = importlib.resources.open_text(res, f"screwdriver-wrench-{icon_color_name}.svg")
         icon_img = svg2rlg(f)
     elif icon == "workshop":
@@ -275,10 +278,10 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
         f = importlib.resources.open_text(res, f"network-wired-{icon_color_name}.svg")
         icon_img = svg2rlg(f)
     elif icon == "question":
-        f = importlib.resources.open_text(res, f"question-{icon_color_name}.svg")
+        f = importlib.resources.open_text(res, f"circle-question-{icon_color_name}.svg")
         icon_img = svg2rlg(f)
     elif icon == "info":
-        f = importlib.resources.open_text(res, f"info-{icon_color_name}.svg")
+        f = importlib.resources.open_text(res, f"circle-info-{icon_color_name}.svg")
         icon_img = svg2rlg(f)
     elif icon == "attraktor":
         if icon_color_name == "black":

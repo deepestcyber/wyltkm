@@ -9,7 +9,7 @@ from slugify import slugify
 from . import generate
 
 APP_INFO = {
-    "version": "0.1.5",
+    "version": "0.1.6",
     "source": "https://github.com/deepestcyber/wyltkm",
     "info": "https://wiki.attraktor.org/Would_you_like_to_know_more%3F",
 }
@@ -92,6 +92,7 @@ class ConfigForm(FlaskForm):
         "Icon",
         choices=[
             ("", "None"),
+            ("project", "Project"),
             ("tool", "Tool"),
             ("workshop", "Workshop"),
             ("infrastructure", "Infrastructure"),
@@ -104,6 +105,7 @@ class ConfigForm(FlaskForm):
     )
     w = IntegerField("Width", default=250)
     preview = SubmitField("preview")
+    exp = SubmitField("adv. parameter", render_kw={"formaction": "exp"})
     svg = SubmitField("SVG", render_kw={"formaction": "img"})
     png = SubmitField("PNG", render_kw={"formaction": "img"})
 
