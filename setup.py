@@ -14,6 +14,6 @@ setup(
         'svglib',
         'ziafont',
         'cairosvg',
-        'python-sluggify',
+        'python-slugify',
     ],
 )
