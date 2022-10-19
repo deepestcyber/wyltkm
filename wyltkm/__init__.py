@@ -4,11 +4,12 @@ import urllib.parse
 from flask import Flask, render_template, request, send_file
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, RadioField, IntegerField, TextAreaField
+from slugify import slugify
 
 from . import generate
 
 APP_INFO = {
-    "version": "0.1.4",
+    "version": "0.1.5",
     "source": "https://github.com/deepestcyber/wyltkm",
     "info": "https://wiki.attraktor.org/Would_you_like_to_know_more%3F",
 }
@@ -71,6 +72,14 @@ class ConfigForm(FlaskForm):
         ],
         default="a",
     )
+    g = RadioField(
+        "Background",
+        choices=[
+            ("", "Transparent"),
+            ("w", "White"),
+        ],
+        default="",
+    )
     B = RadioField(
         "Border",
         choices=[
@@ -78,6 +87,20 @@ class ConfigForm(FlaskForm):
             ("0", "No"),
         ],
         default="0",
+    )
+    i = RadioField(
+        "Icon",
+        choices=[
+            ("", "None"),
+            ("tool", "Tool"),
+            ("workshop", "Workshop"),
+            ("infrastructure", "Infrastructure"),
+            ("food", "Food/Kitchen/Drinks"),
+            ("question", "Question"),
+            ("info", "Info"),
+            ("attraktor", "Attraktor"),
+        ],
+        default="",
     )
     w = IntegerField("Width", default=250)
     preview = SubmitField("preview")
@@ -98,9 +121,10 @@ def help():
 def index():
     """View for index page, that shows the form and preview for qr codes."""
     form = ConfigForm(request.args)
-    svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
-    img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
-    img_args["f"] = "png"
+    svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B", "i", "g"]}
+    img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B", "i", "g"]}
+    img_args["png"] = "PNG"
+    img_args["w"] = 250
     return render_template("index.html",
                            form=form,
                            img_args=urllib.parse.urlencode(img_args),
@@ -113,9 +137,10 @@ def index():
 def exp():
     """View for index page, that shows the form and preview for qr codes."""
     form = ConfigForm(request.args)
-    svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
-    img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B"]}
+    svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B", "i", "g"]}
+    img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B", "i", "g"]}
     img_args["png"] = "PNG"
+    img_args["w"] = 250
     return render_template("exp.html",
                            form=form,
                            img_args=urllib.parse.urlencode(img_args),
@@ -139,8 +164,22 @@ def img_route():
         kind=form.q.data,
         color=form.C.data,
         border=form.B.data,
+        icon=form.i.data,
+        background=form.g.data,
     )
-    if form.png.data:
-        return send_file(generate.drawing_to_png_stream(qr), mimetype="image/png")
+    if form.tt.data:
+        dl_name = slugify(form.tt.data)
     else:
-        return send_file(generate.drawing_to_svg_stream(qr), mimetype="image/svg+xml")
+        dl_name = "wyltkm-qr"
+    if form.png.data:
+        return send_file(
+            generate.drawing_to_png_stream(qr),
+            mimetype="image/png",
+            download_name=f"{dl_name}.png",
+        )
+    else:
+        return send_file(
+            generate.drawing_to_svg_stream(qr),
+            mimetype="image/svg+xml",
+            download_name=f"{dl_name}.svg"
+        )

@@ -1,5 +1,6 @@
 import io
 import importlib.resources
+import math
 import os.path
 
 import qrcode
@@ -92,6 +93,7 @@ class Roundy(qrcode.image.svg.SvgFragmentImage):
     inner_circle_color = "black"
     outer_circle_color = "black"
     dots_color = "black"
+    empty_width = 0
 
     def _add_corner(self, svg, x, y):
         svg.append(
@@ -137,12 +139,26 @@ class Roundy(qrcode.image.svg.SvgFragmentImage):
         x, y = self.pixel_box(row, col)[0]
 
         corner = None
+        # Do not draw pixels making up position markers (will be drawn independently as bigger squares)
         if row < 7 and col < 7:
             corner = "ul"
         elif row < 7 and col >= self.width - 7:
             corner = "ur"
         elif row >= self.width - 7 and col < 7:
             corner = "lr"
+
+        self.empty_width = 0
+        if self.empty_square:
+            # calculate part that can be left out (assuming Level H):
+            self.empty_width = math.floor(math.sqrt(self.width**2 - 64*2) * 0.3)
+            if not self.empty_width & 1:
+                # must be odd do be centred
+                self.empty_width -= 1
+            tr = self.width + 1
+            tx = abs(row+1 - tr/2)
+            ty = abs(col+1 - tr/2)
+            if tx < self.empty_width/2 and ty < self.empty_width/2:
+                corner = "c"
 
         elem = None
         if corner is None:
@@ -160,16 +176,18 @@ class Roundy(qrcode.image.svg.SvgFragmentImage):
                                         xml_declaration=True)
 
 
-def generate_qr(text, factory=None):
+def generate_qr(text, factory=None, error_correction=None):
     if factory is None:
         factory = qrcode.image.svg.SvgPathImage
-    img = qrcode.make(text, image_factory=factory, border=0)
+    if error_correction is None:
+        error_correction = qrcode.ERROR_CORRECT_M
+    img = qrcode.make(text, image_factory=factory, border=0, error_correction=error_correction)
     bots = img.width
     stream = io.BytesIO()
     img.save(stream)
     stream.seek(0)
     qr = svg2rlg(stream)
-    return qr, bots
+    return qr, bots, img.empty_width
 
 
 def text_to_rlg(font, text, color):
@@ -190,10 +208,8 @@ def get_font(what):
     import ziafont
     ziafont.config.svg2 = False
     if what == "p":
-        font_path = "/home/kratenko/git/wyltkm/tinker/PhutureODCBlack.ttf"
         font_path = "PhutureODCBlack.ttf"
     elif what == "a":
-        font_path = "/home/kratenko/git/wyltkm/tinker/AgencyFB-Bold.ttf"
         font_path = "AgencyFB-Bold.ttf"
     else:
         font_path = None
@@ -206,7 +222,7 @@ def get_font(what):
 
 
 def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text=None, kind=None, color=None,
-             border=None):
+             border=None, error_correction=None, icon=None, background=None):
     from . import res
     if width is None:
         width = 250
@@ -220,22 +236,70 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
         dots_color = LIGHT_GREY
         outer_circle_color = BLUE
         inner_circle_color = DARK_GRAY
+        icon_color_name = "dark"
     else:
         text_color_name = "black"
         text_color = "black"
         dots_color = "black"
         outer_circle_color = "black"
         inner_circle_color = "black"
+        icon_color_name = "black"
 
     # Generate QR-Code image:
+    if error_correction == "H":
+        ec = qrcode.ERROR_CORRECT_H
+    elif error_correction == "Q":
+        ec = qrcode.ERROR_CORRECT_Q
+    elif error_correction == "L":
+        ec = qrcode.ERROR_CORRECT_L
+    elif error_correction == "M":
+        ec = qrcode.ERROR_CORRECT_M
+    else:
+        if icon:
+            ec = qrcode.ERROR_CORRECT_H
+        else:
+            ec = qrcode.ERROR_CORRECT_M
+
+    # icon
+    empty_square = True
+    if icon == "tool":
+        f = importlib.resources.open_text(res, f"screwdriver-wrench-{icon_color_name}.svg")
+        icon_img = svg2rlg(f)
+    elif icon == "workshop":
+        f = importlib.resources.open_text(res, f"industry-{icon_color_name}.svg")
+        icon_img = svg2rlg(f)
+    elif icon == "food":
+        f = importlib.resources.open_text(res, f"utensils-{icon_color_name}.svg")
+        icon_img = svg2rlg(f)
+    elif icon == "infrastructure":
+        f = importlib.resources.open_text(res, f"network-wired-{icon_color_name}.svg")
+        icon_img = svg2rlg(f)
+    elif icon == "question":
+        f = importlib.resources.open_text(res, f"question-{icon_color_name}.svg")
+        icon_img = svg2rlg(f)
+    elif icon == "info":
+        f = importlib.resources.open_text(res, f"info-{icon_color_name}.svg")
+        icon_img = svg2rlg(f)
+    elif icon == "attraktor":
+        if icon_color_name == "black":
+            f = importlib.resources.open_text(res, f"attraktor-black.svg")
+        else:
+            f = importlib.resources.open_text(res, f"attraktor-colour.svg")
+        icon_img = svg2rlg(f)
+    else:
+        empty_square = False
+        icon_img = None
+
+    empty_width = 0
     if kind == "a":
         factory = Roundy
         factory.outer_circle_color = outer_circle_color
         factory.inner_circle_color = inner_circle_color
         factory.dots_color = dots_color
-        qr, qr_squares = generate_qr(content, factory=factory)
+        factory.empty_square = empty_square
+        qr, qr_squares, empty_width = generate_qr(content, factory=factory, error_correction=ec)
     else:
-        qr, qr_squares = generate_qr(content)
+        qr, qr_squares, empty_width = generate_qr(content, error_correction=ec)
     if border == "4":
         total_squares = qr_squares + 8
     else:
@@ -247,7 +311,10 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
     # Generate Bottom image:
     bot_img = None
     if bot == "au":
-        f = importlib.resources.open_text(res, f"wyltkm-agency-upper-{text_color_name}.svg")
+        if text_color_name == "dark":
+            f = importlib.resources.open_text(res, f"wyltkm-agency-upper-more.svg")
+        else:
+            f = importlib.resources.open_text(res, f"wyltkm-agency-upper-{text_color_name}.svg")
         bot_img = svg2rlg(f)
     elif bot == "al":
         f = importlib.resources.open_text(res, f"wyltkm-agency-lower-{text_color_name}.svg")
@@ -281,6 +348,13 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
     move(qr, border_width, total_height)
     total_height += qr.height
 
+    if icon_img:
+        icon_size = square_width * (empty_width-1)
+        if icon_img.height > icon_img.width:
+            icon_size = icon_size * icon_img.width / icon_img.height
+        resize_to_width(icon_img, icon_size)
+        move(icon_img, (width - icon_img.width) / 2, total_height - (content_width + icon_img.height) / 2)
+
     if top_img:
         resize_to_width(top_img, content_width)
         total_height += 2 * square_width
@@ -289,12 +363,23 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
 
     total_height += border_width
 
+    bg = None
+    if background == "w":
+        f = importlib.resources.open_text(res, f"white.svg")
+        bg = svg2rlg(f)
+        resize_to(bg, width, total_height)
+
     d = Drawing(width, total_height)
+    if bg:
+        d.add(bg)
+        pass
     d.add(qr)
     if top_img:
         d.add(top_img)
     if bot_img:
         d.add(bot_img)
+    if icon_img:
+        d.add(icon_img)
     return d
 
 
@@ -306,6 +391,17 @@ def resize_to_width(d, w):
     d.scale(ratio, ratio)
     d.width *= ratio
     d.height *= ratio
+
+
+def resize_to(d, w, h):
+    """
+    Scale a rlg drawing to a fixed destination width and update drawings size.
+    """
+    ratio_x = w / d.width
+    ratio_y = h / d.height
+    d.scale(ratio_x, ratio_y)
+    d.width *= ratio_x
+    d.height *= ratio_y
 
 
 def move(d, dx, dy):

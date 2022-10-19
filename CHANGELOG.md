@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.5 - 2022-10-19
+### Added
+- Experimental support for Icons inside QR-Code
+- Optional white background.
+### Changed
+- Individual file name for downloaded files.
+- Change colour theme to render "MORE" in blue.
+
 ## 0.1.4 - 2022-10-17
 ### Fixed
 - Use cairosvg to correctly render the png preview.

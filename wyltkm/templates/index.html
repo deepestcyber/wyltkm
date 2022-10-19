@@ -12,8 +12,18 @@
     <h4>{{ form.c.label }}</h4>
     {{ form.c }}
 
+    <h4>{{ form.i.label }}</h4>
+{% for subfield in form.i %}
+    {{ subfield }}{{ subfield.label }}
+{% endfor %}
+
     <h4>{{ form.C.label }}</h4>
 {% for subfield in form.C %}
+    {{ subfield }}{{ subfield.label }}
+{% endfor %}
+
+    <h4>{{ form.g.label }}</h4>
+{% for subfield in form.g %}
     {{ subfield }}{{ subfield.label }}
 {% endfor %}
 
@@ -31,9 +41,5 @@
 <div class="preview">
     <h2>Preview</h2>
     <img src="img?{{ img_args|safe }}"> <br>
-    <p>
-        <i>The PNG preview might be broken, but the SVG should be fine.</i><br>
-    </p>
-    <br>
 </div>
 {% endblock %}
