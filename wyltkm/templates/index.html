@@ -15,7 +15,12 @@
 
     <h4>{{ form.i.label }}</h4>
 {% for subfield in form.i %}
-    {{ subfield }}<img src="icon?{{  subfield }}">
+    {% if subfield.data %}
+        {{ subfield }}<label for="{{ subfield.id }}"><img height="16" src="icon?{{ subfield.data }}" alt="{{ subfield.data }}" title="{{ subfield.data }}"></label>
+    {% else %}
+        {{ subfield }}<label for="{{ subfield.id }}"><img height="16" src="icon?{{ subfield.data }}" alt="{{ subfield.data }}" title="{{ subfield.data }}"></label>
+        {{ subfield }}{{ subfield.label }}
+    {% endif %}
 {% endfor %}
 
     <h4>{{ form.C.label }}</h4>

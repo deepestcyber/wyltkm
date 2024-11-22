@@ -1,8 +1,9 @@
 import importlib.resources
 import os
+import re
 import urllib.parse
 
-from flask import Flask, render_template, request, send_file, Response
+from flask import Flask, render_template, request, send_file, Response, abort
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, RadioField, IntegerField, TextAreaField
 from slugify import slugify
@@ -10,11 +11,116 @@ from slugify import slugify
 from . import generate
 
 APP_INFO = {
-    "version": "0.1.6",
+    "version": "0.2.0",
     "source": "https://github.com/deepestcyber/wyltkm",
     "info": "https://wiki.attraktor.org/Would_you_like_to_know_more%3F",
 }
 
+"""
+""bell-solid",",
+"biohazard-solid",
+"bluesky-brands-solid",
+"bolt-lightning-solid",
+"book-solid",
+"bus-solid",
+"cat-solid",
+"circle-info-solid",
+"circle-question-solid",
+"computer-solid",
+"flask-vial-solid",
+"gamepad-solid",
+"gavel-solid",
+"hammer-solid",
+"heart-solid",
+"industry-solid",
+"kitchen-set-solid",
+"leaf-solid",
+"lightbulb-solid",
+"mastodon-brands-solid",
+"microscope-solid",
+"mug-hot-solid",
+"music-solid",
+"network-wired-solid",
+"paperclip-solid",
+"person-digging-solid",
+"print-solid",
+"puzzle-piece-solid",
+"qrcode-solid",
+"radiation-solid",
+"radio-solid",
+"restroom-solid",
+"road-bridge-solid",
+"road-solid",
+"robot-solid",
+"rocket-solid",
+"screwdriver-wrench-solid",
+"sliders-solid",
+"sun-solid",
+"toilet-paper-solid",
+"toilet-solid",
+"tower-broadcast-solid",
+"tower-cell-solid",
+"train-subway-solid",
+"trash-can-solid",
+"utensils-solid",
+"walkie-talkie-solid",
+"warehouse-solid",
+"wifi-solid",
+"""
+ICONS = [
+    "",
+    "bell-solid",
+    "biohazard-solid",
+    "bolt-lightning-solid",
+    "book-solid",
+    "bus-solid",
+    "cat-solid",
+    "circle-info-solid",
+    "circle-question-solid",
+    "computer-solid",
+    "flask-vial-solid",
+    "gamepad-solid",
+    "gavel-solid",
+    "hammer-solid",
+    "heart-solid",
+    "industry-solid",
+    "kitchen-set-solid",
+    "leaf-solid",
+    "lightbulb-solid",
+    "microscope-solid",
+    "mug-hot-solid",
+    "music-solid",
+    "network-wired-solid",
+    "paperclip-solid",
+    "person-digging-solid",
+    "print-solid",
+    "puzzle-piece-solid",
+    "qrcode-solid",
+    "radiation-solid",
+    "radio-solid",
+    "restroom-solid",
+    "road-bridge-solid",
+    "road-solid",
+    "robot-solid",
+    "rocket-solid",
+    "screwdriver-wrench-solid",
+    "sliders-solid",
+    "sun-solid",
+    "toilet-paper-solid",
+    "toilet-solid",
+    "tower-broadcast-solid",
+    "tower-cell-solid",
+    "train-subway-solid",
+    "trash-can-solid",
+    "utensils-solid",
+    "walkie-talkie-solid",
+    "warehouse-solid",
+    "wifi-solid",
+
+    "bluesky-brands-solid",
+    "github-brands-solid",
+    "mastodon-brands-solid",
+]
 
 class ConfigForm(FlaskForm):
     """Form used for configuring the qr-code to create."""
@@ -92,16 +198,7 @@ class ConfigForm(FlaskForm):
     i = RadioField(
         "Icon",
         choices=[
-            ("", "None"),
-            ("paperclip-solid", '<img src="/icon?paperclip-solid" alt="paperclip-solid" width="16" height="16">'),
-            ("project", "Project"),
-            ("tool", "Tool"),
-            ("workshop", "Workshop"),
-            ("infrastructure", "Infrastructure"),
-            ("food", "Food/Kitchen/Drinks"),
-            ("question", "Question"),
-            ("info", "Info"),
-            ("attraktor", "Attraktor"),
+            (n, n if n else "None") for n in ICONS
         ],
         default="",
     )
@@ -134,6 +231,8 @@ def index():
                            img_args=urllib.parse.urlencode(img_args),
                            svg_args=urllib.parse.urlencode(svg_args),
                            APP_INFO=APP_INFO,
+                           dir=dir,
+                           ttype=type,
                            )
 
 
@@ -191,9 +290,13 @@ def img_route():
 @app.route("/icon")
 def icon():
     name = request.query_string.decode("utf-8")
+    if re.search(r"[^a-z-]", name):
+        abort(404)
     from .res import icon
-    f = importlib.resources.open_text(icon, f"{name}.svg").read()
-    f = generate.colour_svg(f, generate.LIGHT_GREY)
+    try:
+        f = importlib.resources.open_text(icon, f"{name}.svg").read()
+    except FileNotFoundError:
+        abort(404)
     return Response(
         f,
         mimetype = "image/svg+xml",
