@@ -2,6 +2,7 @@
 
 {% block header %}
     <h1>Would you like to know more?</h1>
+<img src="icon?paperclip-solid" alt="paperclip-solid" height="16">
 {% endblock %}
 
 {% block content %}
@@ -14,7 +15,7 @@
 
     <h4>{{ form.i.label }}</h4>
 {% for subfield in form.i %}
-    {{ subfield }}{{ subfield.label }}
+    {{ subfield }}<img src="icon?{{  subfield }}">
 {% endfor %}
 
     <h4>{{ form.C.label }}</h4>
@@ -40,6 +41,6 @@
 
 <div class="preview">
     <h2>Preview</h2>
-    <img src="img?{{ img_args|safe }}"> <br>
+    <img src="img?{{ img_args|safe }}" alt="qr code"> <br>
 </div>
 {% endblock %}

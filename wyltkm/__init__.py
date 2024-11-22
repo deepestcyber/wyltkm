@@ -1,7 +1,8 @@
+import importlib.resources
 import os
 import urllib.parse
 
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, Response
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, RadioField, IntegerField, TextAreaField
 from slugify import slugify
@@ -92,6 +93,7 @@ class ConfigForm(FlaskForm):
         "Icon",
         choices=[
             ("", "None"),
+            ("paperclip-solid", '<img src="/icon?paperclip-solid" alt="paperclip-solid" width="16" height="16">'),
             ("project", "Project"),
             ("tool", "Tool"),
             ("workshop", "Workshop"),
@@ -185,3 +187,14 @@ def img_route():
             mimetype="image/svg+xml",
             download_name=f"{dl_name}.svg"
         )
+
+@app.route("/icon")
+def icon():
+    name = request.query_string.decode("utf-8")
+    from .res import icon
+    f = importlib.resources.open_text(icon, f"{name}.svg").read()
+    f = generate.colour_svg(f, generate.LIGHT_GREY)
+    return Response(
+        f,
+        mimetype = "image/svg+xml",
+    )

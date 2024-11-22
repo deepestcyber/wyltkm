@@ -221,6 +221,10 @@ def get_font(what):
     return font
 
 
+def colour_svg(svg: str, colour):
+    return svg.replace("<path d=", "<path style=\"fill:" + colour + "\" d=")
+
+
 def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text=None, kind=None, color=None,
              border=None, error_correction=None, icon=None, background=None):
     from . import res
@@ -275,7 +279,7 @@ def generate(content, *, width=None, top=None, top_text=None, bot=None, bot_text
         f = importlib.resources.open_text(res, f"utensils-{icon_color_name}.svg")
         icon_img = svg2rlg(f)
     elif icon == "infrastructure":
-        f = importlib.resources.open_text(res, f"network-wired-{icon_color_name}.svg")
+        f = importlib.resources.open_text(res, f"trash-can-solid-{icon_color_name}.svg")
         icon_img = svg2rlg(f)
     elif icon == "question":
         f = importlib.resources.open_text(res, f"circle-question-{icon_color_name}.svg")
