@@ -2,7 +2,6 @@
 
 {% block header %}
     <h1>Would you like to know more?</h1>
-<img src="icon?paperclip-solid" alt="paperclip-solid" height="16">
 {% endblock %}
 
 {% block content %}
@@ -16,9 +15,8 @@
     <h4>{{ form.i.label }}</h4>
 {% for subfield in form.i %}
     {% if subfield.data %}
-        {{ subfield }}<label for="{{ subfield.id }}"><img height="16" src="icon?{{ subfield.data }}" alt="{{ subfield.data }}" title="{{ subfield.data }}"></label>
+        {{ subfield }}<label for="{{ subfield.id }}"><img height="16" width="16" src="icon?i={{ subfield.data }}" alt="{{ subfield.data }}" title="{{ subfield.data }}"></label>
     {% else %}
-        {{ subfield }}<label for="{{ subfield.id }}"><img height="16" src="icon?{{ subfield.data }}" alt="{{ subfield.data }}" title="{{ subfield.data }}"></label>
         {{ subfield }}{{ subfield.label }}
     {% endif %}
 {% endfor %}
@@ -41,7 +39,7 @@
     <h4>{{ form.w.label }}</h4>
     {{ form.w }}
 
-    <p>{{ form.preview }} {{ form.exp }} {{ form.svg }} {{ form.png }}</p>
+    <p>{{ form.preview }} {{ form.svg }} {{ form.png }}</p>
 </form>
 
 <div class="preview">

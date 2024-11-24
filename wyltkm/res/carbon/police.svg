@@ -4,7 +4,6 @@
       .cls-1 {
         fill: none;
       }
-      * { fill: red; }
     </style>
   </defs>
   <title>police</title>
