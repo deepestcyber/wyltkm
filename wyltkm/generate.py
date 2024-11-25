@@ -45,6 +45,8 @@ class WYLTKM:
             return None, False
 
     def generate_top(self):
+        if not self.text:
+            return None
         font = self.get_font()
         top_img = text_to_rlg(font, self.text, self.style.colour_top)
         return top_img

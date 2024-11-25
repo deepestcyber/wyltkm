@@ -1,5 +1,6 @@
 import importlib.resources
 import io
+import re
 from typing import TextIO
 
 from svglib.svglib import svg2rlg
@@ -36,12 +37,16 @@ def load_icon(icon: str, colour: str|None) -> TextIO|None:
         f = importlib.resources.open_text(res, f"attraktor-mono.svg")
         f = colour_replace(f, colour)
     elif icon.startswith("carbon/"):
+        if re.search(r"[^a-z-]", icon[7:]):
+            return None
         try:
             f = importlib.resources.open_text(carbon, f"{icon[7:]}.svg")
         except FileNotFoundError:
             return None
         f = colour_carbon(f, colour)
     else:
+        if re.search(r"[^a-z-]", icon):
+            return None
         try:
             f = importlib.resources.open_text(awesome, f"{icon}.svg")
         except FileNotFoundError:

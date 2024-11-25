@@ -145,7 +145,7 @@ class ConfigForm(FlaskForm):
         choices=[
             ("a", "Attraktor"),
             ("b", "Attraktor Black/White"),
-            ("38c3", "38C3"),
+            ("38c3", "38c3"),
         ],
         default="a",
     )
@@ -155,7 +155,7 @@ class ConfigForm(FlaskForm):
             ("w", "Colour"),
             ("", "Transparent"),
         ],
-        default="",
+        default="w",
     )
     B = RadioField(
         "Border",
@@ -213,7 +213,7 @@ def exp():
     svg_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B", "i", "g"]}
     img_args = {k: v for k, v in request.args.items() if k in ["t", "tt", "q", "c", "b", "bt", "C", "w", "B", "i", "g"]}
     img_args["png"] = "PNG"
-    img_args["w"] = 250
+    img_args["w"] = "250"
     return render_template("exp.html",
                            form=form,
                            img_args=urllib.parse.urlencode(img_args),
@@ -221,25 +221,6 @@ def exp():
                            APP_INFO=APP_INFO,
                            )
 
-
-@app.route("/xx")
-def xx():
-    from . import style
-    st = style.ccc38c3
-    #st = style.attraktor
-    w = WYLTKM()
-    w.style = st
-    w.icon = "carbon/drone--front"
-#    w.icon = "carbon/add--alt"
-    w.border = True
-    w.width = 500
-    w.text = "Tischtische"
-    w.content = "https://deepcyber.de/projects/table-tables"
-    img = w.generate()
-    return send_file(
-        generate.drawing_to_svg_stream(img),
-        mimetype="image/svg+xml",
-    )
 
 @app.route("/img")
 def img_route():
@@ -291,21 +272,6 @@ def img_route():
             mimetype="image/svg+xml",
             download_name=f"{dl_name}.svg"
         )
-
-@app.route("/iconx")
-def iconx():
-    name = request.query_string.decode("utf-8")
-    if re.search(r"[^a-z-]", name):
-        abort(404)
-    from .res import icon
-    try:
-        f = importlib.resources.open_text(icon, f"{name}.svg").read()
-    except FileNotFoundError:
-        abort(404)
-    return Response(
-        f,
-        mimetype = "image/svg+xml",
-    )
 
 
 class IconForm(FlaskForm):
