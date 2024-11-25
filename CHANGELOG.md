@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 - 2024-11-25
+### Changed
+- Massive internal rewrite.
+- Icons are now stored in black only and coloured on the fly.
+- Easy creation of new designs.
+- Easy adding of new icons.
+### Added
+- New design `38c3` created after design guide.
+- Added a lot of new icons from AwesomeFont.
+- Added a few icons from carbon (from the 38c3 design guide).
+
 ## 0.1.6 - 2022-10-20
 ### Changed
 - Switch question and info icons to use circle.
