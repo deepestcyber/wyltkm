@@ -12,7 +12,7 @@ from . import generate
 from .generate import WYLTKM
 
 APP_INFO = {
-    "version": "0.2.0",
+    "version": "0.2.1",
     "source": "https://github.com/deepestcyber/wyltkm",
     "info": "https://wiki.attraktor.org/Would_you_like_to_know_more%3F",
 }

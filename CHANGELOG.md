@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2024-11-25
+### Fixed
+- Remove empty square in middle if no icon is selected.
+
 ## 0.2.0 - 2024-11-25
 ### Changed
 - Massive internal rewrite.

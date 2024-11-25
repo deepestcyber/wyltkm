@@ -66,7 +66,7 @@ class WYLTKM:
         factory.outer_circle_color = self.style.colour_square
         factory.inner_circle_color = self.style.colour_big
         factory.dots_color = self.style.colour_dot
-        factory.empty_square = self.icon is not None
+        factory.empty_square = self.icon != ""
         img = qrcode.make(self.content, image_factory=factory, border=0, error_correction=qrcode.ERROR_CORRECT_H)
         bots = img.width
         stream = io.BytesIO()
