@@ -12,7 +12,7 @@ from . import generate
 from .generate import WYLTKM
 
 APP_INFO = {
-    "version": "0.2.1",
+    "version": "0.2.2",
     "source": "https://github.com/deepestcyber/wyltkm",
     "info": "https://wiki.attraktor.org/Would_you_like_to_know_more%3F",
 }
@@ -146,6 +146,8 @@ class ConfigForm(FlaskForm):
             ("a", "Attraktor"),
             ("b", "Attraktor Black/White"),
             ("38c3", "38c3"),
+            ("38c3light", "38c3light"),
+            ("38c3lighter", "38c3lighter"),
         ],
         default="a",
     )
@@ -229,6 +231,10 @@ def img_route():
 
     if form.C.data == "38c3":
         st = generate.style.ccc38c3
+    elif form.C.data == "38c3light":
+        st = generate.style.ccc38c3light
+    elif form.C.data == "38c3lighter":
+        st = generate.style.ccc38c3lighter
     elif form.C.data == "b":
         st = generate.style.black_on_white
     else:

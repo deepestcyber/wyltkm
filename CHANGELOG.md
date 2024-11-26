@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 - 2024-11-26
+### Added
+- Design `38c3light` and `38lighter` that uses SpaceGrotesk on top.
+
 ## 0.2.1 - 2024-11-25
 ### Fixed
 - Remove empty square in middle if no icon is selected.
