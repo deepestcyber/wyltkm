@@ -1,0 +1,21 @@
+# Example systemd unit for the WYLTKM web app behind a reverse proxy.
+# Install: python -m venv /opt/wyltkm && /opt/wyltkm/bin/pip install 'wyltkm[web]' gunicorn
+[Unit]
+Description=WYLTKM QR code web app
+After=network.target
+
+[Service]
+Type=simple
+User=wyltkm
+Group=wyltkm
+Environment=WYLTKM_CONFIG=/etc/wyltkm/config.toml
+ExecStart=/opt/wyltkm/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 'wyltkm.web:create_app()'
+Restart=on-failure
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadOnlyPaths=/srv/wyltkm /etc/wyltkm
+
+[Install]
+WantedBy=multi-user.target

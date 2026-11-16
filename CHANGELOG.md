@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.3.0 - unreleased
+### Changed
+- Complete rewrite: core library (`wyltkm.core`), command line tool
+  (`wyltkm`) and web app (`wyltkm.web`) as separate parts sharing one engine.
+- The SVG is built directly; everything is a filled path (QR modules, finder
+  patterns, text, icons). reportlab and svglib are no longer used.
+- Designs are TOML files with inheritance, colour fallbacks and optional
+  colour schemes.
+- The bottom line is rendered from fonts as a justified text block instead of
+  pre-rendered graphics.
+- Icons are named `source:name` (e.g. `fa:solid/cat`, `carbon:boot`,
+  `attraktor:logo`). Clean break: old URL parameters and icon names are gone.
+- Packaging with `pyproject.toml` and uv; Python 3.12 or later.
+- Design variants are schemes: the black and white Attraktor design is the
+  scheme `bw` of `attraktor` (`-d attraktor -s bw`, with the mono logo), and
+  38c3 light and lighter are the schemes `light` and `lighter` of `38c3`.
+### Added
+- Command line tool `wyltkm` (`render`, `designs`, `icons`, `licences`, `web`).
+- Licence records for designs, icon sources and fonts; each image lists the
+  licences of its parts, and embeds them in the file unless switched off.
+- Free fonts bundled: Hack, Jersey 10, Pilowlava, Space Grotesk.
+- Tests, including decoding of rendered codes and golden files.
+### Removed
+- WTForms and flask-wtf; the "advanced parameters" page.
+
 ## 0.2.2 - 2024-11-26
 ### Added
 - Design `38c3light` and `38lighter` that uses SpaceGrotesk on top.

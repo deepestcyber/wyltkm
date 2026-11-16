@@ -1,0 +1,13 @@
+name = "40c3"
+title = "40C3 style guide"
+type = "zip"
+path = "40c3-styleguide-full-latest.zip"
+prefix = "Assets/"
+include = ["Icons_Deco/", "Citizens/", "Logos/"]
+recolour = false
+recolour_except = ["logos/"]   # the logos are one colour each; they take the icon colour
+
+[licence]
+name = "CC0-1.0"
+url = "https://events.ccc.de/congress/2026/infos/styleguide/"
+holder = "Chaos Computer Club"

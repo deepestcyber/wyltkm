@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% macro seg(name, options, value) -%}
+<span class="seg" role="radiogroup">
+{%- for v, label in options %}
+  <label><input type="radio" name="{{ name }}" value="{{ v }}"{% if (value or '') == v %} checked{% endif %}><span>{{ label }}</span></label>
+{%- endfor %}
+</span>
+{%- endmacro %}
+{% block body %}
+<main class="app">
+<form id="qr" action="/" method="get" class="controls">
+  <section class="card stack">
+    <div>
+      <label class="field" for="content">Link or text in the code</label>
+      <input id="content" name="content" type="text" value="{{ args.content }}" autocomplete="off" spellcheck="false">
+    </div>
+    <div>
+      <label class="field" for="text">Top text</label>
+      <textarea id="text" name="text" rows="2">{{ args.text or '' }}</textarea>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Design</h2>
+    <div class="designs" role="radiogroup">
+    {% for d in designs %}
+      <label class="design" title="{{ d.description }}">
+        <input type="radio" name="design" value="{{ d.name }}"{% if (args.design or default_design) == d.name %} checked{% endif %} data-icon-colour="{{ d.colours.icon }}">
+        <img src="{{ d.preview }}" alt="" loading="lazy" width="96" height="128">
+        <span>{{ d.title }}</span>
+      </label>
+    {% endfor %}
+    </div>
+    <div class="schemes" id="schemes"{% if not (design and design.schemes) %} hidden{% endif %}>
+    {% if design and design.schemes %}
+      {% for s in design.schemes.values() %}
+      <label class="chip">
+        <input type="radio" name="scheme" value="{{ s.name }}"{% if scheme == s.name %} checked{% endif %}>
+        <span><i class="dot" style="background: {{ s.colours.finder_ring }}; box-shadow: 0 0 0 2px {{ s.colours.background }}"></i>{{ s.title }}</span>
+      </label>
+      {% endfor %}
+    {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Icon</h2>
+    <div class="row">
+      <input type="search" name="icon_q" id="icon_q" value="{{ icon_q }}" placeholder="Search icons" autocomplete="off">
+      <select name="icon_source" id="icon_source" aria-label="Icon source">
+        <option value="">All</option>
+        {% for s in icon_sources %}<option value="{{ s.name }}"{% if icon_source == s.name %} selected{% endif %}>{{ s.name }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn nojs">Search</button>
+      <a class="btn" id="browse-open" href="/icons/browse?{{ query }}">Browse</a>
+    </div>
+    <div class="icons" id="icons" style="--icon-colour: {{ icon_colour }}; --tile-bg: {{ tile_bg }}">
+      <label class="icon text" title="The design's icon"><input type="radio" name="icon" value=""{% if not args.icon %} checked{% endif %}><span>Design</span></label>
+      <label class="icon text" title="No icon"><input type="radio" name="icon" value="{{ no_icon }}"{% if args.icon == no_icon %} checked{% endif %}><span>None</span></label>
+      {% if args.icon and args.icon != no_icon and args.icon not in icon_hits|map(attribute='name') %}
+      <label class="icon" title="{{ args.icon }}"><input type="radio" name="icon" value="{{ args.icon }}" checked><img src="/icons/{{ args.icon.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" alt="{{ args.icon }}" width="20" height="20"></label>
+      {% endif %}
+      {% for h in icon_hits %}
+      <label class="icon" title="{{ h.name }}{% if h.label %} · {{ h.label }}{% endif %}"><input type="radio" name="icon" value="{{ h.name }}"{% if args.icon == h.name %} checked{% endif %}><img src="/icons/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" alt="{{ h.name }}" width="20" height="20" loading="lazy"></label>
+      {% endfor %}
+    </div>
+    <p class="hint"><span class="mono" id="icon-name">{{ current_icon }}</span>
+      <span class="jsonly">· <label class="upload">Upload your own SVG<input type="file" name="icon_file" id="icon_file" accept=".svg,image/svg+xml"></label>
+      <button type="button" class="linkish" id="icon_file_clear" hidden>remove upload</button></span></p>
+  </section>
+
+  <section class="card">
+    <h2>Options</h2>
+    <div class="opt"><span>Background</span>{{ seg('background', [('', 'Design'), ('1', 'Colour'), ('0', 'Transparent')], args.background) }}</div>
+    <div class="opt"><span>Border</span>{{ seg('border', [('', 'Design'), ('1', 'Quiet zone'), ('0', 'None')], args.border) }}</div>
+    <div class="opt"><span>Side text</span>{{ seg('side', [('', 'Off'), ('1', 'Content as text')], args.side) }}</div>
+    <div class="opt" id="side-font-row"{% if args.side != '1' %} hidden{% endif %}><label for="side_font">Side font</label>
+      <span><input type="text" name="side_font" id="side_font" list="fonts" value="{{ args.side_font or '' }}" placeholder="Design default" autocomplete="off">
+      <datalist id="fonts">{% for f in side_fonts %}<option value="{{ f }}">{% endfor %}</datalist></span></div>
+    <div class="opt"><label for="width">Width</label><span class="row"><input id="width" name="width" type="number" min="50" max="{{ max_width }}" step="10" value="{{ args.width or 250 }}"><span class="hint">px, whole image</span></span></div>
+    <div class="opt"><span>Licence info</span>{{ seg('licence_metadata', [('', 'In the file'), ('0', 'Leave out')], args.licence_metadata) }}</div>
+  </section>
+  <p class="nojs"><button type="submit" class="btn primary">Update preview</button></p>
+</form>
+
+<aside class="preview">
+  <div class="mat">
+    <div class="sheet" id="sheet"{% if error %} hidden{% endif %}>
+      <span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
+      <img id="preview" src="/render.svg?{{ query }}" alt="QR code preview"{% if result %} width="{{ result.width }}"{% endif %}>
+      <div class="dims mono" id="dims">{% if result %}{{ result.width }} × {{ result.height|round|int }} px · {{ result.modules }} modules{% endif %}</div>
+    </div>
+    <p class="error" id="error"{% if not error %} hidden{% endif %}>{{ error or '' }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn primary" id="dl-svg" href="/render.svg?{{ query }}&amp;download=1">Download SVG</a>
+    <a class="btn" id="dl-png" href="/render.png?{{ query }}&amp;download=1">Download PNG</a>
+    <button type="button" class="btn quiet" id="copy-link" hidden>Copy link</button>
+  </div>
+  <ul class="warnings" id="warnings">{% if result %}{% for w in result.warnings %}<li>{{ w }}</li>{% endfor %}{% endif %}</ul>
+  <div class="licences" id="licences">
+    {% if result %}{% for lic in result.licences %}
+    <p>{{ lic.part }}: {% if lic.url %}<a href="{{ lic.url }}">{{ lic.name }}</a>{% else %}{{ lic.name }}{% endif %}{% if lic.holder %}, {{ lic.holder }}{% endif %}
+      {%- if lic.requires_attribution %}<br><span class="attribution">Attribution required: <code>{{ lic.attribution }}</code></span>{% endif %}</p>
+    {% endfor %}{% endif %}
+  </div>
+</aside>
+
+<dialog id="browser" class="browser" aria-label="Browse icons">
+  <div class="browser-head">
+    <input type="search" id="browse-q" placeholder="Search icons" aria-label="Search icons" autocomplete="off">
+    <button type="button" class="btn quiet" id="browse-close" aria-label="Close">Close</button>
+  </div>
+  <nav class="sources" id="browse-sources"></nav>
+  <div class="browser-body">
+    <aside class="folders" id="browse-folders"></aside>
+    <div class="browser-main" id="browse-main">
+      <p class="hint mono" id="browse-count"></p>
+      <div class="browse-grid" id="browse-grid" role="listbox" aria-label="Icons" style="--tile-bg: {{ tile_bg }}"></div>
+      <div id="browse-more" class="more"></div>
+    </div>
+  </div>
+  <div class="browser-foot">
+    <span class="pick-preview" id="browse-pick-img" style="--tile-bg: {{ tile_bg }}"></span>
+    <span class="pick-info"><span id="browse-pick-name" class="mono">No icon chosen</span><br><span id="browse-pick-meta" class="hint"></span></span>
+    <button type="button" class="btn quiet" id="browse-cancel">Cancel</button>
+    <button type="button" class="btn primary" id="browse-use" disabled>Use icon</button>
+  </div>
+</dialog>
+</main>
+{% endblock %}

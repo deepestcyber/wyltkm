@@ -1,0 +1,19 @@
+# Example config for a hosted WYLTKM web app, e.g. /etc/wyltkm/config.toml.
+# See docs/configuration.md for all keys.
+
+default_design = "attraktor"
+
+# Fonts, extra designs and icon sources of this install live here:
+#   /srv/wyltkm/fonts/AgencyFB-Bold.ttf   (+ AgencyFB-Bold.ttf.licence.toml)
+#   /srv/wyltkm/designs/<name>/design.toml
+#   /srv/wyltkm/icons/<source>.toml
+data_dirs = ["/srv/wyltkm"]
+
+# Do not depend on what happens to be installed on the host.
+system_fonts = false
+
+[web]
+max_width = 4000
+max_upload_bytes = 262144
+max_upload_elements = 5000
+max_upload_depth = 20

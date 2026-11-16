@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Licences · Would you like to know more?{% endblock %}
+{% macro item(lic) %}
+<li>{{ lic.part }}: {% if lic.url %}<a href="{{ lic.url }}">{{ lic.name }}</a>{% else %}{{ lic.name }}{% endif %}{% if lic.holder %}, {{ lic.holder }}{% endif %}
+{%- if lic.requires_attribution %}<br>Attribution required: <code>{{ lic.attribution }}</code>{% endif %}</li>
+{% endmacro %}
+{% block body %}
+<main class="page">
+<h1>Licences</h1>
+<p>
+  Every image is made of parts with their own licences: the design, the icon, and the fonts of
+  the text. Under the preview, the page lists the licences of the parts of that image; by default
+  the image file contains them as well.
+</p>
+<h2>Designs</h2>
+<ul>{% for lic in designs %}{{ item(lic) }}{% endfor %}</ul>
+<h2>Icon sources</h2>
+<ul>{% for lic in sources %}{{ item(lic) }}{% endfor %}</ul>
+<h2>Fonts</h2>
+<p>
+  The text is drawn as outlines of these fonts. Fonts that are not listed here may be installed on
+  this server; each image names the fonts it uses.
+</p>
+<ul>{% for lic in fonts %}{{ item(lic) }}{% endfor %}</ul>
+</main>
+{% endblock %}

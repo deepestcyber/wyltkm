@@ -1,0 +1,13 @@
+name = "carbon"
+title = "IBM Carbon 11.92.0"
+type = "zip"
+path = "carbon-icons-11.92.0.zip"
+prefix = "svg/32/"
+recolour = true
+metadata = "carbon"
+
+[licence]
+name = "Apache-2.0"
+url = "https://github.com/carbon-design-system/carbon/blob/main/LICENSE"
+holder = "IBM Corp."
+attribution = "Icon from IBM Carbon, Apache License 2.0"
