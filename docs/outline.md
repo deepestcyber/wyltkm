@@ -98,19 +98,22 @@ uv.lock
 src/wyltkm/
   core/
     __init__.py        public API: Library, Request, render_svg, render_png, errors
-    config.py          config file, data dirs, env
+    errors.py          exception types
+    library.py         Library: designs, icons, fonts of one install
+    config.py          config file, data dirs, env (plan 0002)
     request.py         Request and validation
-    render.py          layout and SVG assembly
+    render.py          layout and SVG assembly, PNG
+    geometry.py        path data of basic shapes, number formatting
     qr.py              QR matrix and path generation
-    text.py            text to paths (ziafont)
+    text.py            text blocks to paths (ziafont)
     svg.py             SVG parsing, sanitising, primitive-to-path conversion, recolouring
-    designs.py         design loading, inheritance, registry
-    icons/             icon source types (zip, dir), registry, search
+    designs.py         design loading, inheritance, schemes, registry
+    icons.py           icon sources, registry (zip sources and search: plan 0004)
     fonts.py           font resolution
-    licences.py        licence records and collection per render
+    licences.py        licence records
     data/
       designs/<name>/design.toml (+ assets)
-      icons/           fontawesome-free-7.3.1-web.zip, 40c3 zip, carbon, attraktor
+      icons/           <source>.toml and its directory or zip
       fonts/           bundled free fonts with licence files
   cli/
     __init__.py        entry point `wyltkm` (click)

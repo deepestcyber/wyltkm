@@ -17,6 +17,7 @@ url = "https://fontawesome.com/license/free"
 holder = "Fonticons, Inc."
 attribution = "Icon from Font Awesome Free, https://fontawesome.com, CC BY 4.0"
 requires_attribution = true            # default false
+file = "LICENSE.txt"                   # optional: licence text next to the part
 ```
 
 `requires_attribution` is set by whoever writes the record; for the known
@@ -62,6 +63,7 @@ text, including the side text font. Sorted, without duplicates.
 | Attraktor design and logo | "unclear", holder Attraktor e.V.; shown as such until clarified | unclear |
 | 38c3 style | CC0 | not required |
 | Agency FB (font, not bundled) | commercial, install's own licence | — |
+| DejaVu Sans (fallback font, from ziafont) | Bitstream Vera licence | — |
 
 Font licences cover the use of the font; glyph outlines in a graphic are
 normally allowed by them. They are listed so users can check.

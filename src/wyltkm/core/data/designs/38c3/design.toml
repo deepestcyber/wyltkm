@@ -1,0 +1,34 @@
+name = "38c3"
+title = "38c3"
+description = "38th Chaos Communication Congress style, Pilowlava"
+
+[colours]
+background = "#0f000a"
+modules = "#6a5fdb"
+finder_ring = "#b2aaff"
+finder_centre = "#ff5053"
+icon = "#ff5053"
+top = "#ff5053"
+bottom = "#ff5053"
+highlight = "#b2aaff"
+
+[qr]
+module_shape = "rounded"
+module_radius = 0.3
+finder_ring_shape = "rounded"
+finder_ring_radius = 1.5
+finder_centre_shape = "rounded"
+finder_centre_radius = 1.0
+
+[top]
+fonts = ["Pilowlava-Regular.otf"]
+
+[bottom]
+type = "text"
+fonts = ["Pilowlava-Regular.otf"]
+lines = ["WOULD YOU LIKE", "TO KNOW [MORE]?"]
+
+[licence]
+name = "CC0-1.0"
+url = "https://events.ccc.de/congress/2024/infos/styleguide.html"
+holder = "Chaos Computer Club"

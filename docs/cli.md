@@ -35,8 +35,12 @@ wyltkm render https://wiki.attraktor.org/Laser \
 | `--no-licence-metadata` | Leave the licence info out of the image file (SVG and PNG) |
 
 Warnings (missing font, not laser-friendly icon) and, when a part requires
-attribution, a short licence note go to stderr. The exit code is not 0 for
-errors such as an unknown design or icon.
+attribution or its licence is unclear or unknown, a short licence note go to
+stderr.
+
+Exit codes: 0 success, 1 invalid request (e.g. unknown scheme), 2 wrong
+command line usage, 3 unknown design or icon, 4 broken data (a design or
+icon source of the install is faulty).
 
 ## Inspecting
 

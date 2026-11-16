@@ -1,0 +1,11 @@
+name = "carbon"
+title = "IBM Carbon (subset)"
+type = "dir"
+path = "carbon"
+recolour = true
+
+[licence]
+name = "Apache-2.0"
+url = "https://github.com/carbon-design-system/carbon/blob/main/LICENSE"
+holder = "IBM Corp."
+attribution = "Icon from IBM Carbon, Apache License 2.0"

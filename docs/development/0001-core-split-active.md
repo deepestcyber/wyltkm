@@ -1,6 +1,6 @@
 # Core split
 
-Status: active (2026-11-16)
+Status: active (2026-11-16); all parts done, waiting for review
 
 Split the project into core library, CLI and web app, on a new renderer that
 builds the SVG itself and emits paths only. At the end, everything 0.2.2 can
@@ -15,23 +15,23 @@ Status values: `open`, `in progress`, `done`.
 
 | # | Part | Status |
 | --- | --- | --- |
-| 1 | Packaging: pyproject, uv, src layout, pytest | open |
-| 2 | Core API: `Library`, `Request`, `render_svg`, `render_png` | open |
-| 3 | QR as paths | open |
-| 4 | Bundled fonts and basic font lookup | open |
-| 5 | Text blocks as paths | open |
-| 6 | SVG normalising for icons and assets | open |
-| 7 | Layout and assembly, PNG | open |
-| 8 | Designs as TOML, built-ins ported | open |
-| 9 | Existing icons as `dir` sources | open |
-| 10 | CLI: `wyltkm render` | open |
-| 11 | Web: port to the core API | open |
-| 12 | Licence records and reporting | open |
-| 13 | Clean-up, changelog, README | open |
+| 1 | Packaging: pyproject, uv, src layout, pytest | done |
+| 2 | Core API: `Library`, `Request`, `render_svg`, `render_png` | done |
+| 3 | QR as paths | done |
+| 4 | Bundled fonts and basic font lookup | done |
+| 5 | Text blocks as paths | done |
+| 6 | SVG normalising for icons and assets | done |
+| 7 | Layout and assembly, PNG | done |
+| 8 | Designs as TOML, built-ins ported | done |
+| 9 | Existing icons as `dir` sources | done |
+| 10 | CLI: `wyltkm render` | done |
+| 11 | Web: port to the core API | done |
+| 12 | Licence records and reporting | done |
+| 13 | Clean-up, changelog, README | done |
 
 ## 1. Packaging: pyproject, uv, src layout, pytest
 
-Status: open
+Status: done (2026-11-16)
 
 - `pyproject.toml` with hatchling, Python ≥ 3.12, `uv.lock`.
 - Move the package to `src/wyltkm/`, subpackages `core`, `cli`, `web`.
@@ -50,7 +50,7 @@ Status: open
 
 ## 2. Core API
 
-Status: open
+Status: done (2026-11-16)
 
 - `Request`: frozen dataclass. Fields left `None` mean "default" (from
   config or design). Creating it checks what needs no library: content not
@@ -67,9 +67,16 @@ Status: open
   `InvalidRequest` for everything else, including an unknown scheme or side
   font (web 400).
 
+Done:
+
+- `wyltkm.core`: `Library` (`Library.builtin()`), `Request`, `render_svg`,
+  `render_png`, `Result` (`svg`, `png`, `warnings`, `licences`,
+  `licence_notes`), errors in `errors.py`. `DataError` added for broken
+  designs or icon sources (CLI exit code 4).
+
 ## 3. QR as paths
 
-Status: open
+Status: done (2026-11-16)
 
 - Matrix from `qrcode.QRCode(...).get_matrix()`, border 0, error correction
   always H.
@@ -82,9 +89,15 @@ Status: open
 - Test: decode generated codes (e.g. with `zbar`/`pyzbar` or `zxing-cpp` as a
   test dependency) for several contents, with and without the empty centre.
 
+Done:
+
+- `qr.py`; finder rings as two subpaths with even-odd fill. All codes of the
+  test matrix (designs × icon on/off × contents) decode with zxing-cpp
+  (`tests/test_qr.py`).
+
 ## 4. Bundled fonts and basic font lookup
 
-Status: open
+Status: done (2026-11-16)
 
 Needed here already, because every ported design draws its bottom line as
 text.
@@ -108,9 +121,17 @@ text.
   renders with the fallback font and a warning, like any design with a
   missing font.
 
+Done:
+
+- Fonts and licence records in `core/data/fonts/`; `Pilowlava-Atome.otf` was
+  byte-identical to the upstream file. Licence records got an optional
+  `file` key for the licence text.
+- `FontResolver` in `fonts.py`; the fallback font (DejaVu Sans from ziafont)
+  has its own licence record.
+
 ## 5. Text blocks as paths
 
-Status: open
+Status: done (2026-11-16)
 
 - ziafont glyphs as plain `path` elements (check that `svg2 = False` gives no
   `<use>`; otherwise flatten). Keep or fix the workaround for the empty
@@ -122,9 +143,15 @@ Status: open
 - Used for the top text and the bottom line alike.
 - Fonts from the lookup in part 4.
 
+Done:
+
+- `text.py`: own line layout from advances with kerning (ziafont's GPOS);
+  heights and widths from the ink (glyph bounding boxes), so text touches
+  the QR width exactly, as in 0.2.2.
+
 ## 6. SVG normalising
 
-Status: open
+Status: done (2026-11-16)
 
 - Safe parsing; everything but shapes, groups, clip paths and gradients is
   removed ([icons.md](../icons.md), "Normalising").
@@ -138,9 +165,14 @@ Status: open
 - Detection of strokes, clip paths and gradients for the "not
   laser-friendly" warning.
 
+Done:
+
+- `svg.py`. Empty `defs`, groups and clip paths are dropped. Ids are
+  prefixed (`icon-`, `bottom-`) so they cannot clash.
+
 ## 7. Layout and assembly, PNG
 
-Status: open
+Status: done (2026-11-16)
 
 - Layout as in [rendering.md](../rendering.md); same proportions as 0.2.2, so
   outputs look the same.
@@ -150,9 +182,16 @@ Status: open
   so results do not depend on the machine. `attraktor` goldens therefore use
   the fallback font; its look with Agency FB is checked by hand (part 8).
 
+Done:
+
+- `render.py`; the viewBox is in module units and `width`/`height` in px, so
+  no scaling transform is needed. Licence metadata as RDF in `<metadata>`,
+  PNG as an `iTXt` chunk (UTF-8) with keyword `Copyright`.
+- Golden files in `tests/golden/`; rewrite with `UPDATE_GOLDEN=1 pytest`.
+
 ## 8. Designs as TOML
 
-Status: open
+Status: done (2026-11-16)
 
 - Loader with validation, defaults and colour fallbacks (key table in
   [designs.md](../designs.md)), `extends` and colour schemes with
@@ -167,9 +206,19 @@ Status: open
   config file); nothing in the code treats `attraktor` specially.
 - Built-in registry only; data directories come in 0002.
 
+Done:
+
+- `designs.py`, the five designs in `core/data/designs/`. Shapes as in
+  0.2.2: modules rounded 0.3, finder ring rounded 1.5 (inner edge 0.5),
+  centre rounded 1.0.
+- `attraktor-bw` now uses `attraktor:logo-mono` (0.2.2 showed the colour
+  logo), and has the "WOULD YOU LIKE / TO KNOW MORE?" line in black instead
+  of the content as text.
+- Compared by eye with the 0.2.2 bottom graphics, with Agency FB installed.
+
 ## 9. Existing icons as `dir` sources
 
-Status: open
+Status: done (2026-11-16)
 
 - `dir` source type, source TOML files with `rename` tables, the icon name
   syntax `source:name` and the file-name rule ([icons.md](../icons.md)).
@@ -179,9 +228,16 @@ Status: open
   subdirectories without the `-solid`/`-brands-solid` suffix, so names are
   already `fa:solid/cat`, `fa:brands/github`.
 
+Done:
+
+- `icons.py`; sources `attraktor`, `carbon`, `fa` in `core/data/icons/`.
+  Added `recolour_except` to the source format, since the Attraktor source
+  has a colour logo and a mono logo ([icons.md](../icons.md)); this also
+  answers the per-icon recolouring question of 0004.
+
 ## 10. CLI: `wyltkm render`
 
-Status: open
+Status: done (2026-11-16)
 
 - click, with help texts for every command and option.
 - `wyltkm render` with the options in [cli.md](../cli.md), except those that
@@ -192,9 +248,14 @@ Status: open
   in 0002, `wyltkm icons list/search/show` in 0004.
 - Exit codes and warnings on stderr.
 
+Done:
+
+- Exit codes: 1 invalid request, 2 usage, 3 unknown design or icon, 4 broken
+  data ([cli.md](../cli.md)).
+
 ## 11. Web: port to the core API
 
-Status: open
+Status: done (2026-11-16)
 
 - `create_app()` factory, routes `/`, `/render.svg`, `/render.png`, `/help`
   with the new parameter names. Parameters are read into `Request` directly;
@@ -203,9 +264,15 @@ Status: open
 - `wyltkm web` starts the development server (only with the web extra
   installed; otherwise a clear message).
 
+Done:
+
+- `wyltkm.web.create_app(library=None)`. Maximum width 4000 is fixed until
+  0002 reads `[web] max_width`; upload limits are the core's (1 MiB, 5000
+  elements, depth 20) until then. Icon selection is a plain list for now.
+
 ## 12. Licence records and reporting
 
-Status: open
+Status: done (2026-11-16)
 
 - Licence records as in [licences.md](../licences.md) for the built-in
   designs, icon sources and bundled fonts.
@@ -221,14 +288,24 @@ Status: open
   Attraktor e.V.) until clarified; 38c3 is CC0.
 - Add `LICENCE.md` next to the 40c3 zip with the CC0 statement and source URL.
 
+Done:
+
+- `LICENCE` note for the 40c3 zip: `core/data/icons/40c3-styleguide-LICENCE.md`.
+
 ## 13. Clean-up, changelog, README
 
-Status: open
+Status: done (2026-11-16)
 
 - Remove `generate.py`, `style.py`, `icon.py`, the dead code and unused
   resources.
 - README: short description, install, links to docs.
 - Changelog entry; version 0.3.0.
+
+Done:
+
+- Old modules, `res/` with the bottom graphics and the unused FA/Carbon
+  `__init__.py` files removed.
+- The two zips are moved to `core/data/icons/` but not committed yet.
 
 ## Open questions
 

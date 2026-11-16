@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>Would you like to know more?</h1>
+{% endblock %}
+
+{% block content %}
+<form class="cf" action="/" method="get">
+    <h4><label for="text">Top text</label></h4>
+    <textarea id="text" name="text" cols="50" rows="3">{{ args.text or '' }}</textarea>
+
+    <h4><label for="content">Content</label></h4>
+    <input id="content" name="content" size="50" value="{{ args.content }}">
+    <small>The data inside the QR code; typically a URL.</small>
+
+    <h4><label for="design">Design</label></h4>
+    <select id="design" name="design">
+    {% for d in designs %}
+        <option value="{{ d.name }}"{% if (args.design or default_design) == d.name %} selected{% endif %}>{{ d.title }}</option>
+    {% endfor %}
+    </select>
+    {% if design and design.schemes %}
+    <select name="scheme">
+    {% for s in design.schemes.values() %}
+        <option value="{{ s.name }}"{% if (args.scheme or design.default_scheme) == s.name %} selected{% endif %}>{{ s.title }}</option>
+    {% endfor %}
+    </select>
+    {% endif %}
+
+    <h4><label for="icon">Icon</label></h4>
+    <select id="icon" name="icon">
+        <option value=""{% if not args.icon %} selected{% endif %}>Design default</option>
+        <option value="{{ no_icon }}"{% if args.icon == no_icon %} selected{% endif %}>No icon</option>
+    {% for i in icons %}
+        <option value="{{ i }}"{% if args.icon == i %} selected{% endif %}>{{ i }}</option>
+    {% endfor %}
+    </select>
+
+    <h4>Background</h4>
+    <label><input type="radio" name="background" value=""{% if not args.background %} checked{% endif %}>Design default</label>
+    <label><input type="radio" name="background" value="1"{% if args.background == '1' %} checked{% endif %}>Colour</label>
+    <label><input type="radio" name="background" value="0"{% if args.background == '0' %} checked{% endif %}>Transparent</label>
+
+    <h4>Border</h4>
+    <label><input type="radio" name="border" value=""{% if not args.border %} checked{% endif %}>Design default</label>
+    <label><input type="radio" name="border" value="1"{% if args.border == '1' %} checked{% endif %}>Yes</label>
+    <label><input type="radio" name="border" value="0"{% if args.border == '0' %} checked{% endif %}>No</label>
+
+    <h4><label for="width">Width</label></h4>
+    <input id="width" name="width" type="number" min="50" max="4000" value="{{ args.width or 250 }}">
+
+    <h4>Licence info in file</h4>
+    <label><input type="radio" name="licence_metadata" value=""{% if args.licence_metadata != '0' %} checked{% endif %}>Yes</label>
+    <label><input type="radio" name="licence_metadata" value="0"{% if args.licence_metadata == '0' %} checked{% endif %}>No</label>
+
+    <p><button type="submit">Preview</button></p>
+</form>
+
+<div class="preview">
+    <h2>Preview</h2>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% else %}
+    <img src="/render.png?{{ img_args }}" alt="QR code preview"><br>
+    <a href="/render.svg?{{ img_args }}&amp;download=1">Download SVG</a>
+    &ndash;
+    <a href="/render.png?{{ img_args }}&amp;download=1">Download PNG</a>
+    {% for w in result.warnings %}
+    <p class="warning">Warning: {{ w }}</p>
+    {% endfor %}
+    <div class="licences">
+        <h3>Licences of this image</h3>
+        <ul>
+        {% for lic in result.licences %}
+            <li>{{ lic.part }}: {% if lic.url %}<a href="{{ lic.url }}">{{ lic.name }}</a>{% else %}{{ lic.name }}{% endif %}{% if lic.holder %}, {{ lic.holder }}{% endif %}
+            {% if lic.requires_attribution %}<br>Attribution required: <code>{{ lic.attribution }}</code>{% endif %}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

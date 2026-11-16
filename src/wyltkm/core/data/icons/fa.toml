@@ -1,0 +1,12 @@
+name = "fa"
+title = "Font Awesome Free (subset)"
+type = "dir"
+path = "fa"
+recolour = true
+
+[licence]
+name = "CC-BY-4.0"
+url = "https://fontawesome.com/license/free"
+holder = "Fonticons, Inc."
+attribution = "Icon from Font Awesome Free, https://fontawesome.com, CC BY 4.0"
+requires_attribution = true

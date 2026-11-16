@@ -1,0 +1,37 @@
+name = "attraktor"
+title = "Attraktor"
+description = "Attraktor e.V. blue and greys, Agency FB"
+
+[colours]
+background = "#ffffff"
+modules = "#9b9c9e"
+finder_ring = "#67b8dc"
+finder_centre = "#4b4b4d"
+icon = "#4b4b4d"
+top = "#4b4b4d"
+bottom = "#4b4b4d"
+highlight = "#67b8dc"
+
+[qr]
+module_shape = "rounded"
+module_radius = 0.3
+finder_ring_shape = "rounded"
+finder_ring_radius = 1.5
+finder_centre_shape = "rounded"
+finder_centre_radius = 1.0
+
+[top]
+fonts = ["AgencyFB-Bold.ttf"]
+
+[bottom]
+type = "text"
+fonts = ["AgencyFB-Bold.ttf"]
+lines = ["WOULD YOU LIKE", "TO KNOW [MORE]?"]
+
+[defaults]
+icon = "attraktor:logo"
+
+[licence]
+name = "unclear"
+holder = "Attraktor e.V."
+url = "https://www.attraktor.org"

@@ -1,0 +1,15 @@
+name = "attraktor"
+title = "Attraktor"
+type = "dir"
+path = "attraktor"
+recolour = false
+recolour_except = ["logo-mono"]   # the mono logo takes the design's icon colour
+
+[rename]
+"attraktor" = "logo"
+"attraktor-mono" = "logo-mono"
+
+[licence]
+name = "unclear"
+holder = "Attraktor e.V."
+url = "https://www.attraktor.org"

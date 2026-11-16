@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>Licences</h1>
+{% endblock %}
+
+{% block content %}
+<p>
+    Every image is made of parts with their own licences: the design, the icon, and the fonts
+    of the text. The page of each image lists the licences of its parts; by default, the image
+    file contains them as well.
+</p>
+{% macro item(lic) %}
+<li>{{ lic.part }}: {% if lic.url %}<a href="{{ lic.url }}">{{ lic.name }}</a>{% else %}{{ lic.name }}{% endif %}{% if lic.holder %}, {{ lic.holder }}{% endif %}
+{% if lic.requires_attribution %}<br>Attribution required: <code>{{ lic.attribution }}</code>{% endif %}</li>
+{% endmacro %}
+<h2>Designs</h2>
+<ul>{% for lic in designs %}{{ item(lic) }}{% endfor %}</ul>
+<h2>Icon sources</h2>
+<ul>{% for lic in sources %}{{ item(lic) }}{% endfor %}</ul>
+<h2>Fonts</h2>
+<p>
+    The fonts of the text are drawn as outlines. Each image lists the fonts it uses with their
+    licences. Free fonts (Hack, Jersey 10, Pilowlava, Space Grotesk) ship with WYLTKM; others are
+    installed by the operator.
+</p>
+{% endblock %}

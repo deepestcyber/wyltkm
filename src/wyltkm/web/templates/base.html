@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Would you like to know more?</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+<header>{% block header %}{% endblock %}</header>
+<nav>
+<a href="/">QR code</a> &ndash; <a href="/help">Help</a> &ndash; <a href="/licences">Licences</a>
+</nav>
+
+<section class="content">
+    {% block content %}{% endblock %}
+</section>
+
+<footer>
+    WYLTKM v{{ APP_INFO.version }}
+    &ndash;
+    <a href="{{ APP_INFO.source }}">Source</a>
+    &ndash;
+    <a href="{{ APP_INFO.info }}">More information (German)</a>
+    &ndash;
+    <a href="/licences">Licences</a>
+</footer>
+</body>
+</html>

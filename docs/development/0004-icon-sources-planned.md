@@ -57,8 +57,8 @@ Status: open
   `Assets/Logos`. Names from the file-name rule ([icons.md](../icons.md)),
   e.g. `icons-deco/icon-cat`, `citizens/blahaj`, `logos/40c3-logo-a`; a
   `rename` table only where that is unreadable.
-- These are multi-coloured: `recolour = false` by default, maybe a
-  per-icon or per-folder override.
+- These are multi-coloured: `recolour = false`, with `recolour_except` for
+  folders that should take the design colour, if any.
 - Licence CC0, from the style guide page; two assets use a clip path and
   get the "not laser-friendly" warning.
 
@@ -98,6 +98,6 @@ Status: open
 
 ## Open questions
 
-- Should `recolour` be settable per folder or per icon within a source (e.g.
-  40c3 deco icons mono, citizens in colour)? The source format has it per
-  source only.
+- None at the moment. (Per-icon or per-folder recolouring is answered by
+  `recolour_except` in the source file, added in 0001 for the Attraktor
+  logos.)

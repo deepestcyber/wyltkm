@@ -42,6 +42,8 @@ type = "zip"
 path = "fontawesome-free-7.3.1-web.zip"   # relative to this file
 prefix = "fontawesome-free-7.3.1-web/svgs/"
 recolour = true                            # fill all shapes with the design's icon colour
+recolour_except = []                       # icon names, or folders ending in "/", where
+                                           # recolour is the other way round
 metadata = "fontawesome"                   # optional: reader for labels and search terms
 
 [licence]                                  # see licences.md
