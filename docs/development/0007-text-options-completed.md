@@ -1,6 +1,6 @@
 # Text options
 
-Status: active (2026-11-16); all parts done, waiting for review
+Status: completed (2026-11-16)
 
 Highlighting in the top text, and an own bottom line or none.
 
