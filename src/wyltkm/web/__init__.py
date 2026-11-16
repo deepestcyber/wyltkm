@@ -237,7 +237,7 @@ def create_app(library: Library | None = None) -> Flask:
         except WyltkmError as e:
             return error_response(e)
         return jsonify([{"name": h.name, "label": h.label,
-                         "url": f"/icons/{h.name.replace(':', '/', 1)}.svg"} for h in hits])
+                         "url": f"/icon/{h.name.replace(':', '/', 1)}.svg"} for h in hits])
 
     @app.route("/api/icon-sources")
     def api_icon_sources():
@@ -269,10 +269,10 @@ def create_app(library: Library | None = None) -> Flask:
             return error_response(e)
         return jsonify({"total": len(hits), "offset": offset,
                         "hits": [{"name": h.name, "label": h.label,
-                                  "url": f"/icons/{h.name.replace(':', '/', 1)}.svg"}
+                                  "url": f"/icon/{h.name.replace(':', '/', 1)}.svg"}
                                  for h in hits[offset:offset + limit]]})
 
-    @app.route("/icons/browse")
+    @app.route("/browse")
     def icons_browse():
         """The icon browser as a page (without JavaScript); a pick leads back
         to the form with all its settings."""
@@ -292,7 +292,7 @@ def create_app(library: Library | None = None) -> Flask:
 
         def link(**changes):
             args = {**{k: v for k, v in request.args.items() if k not in ("offset",)}, **changes}
-            return "/icons/browse?" + urllib.parse.urlencode({k: v for k, v in args.items() if v})
+            return "/browse?" + urllib.parse.urlencode({k: v for k, v in args.items() if v})
 
         return render_template(
             "icons_browse.html", APP_INFO=APP_INFO, q=q, source=source, folder=folder,
@@ -301,7 +301,7 @@ def create_app(library: Library | None = None) -> Flask:
             pick=lambda name: "/?" + urllib.parse.urlencode({**form, "icon": name}),
             form=form)
 
-    @app.route("/icons/<source>/<path:name>.svg")
+    @app.route("/icon/<source>/<path:name>.svg")
     def icon_svg(source, name):
         colour = request.args.get("colour") or None
         if colour is not None and not COLOUR_RE.match(colour):

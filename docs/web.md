@@ -29,7 +29,7 @@ One page, two columns (on phones the preview comes first):
   scrolling, and a bar with the chosen icon's name, label, source and
   licence. Click picks, double-click or Enter uses it, arrow keys move.
   Without JavaScript, "Browse" opens the same view as the page
-  `/icons/browse` (paged, server-rendered); picking an icon there leads back
+  `/browse` (paged, server-rendered); picking an icon there leads back
   to the form with all settings. Icon tiles show the design's background and
   icon colour, so each icon looks as it will in the code.
 - Header with Help, Licences and a theme switch (system, dark, light;
@@ -64,8 +64,8 @@ is one small vanilla file (`static/app.js`): no npm, no build step.
 | `/api/icons?q=&source=&limit=` | GET | Icon search as JSON (name, label, URL) |
 | `/api/icon-sources` | GET | Icon sources as JSON (name, title, number of icons, folders with counts, licence) |
 | `/api/icons/browse?q=&source=&folder=&offset=&limit=` | GET | All matching icons a page at a time (default 120), with the total; an empty `q` lists all |
-| `/icons/browse?q=&source=&folder=&offset=&<form parameters>` | GET | The icon browser as a page; links lead back to `/` with the form parameters and the picked icon |
-| `/icons/<source>/<name>.svg` | GET | Normalised icon, recoloured with `?colour=` |
+| `/browse?q=&source=&folder=&offset=&<form parameters>` | GET | The icon browser as a page; links lead back to `/` with the form parameters and the picked icon |
+| `/icon/<source>/<name>.svg` | GET | Normalised icon, recoloured with `?colour=` |
 | `/help` | GET | Help page |
 
 Query parameters of `/render.*` and `/`:
@@ -102,6 +102,11 @@ keeps no state, so it can run in several processes.
 
 The app must be served at the root of its host (its own vhost), not below a
 path: the page and its JavaScript use absolute paths like `/render.svg`.
+
+No route of the app starts with `/icons/`: Debian and Ubuntu Apache map
+`/icons/` to its own directory server-wide (`Alias /icons/` in
+`mods-enabled/alias.conf`), before any `.htaccess` rewrite. Icon images are
+therefore served at `/icon/...` and the icon browser page at `/browse`.
 
 Two ways are described: a WSGI server behind a reverse proxy, for a server you
 control, and FastCGI under Apache, for shared hosting.
@@ -177,8 +182,8 @@ FastCGI process can read works.
    venv's Python) and [examples/htaccess](examples/htaccess) (as `.htaccess`)
    into the document root of the vhost. The script sets `WYLTKM_CONFIG`
    itself, since with mod_fcgid a `SetEnv` in `.htaccess` often does not reach
-   the process. Do not keep directories named `icons` or `static` in the
-   document root; they would catch requests meant for the app.
+   the process. Do not keep a directory named `static` in the document root;
+   it would catch requests meant for the app.
 
 5. **Switch and restart.** FastCGI processes keep running; a changed
    `qr.fcgi` usually makes mod_fcgid start new ones, otherwise restart them
