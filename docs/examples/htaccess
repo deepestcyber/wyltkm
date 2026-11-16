@@ -1,0 +1,8 @@
+# .htaccess in the document root of the WYLTKM vhost: everything that is not
+# an existing file goes to the FastCGI script. See docs/web.md.
+Options +ExecCGI
+AddHandler fcgid-script .fcgi
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ qr.fcgi/$1 [QSA,L]
