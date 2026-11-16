@@ -84,5 +84,15 @@ class Library:
         lib.config = config
         return lib
 
+    def pickable_fonts(self) -> dict:
+        """Fonts users may pick for the side text (see ``FontResolver.pickable``)."""
+        designs = []
+        for name in self.designs.names():
+            try:
+                designs.append(self.designs.get(name))
+            except Exception:  # broken designs are reported elsewhere
+                continue
+        return self.fonts.pickable(designs)
+
     def design(self, name: str | None = None) -> Design:
         return self.designs.get(name or self.default_design)

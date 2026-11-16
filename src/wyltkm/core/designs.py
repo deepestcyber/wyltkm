@@ -42,7 +42,7 @@ TABLE_KEYS = {
            "finder_centre_shape", "finder_centre_radius"},
     "top": {"fonts", "align", "gap", "line_gap"},
     "bottom": {"type", "lines", "fonts", "align", "gap", "line_gap", "svg", "recolour"},
-    "side": {"fonts", "direction", "min_size", "max_columns"},
+    "side": {"fonts", "direction", "gap", "min_size", "max_size", "max_columns"},
     "defaults": {"icon", "border", "background"},
 }
 MODULE_SHAPES = {"square", "rounded", "dot"}
@@ -74,7 +74,10 @@ class Side:
     fonts: tuple[str, ...] = ("Hack-Regular.ttf",)
     direction: str = "up"
     min_size: float = 1.5
+    max_size: float = 3.0
     max_columns: int = 4
+    gap: float = 2.0
+    """Space between the main column and the side text, in modules."""
 
 
 @dataclass(frozen=True)
@@ -358,8 +361,12 @@ def _build(raw: dict, dirs: list[Path]) -> Design:
         fonts=_fonts(s.get("fonts"), f"{where}: side.fonts", Side.fonts),
         direction=_choice(s.get("direction"), f"{where}: side.direction", {"up", "down"}, "up"),
         min_size=_num(s.get("min_size"), f"{where}: side.min_size", 1.5, 0.1, 100),
+        max_size=_num(s.get("max_size"), f"{where}: side.max_size", 3.0, 0.1, 100),
         max_columns=int(_num(s.get("max_columns"), f"{where}: side.max_columns", 4, 1, 20)),
+        gap=_num(s.get("gap"), f"{where}: side.gap", 2.0, 0, 20),
     )
+    if side.max_size < side.min_size:
+        raise DataError(f"{where}: side.max_size must not be smaller than side.min_size")
 
     df = raw.get("defaults") or {}
     icon = _str(df.get("icon"), f"{where}: defaults.icon", NO_ICON)

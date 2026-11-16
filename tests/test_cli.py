@@ -71,6 +71,15 @@ def test_broken_config(tmp_path, monkeypatch):
     assert r.exit_code == 4 and "unknown keys" in r.output
 
 
+def test_side_text_options():
+    runner = CliRunner()
+    r = runner.invoke(main, ["render", "https://example.org", "--side-text", "--side-font",
+                             "Hack-Regular.ttf"])
+    assert r.exit_code == 0 and "rotate(-90)" in r.stdout
+    assert runner.invoke(main, ["render", "x", "--side-text", "--side-font", "No.ttf"]).exit_code == 1
+    assert "Hack-Regular.ttf" in runner.invoke(main, ["fonts"]).output
+
+
 def test_icon_commands(tmp_path):
     runner = CliRunner()
     r = runner.invoke(main, ["icons"])

@@ -86,6 +86,11 @@ def main():
 @click.option("--background/--transparent", default=None,
               help="With the design's background colour, or transparent. Default: from "
               "the design.")
+@click.option("--side-text/--no-side-text", "side", default=False,
+              help="Print the content as readable text along the right side, for people "
+              "without a QR scanner. Default: off.")
+@click.option("--side-font", metavar="FILE", help="Font file name for the side text (see "
+              "'wyltkm fonts'). Default: from the design.")
 @click.option("-f", "--format", "fmt", type=click.Choice(["svg", "png"]),
               help="Output format. Default: from the extension of --output, else svg.")
 @click.option("-o", "--output", type=click.Path(dir_okay=False, allow_dash=True), default="-",
@@ -94,8 +99,8 @@ def main():
               help="Print the licences of all parts of the image to stderr.")
 @click.option("--no-licence-metadata", is_flag=True,
               help="Leave the licence info out of the image file (SVG and PNG).")
-def render(content, texts, design, scheme, icon, icon_file, width, border, background, fmt,
-           output, show_licences, no_licence_metadata):
+def render(content, texts, design, scheme, icon, icon_file, width, border, background, side,
+           side_font, fmt, output, show_licences, no_licence_metadata):
     """Render a QR code for CONTENT (usually a URL).
 
     Warnings (e.g. a missing font) go to stderr. When a part of the image
@@ -108,7 +113,8 @@ def render(content, texts, design, scheme, icon, icon_file, width, border, backg
         icon_svg = icon_file.read() if icon_file is not None else None
         request = Request(content=content, text="\n".join(texts), design=design, scheme=scheme,
                           icon=icon, icon_svg=icon_svg, width=width, border=border, background=background,
-                          licence_metadata=not no_licence_metadata)
+                          licence_metadata=not no_licence_metadata, side=side,
+                          side_font=side_font)
         lib = _library()
         result = render_png(lib, request) if fmt == "png" else render_svg(lib, request)
     except WyltkmError as e:
@@ -355,6 +361,10 @@ def fonts():
     for name, path in lib.fonts.available().items():
         click.echo(f"  {name}  {path}  ({licmod.for_font(path).name})")
     click.echo(f"System fonts: {'searched' if lib.fonts.system_fonts else 'not searched'}")
+    pickable = lib.pickable_fonts()
+    click.echo(f"Fonts for the side text (--side-font): {len(pickable)}")
+    for name in pickable:
+        click.echo(f"  {name}")
     click.echo("Fonts of the designs:")
     for name in lib.designs.names():
         try:

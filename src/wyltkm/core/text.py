@@ -93,19 +93,13 @@ class TextBlock:
     """Path data of highlighted text."""
 
 
-def _cap_height(font: ziafont.Font) -> float:
+def cap_height(font: ziafont.Font) -> float:
+    """Height of a capital letter in font units."""
     g = font.glyph("H")
     return g.bbox.ymax if g.operators else font.info.layout.ascent
 
 
-def block(font: ziafont.Font, lines: list[list[Run]], width: float, align: str = "center",
-          line_gap: float = 2.0) -> TextBlock | None:
-    """Lay out ``lines`` to fill ``width``. Returns None if there is no ink.
-
-    ``line_gap`` is the space between the ink of one line and the ink of the
-    next, in the units of ``width``; an empty line takes the height of a
-    capital letter plus one gap."""
-    laid = [_layout_line(font, runs) for runs in lines]
+def _inks(laid: list[list[_Glyph]]):
     inks = []
     for glyphs in laid:
         inked = [g for g in glyphs if g.inked]
@@ -117,12 +111,45 @@ def block(font: ziafont.Font, lines: list[list[Run]], width: float, align: str =
             inks.append((left, right, top, bottom))
         else:
             inks.append(None)
+    return inks
+
+
+def ink_width(font: ziafont.Font, text: str) -> float:
+    """Width of the ink of ``text`` in one line, in font units."""
+    ink = _inks([_layout_line(font, [Run(text)])])[0]
+    return ink[1] - ink[0] if ink else 0.0
+
+
+def block(font: ziafont.Font, lines: list[list[Run]], width: float, align: str = "center",
+          line_gap: float = 2.0) -> TextBlock | None:
+    """Lay out ``lines`` to fill ``width``. Returns None if there is no ink.
+
+    ``line_gap`` is the space between the ink of one line and the ink of the
+    next, in the units of ``width``; an empty line takes the height of a
+    capital letter plus one gap."""
+    laid = [_layout_line(font, runs) for runs in lines]
+    inks = _inks(laid)
     widest = max((ink[1] - ink[0] for ink in inks if ink), default=0)
     if widest <= 0:
         return None
-    scale = width / widest
-    empty_line = _cap_height(font) * scale + line_gap
+    return _place(font, laid, inks, width / widest, width, align, line_gap)
 
+
+def block_at(font: ziafont.Font, lines: list[list[Run]], scale: float,
+             line_gap: float = 1.0) -> TextBlock | None:
+    """Lay out ``lines`` left-aligned at a fixed ``scale`` (output units per
+    font unit). The block is as wide as its widest line."""
+    laid = [_layout_line(font, runs) for runs in lines]
+    inks = _inks(laid)
+    widest = max((ink[1] - ink[0] for ink in inks if ink), default=0)
+    if widest <= 0:
+        return None
+    return _place(font, laid, inks, scale, widest * scale, "left", line_gap)
+
+
+def _place(font, laid, inks, scale: float, width: float, align: str,
+           line_gap: float) -> TextBlock:
+    empty_line = cap_height(font) * scale + line_gap
     y = 0.0  # top of the ink of the next line
     last_bottom = 0.0
     parts = {False: [], True: []}
@@ -144,7 +171,7 @@ def block(font: ziafont.Font, lines: list[list[Run]], width: float, align: str =
             x = (g.x - left) * scale
             if align == "justify" and hi > lo:
                 x += (width - natural) * (i - lo) / (hi - lo)
-            else:
+            elif align == "center":
                 x += (width - natural) / 2
             d = "".join(op.path(x, baseline, scale) for op in g.glyph.operators)
             parts[g.highlight].append(_close(d))

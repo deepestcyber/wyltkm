@@ -52,6 +52,16 @@
     <label><input type="radio" name="border" value="1"{% if args.border == '1' %} checked{% endif %}>Yes</label>
     <label><input type="radio" name="border" value="0"{% if args.border == '0' %} checked{% endif %}>No</label>
 
+    <h4>Readable side text</h4>
+    <label><input type="checkbox" name="side" value="1"{% if args.side == '1' %} checked{% endif %}>Show the content as text along the right side</label>
+    <br>
+    <label>Font: <select name="side_font">
+        <option value=""{% if not args.side_font %} selected{% endif %}>Design default</option>
+    {% for f in side_fonts %}
+        <option value="{{ f }}"{% if args.side_font == f %} selected{% endif %}>{{ f.rsplit('.', 1)[0] }}</option>
+    {% endfor %}
+    </select></label>
+
     <h4><label for="width">Width</label></h4>
     <input id="width" name="width" type="number" min="50" max="{{ max_width }}" value="{{ args.width or 250 }}">
 

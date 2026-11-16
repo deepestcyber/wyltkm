@@ -23,6 +23,10 @@ CASES = {
     "38c3-light-carbon": Request(content="https://events.ccc.de", design="38c3-light",
                                  text="Boot", icon="carbon:boot", background=False),
     "38c3-lighter": Request(content="x", design="38c3-lighter", text="Lighter", icon="none"),
+    "side-up-attraktor": Request(content="https://wiki.attraktor.org/Laser", text="Laser",
+                                 side=True),
+    "side-long-40c3": Request(content="https://example.org/" + "/".join(["segment"] * 12),
+                              design="40c3", side=True, text="Long"),
     **{f"40c3-{s}": Request(content="https://events.ccc.de/congress/2026", design="40c3",
                             scheme=s, text="Model Citizens") for s in FORTY_SCHEMES},
 }

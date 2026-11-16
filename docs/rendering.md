@@ -19,7 +19,7 @@ The main column, from top to bottom, all parts as wide as the QR code:
 Gaps exist only next to a part that is there.
 
 Optionally, a readable side text to the right of the main column (see below),
-separated by a gap of 2 modules, inside the border.
+separated by the design's side gap (default 2 modules), inside the border.
 
 The requested `width` is in px, default 250. The core accepts 50 to 10000;
 the web app may set a lower maximum (`[web] max_width` in the config file,
@@ -40,13 +40,17 @@ and the user may pick another font.
 - The text is rotated by 90° and runs along the full height of the main
   column (top text to bottom line). It reads bottom to top by default, like a
   book spine; a design can set top to bottom.
-- The font size is chosen so the text fills that height in one line.
-- If that would make the text smaller than the design's minimum size
+- The font size is chosen so the text fills that height in one line, but
+  capital letters are at most `max_size` modules high (default 3); shorter
+  text then ends early.
+- If one line would make the text smaller than the design's minimum size
   (`min_size`, in modules of cap height), the text wraps into several
-  columns, each at least that size. Breaks go after `/`, `?`, `&`, `=`, `.`,
-  `-`, `_`, `#` or spaces, and at line breaks of the content; only when a
-  piece is still too long, it breaks anywhere. Columns are left-aligned
-  (seen in reading direction), gap of 1 module between columns.
+  columns: as few as keep it at least that size. The breaks are then chosen
+  so the columns are about equally long, which makes the text as large as
+  possible. Breaks go after `/`, `?`, `&`, `=`, `.`, `-`, `_`, `#` or
+  spaces, and at line breaks of the content; only when a piece is still too
+  long, it breaks anywhere. Columns are left-aligned (seen in reading
+  direction), with a gap of 1 module between columns.
 - At most `max_columns` columns (design, default 4). Beyond that, the text
   gets smaller than `min_size` and the result carries a warning.
 - The content is shown exactly as in the QR code, nothing shortened or

@@ -38,5 +38,5 @@ docs in [../](../) in the same change.
 | 0002 | [Configuration and fonts](0002-config-and-fonts-completed.md) | completed |
 | 0003 | [Designs](0003-designs-completed.md) | completed |
 | 0004 | [Icon sources](0004-icon-sources-completed.md) | completed |
-| 0005 | [Readable side text](0005-side-text-planned.md) | planned |
+| 0005 | [Readable side text](0005-side-text-completed.md) | completed |
 | 0006 | [Web rework](0006-web-rework-planned.md) | planned |

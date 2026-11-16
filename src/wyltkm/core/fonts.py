@@ -95,6 +95,22 @@ class FontResolver:
                         out.setdefault(f.name, f)
         return out
 
+    def pickable(self, designs=()) -> dict[str, Path]:
+        """Fonts users may pick for the side text: the font directories, the
+        side default font of each given design, and system fonts if they are
+        searched. By file name, first found wins, sorted by name."""
+        out = dict(self.available())
+        for d in designs:
+            for name in d.side.fonts:
+                path = self.find(name, list(d.dirs))
+                if path is not None:
+                    out.setdefault(name, path)
+                    break
+        if self.system_fonts:
+            for name, path in self._system().items():
+                out.setdefault(name, path)
+        return dict(sorted(out.items(), key=lambda kv: kv[0].lower()))
+
     def load(self, path: Path | None) -> FontRef:
         if path not in self._loaded:
             if path is None:

@@ -116,7 +116,9 @@ Lengths are in modules (the size of one QR module) unless stated otherwise.
 | `bottom.recolour` | no | `false` | For `svg`: fill all shapes with `colours.bottom` |
 | `side.fonts` | no | `["Hack-Regular.ttf"]` | Default font for the side text |
 | `side.direction` | no | `up` | `up`: reads bottom to top; `down`: top to bottom |
+| `side.gap` | no | `2` | Space between the main column and the side text |
 | `side.min_size` | no | `1.5` | Minimum cap height before wrapping into columns |
+| `side.max_size` | no | `3` | Maximum cap height, so short content does not get huge letters |
 | `side.max_columns` | no | `4` | |
 | `defaults.icon` | no | `none` | Icon when the request names none; `none` for no icon |
 | `defaults.border` | no | `false` | |

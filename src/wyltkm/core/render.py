@@ -10,8 +10,10 @@ from dataclasses import dataclass, field
 import cairosvg
 
 from . import qr as qrmod
+from . import side as sidemod
 from . import svg as svgmod
 from . import text as textmod
+from .errors import InvalidRequest
 from .geometry import num
 from .licences import Licence
 from .library import Library
@@ -167,9 +169,34 @@ def render_svg(library: Library, request: Request) -> Result:
         h = n * bottom_svg.aspect
         body.append(svgmod.place(bottom_svg, border, y, n, h))
         y += h
+    main_bottom = y
     y += border
 
-    total_w = n + 2 * border
+    side_w = 0.0
+    if request.side:
+        if request.side_font is not None:
+            path = library.pickable_fonts().get(request.side_font)
+            if path is None:
+                raise InvalidRequest(f"font {request.side_font} is not available for the side text")
+            font = library.fonts.load(path)
+        else:
+            font = library.fonts.resolve(design.side.fonts, list(design.dirs), parts.warnings)
+        length = main_bottom - border
+        sb = sidemod.block(font.font, request.content, length, design.side.min_size,
+                           design.side.max_size, design.side.max_columns, parts.warnings)
+        if sb is not None:
+            parts.licence(font.licence)
+            x0 = border + n + design.side.gap
+            if design.side.direction == "up":
+                transform = f"translate({num(x0)} {num(border + length)}) rotate(-90)"
+            else:
+                transform = f"translate({num(x0 + sb.height)} {num(border)}) rotate(90)"
+            g = ET.Element("g", transform=transform)
+            ET.SubElement(g, "path", d=sb.normal, fill=colours["side"])
+            body.append(g)
+            side_w = design.side.gap + sb.height
+
+    total_w = n + side_w + 2 * border
     total_h = y
     width = request.width
     height = round(width * total_h / total_w, 3)

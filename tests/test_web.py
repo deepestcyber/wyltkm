@@ -92,6 +92,16 @@ def test_icons_api_and_route(client):
     assert {"fa", "carbon", "40c3"} <= sources
 
 
+def test_side_text(client):
+    r = client.get("/render.svg?content=x&side=1&side_font=Hack-Regular.ttf")
+    assert r.status_code == 200 and b"rotate(-90)" in r.data
+    assert client.get("/render.svg?content=x&side=1&side_font=No.ttf").status_code == 400
+    assert client.get("/render.svg?content=x&side=2").status_code == 400
+    fonts = [f["name"] for f in client.get("/api/fonts").get_json()]
+    assert "Hack-Regular.ttf" in fonts and "jersey-10-latin-400-normal.ttf" in fonts
+    assert b'name="side_font"' in client.get("/").data
+
+
 def test_icon_search_in_form(client):
     r = client.get("/?icon_q=cat")
     assert r.status_code == 200 and b'value="fa:solid/cat"' in r.data

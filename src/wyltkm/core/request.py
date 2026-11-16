@@ -22,6 +22,7 @@ MAX_ICON_BYTES = 1024 * 1024
 NO_ICON = "none"
 
 NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+FONT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 ._+-]*\.(ttf|otf|TTF|OTF)$")
 ICON_RE = re.compile(r"^[a-z0-9][a-z0-9-]*:[a-z0-9-]+(/[a-z0-9-]+)*$")
 
 
@@ -76,6 +77,10 @@ class Request:
     background: bool | None = None
     licence_metadata: bool = True
     """Put licence info into the image file."""
+    side: bool = False
+    """Readable side text with the content."""
+    side_font: str | None = None
+    """Font file name for the side text; default from the design."""
 
     def __post_init__(self):
         if not isinstance(self.content, str) or not self.content:
@@ -99,6 +104,9 @@ class Request:
             raise InvalidRequest("width must be a whole number")
         if not MIN_WIDTH <= self.width <= MAX_WIDTH:
             raise InvalidRequest(f"width must be between {MIN_WIDTH} and {MAX_WIDTH}")
+        if self.side_font is not None and (not FONT_RE.match(self.side_font)
+                                           or len(self.side_font) > 200):
+            raise InvalidRequest(f"invalid font file name: {self.side_font!r}")
         if not fits_qr(self.content):
             raise InvalidRequest("content is too long for a QR code")
 

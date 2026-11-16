@@ -24,7 +24,7 @@ APP_INFO = {
 }
 DEFAULT_CONTENT = "https://wiki.attraktor.org"
 PARAMS = ("content", "text", "design", "scheme", "icon", "width", "border", "background",
-          "licence_metadata")
+          "licence_metadata", "side", "side_font")
 
 
 def _flag(value: str | None, name: str) -> bool | None:
@@ -63,6 +63,8 @@ def request_from(values, files=None, default_content: str | None = None,
         border=_flag(values.get("border"), "border"),
         background=_flag(values.get("background"), "background"),
         licence_metadata=True if metadata is None else metadata,
+        side=bool(_flag(values.get("side"), "side")),
+        side_font=values.get("side_font") or None,
     )
 
 
@@ -108,6 +110,7 @@ def create_app(library: Library | None = None) -> Flask:
                                error=error, design=design, designs=lib.designs.all(),
                                default_design=lib.default_design, icon_q=icon_q,
                                icon_hits=icon_hits, icon_colour=icon_colour,
+                               side_fonts=list(lib.pickable_fonts()),
                                no_icon=NO_ICON, img_args=img_args, max_width=web.max_width)
 
     def render_route(fmt: str):
@@ -201,6 +204,11 @@ def create_app(library: Library | None = None) -> Flask:
         resp = Response(svg, mimetype="image/svg+xml")
         resp.cache_control.max_age = 86400
         return resp
+
+    @app.route("/api/fonts")
+    def api_fonts():
+        return jsonify([{"name": name, "title": name.rsplit(".", 1)[0]}
+                        for name in lib.pickable_fonts()])
 
     @app.route("/api/licences")
     def api_licences():
