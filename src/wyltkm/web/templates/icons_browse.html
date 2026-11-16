@@ -2,7 +2,7 @@
 {% block title %}Icons · Would you like to know more?{% endblock %}
 {% block body %}
 <main class="browse-page">
-  <form class="browse-head" action="/icons/browse" method="get">
+  <form class="browse-head" action="/browse" method="get">
     {% for k, v in form.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
     {% if source %}<input type="hidden" name="source" value="{{ source }}">{% endif %}
     {% if folder %}<input type="hidden" name="folder" value="{{ folder }}">{% endif %}
@@ -24,7 +24,7 @@
     <div>
       <p class="hint mono">{{ total }} icons{% if total > limit %} · {{ offset + 1 }}–{{ [offset + limit, total]|min }}{% endif %}</p>
       <div class="browse-grid" style="--tile-bg: {{ tile_bg }}">
-        {% for h in hits %}<a class="icon" href="{{ pick(h.name) }}" title="{{ h.name }}{% if h.label %} · {{ h.label }}{% endif %}"><img src="/icons/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ colour|urlencode }}" alt="{{ h.name }}" width="24" height="24" loading="lazy"></a>{% endfor %}
+        {% for h in hits %}<a class="icon" href="{{ pick(h.name) }}" title="{{ h.name }}{% if h.label %} · {{ h.label }}{% endif %}"><img src="/icon/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ colour|urlencode }}" alt="{{ h.name }}" width="24" height="24" loading="lazy"></a>{% endfor %}
       </div>
       <p class="pager">
         {% if offset > 0 %}<a class="btn" href="{{ link(offset=[offset - limit, 0]|max) }}">Previous</a>{% endif %}

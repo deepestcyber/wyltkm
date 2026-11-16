@@ -52,16 +52,16 @@
         {% for s in icon_sources %}<option value="{{ s.name }}"{% if icon_source == s.name %} selected{% endif %}>{{ s.name }}</option>{% endfor %}
       </select>
       <button type="submit" class="btn nojs">Search</button>
-      <a class="btn" id="browse-open" href="/icons/browse?{{ query }}">Browse</a>
+      <a class="btn" id="browse-open" href="/browse?{{ query }}">Browse</a>
     </div>
     <div class="icons" id="icons" style="--icon-colour: {{ icon_colour }}; --tile-bg: {{ tile_bg }}">
       <label class="icon text" title="The design's icon"><input type="radio" name="icon" value=""{% if not args.icon %} checked{% endif %}><span>Design</span></label>
       <label class="icon text" title="No icon"><input type="radio" name="icon" value="{{ no_icon }}"{% if args.icon == no_icon %} checked{% endif %}><span>None</span></label>
       {% if args.icon and args.icon != no_icon and args.icon not in icon_hits|map(attribute='name') %}
-      <label class="icon" title="{{ args.icon }}"><input type="radio" name="icon" value="{{ args.icon }}" checked><img src="/icons/{{ args.icon.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" alt="{{ args.icon }}" width="20" height="20"></label>
+      <label class="icon" title="{{ args.icon }}"><input type="radio" name="icon" value="{{ args.icon }}" checked><img src="/icon/{{ args.icon.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" alt="{{ args.icon }}" width="20" height="20"></label>
       {% endif %}
       {% for h in icon_hits %}
-      <label class="icon" title="{{ h.name }}{% if h.label %} · {{ h.label }}{% endif %}"><input type="radio" name="icon" value="{{ h.name }}"{% if args.icon == h.name %} checked{% endif %}><img src="/icons/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" alt="{{ h.name }}" width="20" height="20" loading="lazy"></label>
+      <label class="icon" title="{{ h.name }}{% if h.label %} · {{ h.label }}{% endif %}"><input type="radio" name="icon" value="{{ h.name }}"{% if args.icon == h.name %} checked{% endif %}><img src="/icon/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" alt="{{ h.name }}" width="20" height="20" loading="lazy"></label>
       {% endfor %}
     </div>
     <p class="hint"><span class="mono" id="icon-name">{{ current_icon }}</span>

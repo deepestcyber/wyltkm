@@ -20,7 +20,7 @@ function el(tag, attrs = {}, children = []) {
 }
 
 function iconUrl(name, colour) {
-  return "/icons/" + name.replace(":", "/") + ".svg?colour=" + encodeURIComponent(colour);
+  return "/icon/" + name.replace(":", "/") + ".svg?colour=" + encodeURIComponent(colour);
 }
 
 // ---------------------------------------------------------------- theme

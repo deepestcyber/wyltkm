@@ -86,10 +86,10 @@ def test_icons_api_and_route(client):
     hits = client.get("/api/icons?q=github&limit=2").get_json()
     assert [h["name"] for h in hits] == ["fa:brands/github", "fa:brands/github-alt"]
     assert client.get(hits[0]["url"]).status_code == 200
-    r = client.get("/icons/carbon/boot.svg?colour=%23123456")
+    r = client.get("/icon/carbon/boot.svg?colour=%23123456")
     assert r.status_code == 200 and b"#123456" in r.data
-    assert client.get("/icons/fa/solid/nope.svg").status_code == 404
-    assert client.get("/icons/fa/solid/cat.svg?colour=red").status_code == 400
+    assert client.get("/icon/fa/solid/nope.svg").status_code == 404
+    assert client.get("/icon/fa/solid/cat.svg?colour=red").status_code == 400
     assert client.get("/api/icons?limit=x").status_code == 400
     sources = {s["name"] for s in client.get("/api/icon-sources").get_json()}
     assert {"fa", "carbon", "40c3"} <= sources
@@ -125,7 +125,7 @@ def test_render_info(client):
 
 def test_caching(client):
     for url in ("/render.svg?content=x", "/render.png?content=x", "/designs/40c3/preview.svg",
-                "/icons/fa/solid/cat.svg"):
+                "/icon/fa/solid/cat.svg"):
         r = client.get(url)
         assert r.status_code == 200 and r.headers["ETag"] and r.cache_control.max_age
         again = client.get(url, headers={"If-None-Match": r.headers["ETag"]})
@@ -153,7 +153,17 @@ def test_icon_browser(client):
     assert client.get("/api/icons/browse?source=nope").status_code == 404
     sources = {s["name"]: s for s in client.get("/api/icon-sources").get_json()}
     assert {f["name"] for f in sources["40c3"]["folders"]} == {"citizens", "icons-deco", "logos"}
-    r = client.get("/icons/browse?source=40c3&folder=logos&design=40c3&text=Hi")
+    r = client.get("/browse?source=40c3&folder=logos&design=40c3&text=Hi")
     assert r.status_code == 200 and r.data.count(b'class="icon"') == 28
     assert b"/?design=40c3&amp;text=Hi&amp;icon=40c3%3Alogos" in r.data
     assert b'id="browser"' in client.get("/").data
+
+
+def test_no_route_under_icons(library):
+    """Apache on Debian maps /icons/ to its own directory server-wide, so the
+    app must not use that path (see docs/web.md, "Deployment")."""
+    app = create_app(library)
+    rules = [r.rule for r in app.url_map.iter_rules()]
+    assert not [r for r in rules if r.startswith("/icons/")], rules
+    page = app.test_client().get("/?icon_q=cat").data
+    assert b'src="/icons/' not in page and b'href="/icons/' not in page
