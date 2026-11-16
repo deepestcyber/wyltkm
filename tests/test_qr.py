@@ -37,7 +37,9 @@ DESIGNS = [("attraktor", None), ("attraktor", "bw"), ("38c3", None), ("38c3", "l
            ("38c3", "lighter"),
            *(("40c3", s) for s in ("green", "teal", "lavender", "lilac", "pink", "rose",
                                    "orange", "yellow", "sage", "taupe", "light", "light-brown",
-                                   "bw"))]
+                                   "bw")),
+           *(("fednet", s) for s in ("night", "night-subtle", "light", "light-subtle",
+                                                   "bw"))]
 
 
 @pytest.mark.parametrize("design, scheme", DESIGNS)

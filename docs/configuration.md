@@ -91,7 +91,8 @@ each with its licence file and a licence record ([licences.md](licences.md)):
 Pilowlava, Space Grotesk, Hack, Jersey 10. The exact files and their origin
 are listed in [0001](development/0001-core-split-completed.md), part 4.
 
-Agency FB, the font of the Attraktor design, is not free. Install it in a
+Agency FB, the font of the Attraktor design, and Phuture ODC, the font of the
+FedNet design (file `PhutureODC-Black.ttf`), are not free. Install them in a
 font directory (for a server: `fonts/` of a data directory; for local work:
 the user's font directory works through system fonts).
 

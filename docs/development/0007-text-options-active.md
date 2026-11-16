@@ -15,6 +15,7 @@ Status values: `open`, `in progress`, `done`.
 | 2 | Own bottom line or none | done |
 | 3 | CLI and web | done |
 | 4 | Justified or centred, per text | done |
+| 5 | Design `fednet` | done |
 
 ## 1. `[...]` in the top text
 
@@ -52,3 +53,24 @@ Status: done (2026-11-16)
   design's setting) switch each text; CLI `--top-justify/--top-center`,
   `--bottom-justify/--bottom-center`; web `top_justify`, `bottom_justify` and
   a switch under each text.
+
+## 5. Design `fednet`
+
+Status: done (2026-11-16)
+
+- Homage to the "Would you like to know more?" banner of Starship Troopers,
+  after a screenshot on the wiki page of the project. The banner's lettering
+  has a "Y" shaped like a U with a long right stem; Phuture ODC (T-26,
+  Identikal), which 0.2.0 already used, has the same shapes, Eurostile and
+  Michroma do not. Phuture is commercial: not bundled, generic fallback with a
+  warning where it is missing. File `PhutureODC-Black.ttf`, also
+  `PhutureODCBlack.ttf` as 0.2.0 named it.
+- Colours sampled from the screenshot: off-white text, cyan `#67b1d0` for
+  MORE, orange emblem. A first scheme on the banner's grey bar (`#857371`)
+  was dropped: cyan has too little contrast on it for finder patterns, and
+  orange hardly shows. Schemes `night` (default; dark, cyan finder patterns,
+  orange emblem), `night-subtle` (emblem in muted blue-grey `#7d8996`),
+  `light`, `light-subtle` (emblem in `#8b939c`), `bw`.
+- Icon: the Federation emblem, given as an SVG (one filled path, no
+  background), as icon source `fednet` with `emblem`, recoloured in the
+  design's icon colour (orange; black in `bw`). Licence marked unclear.

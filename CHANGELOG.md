@@ -8,6 +8,10 @@
   "Bottom line: Own text"), or no bottom line at all (`--no-bottom`, "None").
 - Top text and bottom line can each be justified or centred
   (`--top-center`, `--bottom-center`, web switches).
+- Design `fednet`: homage to the "Would you like to know more?" banner of
+  Starship Troopers, with Phuture ODC (install it; not bundled), the Federation
+  emblem as icon (new icon source `fednet`) and the schemes `night`,
+  `night-subtle`, `light`, `light-subtle` and `bw`.
 ### Changed
 - The top text is justified by default, like the bottom line (one line looks
   the same as before; several lines now fill the width).

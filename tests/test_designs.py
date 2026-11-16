@@ -188,12 +188,28 @@ def test_unknown_and_override(tmp_path, library):
     assert DesignRegistry([tmp_path, BUILTIN_DIR]).get("attraktor").title == "Mine"
 
 
+def test_fednet(library):
+    d = library.design("fednet")
+    assert d.default_scheme == "night"
+    assert set(d.schemes) == {"night", "night-subtle", "light", "light-subtle", "bw"}
+    assert d.colours("bw")["finder_ring"] == d.colours("bw")["finder_centre"] == "#000000"
+    assert d.top_style().fonts[0] == "PhutureODC-Black.ttf"
+    assert d.default_icon() == "fednet:emblem"
+    src, icon = library.icons.lookup("fednet:emblem")
+    assert src.recolours(icon)
+    from wyltkm.core.designs import contrast
+    for s in d.schemes.values():
+        for key in ("modules", "finder_ring", "finder_centre"):
+            assert contrast(s.colours[key], s.colours["background"]) >= 4, (s.name, key)
+
+
 def test_order(library, tmp_path):
-    assert [d.name for d in library.ordered_designs()] == ["attraktor", "40c3", "38c3"]
+    assert [d.name for d in library.ordered_designs()] == ["attraktor", "40c3", "38c3", "fednet"]
     _write(tmp_path, "zz", 'title = "Z"\norder = 1\n[colours]\nbackground = "#ffffff"\n'
                            'modules = "#000000"\n')
     _write(tmp_path, "aa", 'title = "A"\n[colours]\nbackground = "#ffffff"\nmodules = "#000000"\n')
     from wyltkm.core import Library
     from wyltkm.core.designs import BUILTIN_DIR
     lib = Library(DesignRegistry([tmp_path, BUILTIN_DIR]), library.icons, library.fonts)
-    assert [d.name for d in lib.ordered_designs()] == ["attraktor", "zz", "40c3", "38c3", "aa"]
+    assert [d.name for d in lib.ordered_designs()] == ["attraktor", "zz", "40c3", "38c3", "fednet",
+                                                       "aa"]

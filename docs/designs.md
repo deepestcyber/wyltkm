@@ -241,6 +241,7 @@ modules = "#3B5831"
 | --- | --- | --- |
 | `attraktor` | | Default design out of the box. Agency FB (not bundled, install it). Schemes `colour` (default: Attraktor blue and greys, colour logo) and `bw` (black on white, mono logo). Licence of the design unclear, marked as such. |
 | `38c3` | | 38c3 style guide (CC0). Schemes with the same colours and different fonts: `pilowlava` (default, Pilowlava everywhere), `light` (Space Grotesk on top), `lighter` (Space Grotesk on top and bottom) |
+| `fednet` | | Homage to the "Would you like to know more?" broadcast banner of *Starship Troopers* (1997): Phuture ODC (commercial, not bundled, install it as `PhutureODC-Black.ttf`), off-white code and text, "MORE" in cyan, the Federation emblem (`fednet:emblem`) as icon. Schemes `night` (default: dark, cyan finder patterns, orange emblem), `night-subtle` (the emblem in a muted blue-grey), `light`, `light-subtle` (the same on light), `bw` |
 | `40c3` | | 40c3 "Model Citizens", Jersey 10, square modules, the 40c3 logo as icon. Thirteen schemes (including `bw` for engraving), default `green` |
 
 The 40c3 style guide (`40c3-styleguide-full-latest.zip`,

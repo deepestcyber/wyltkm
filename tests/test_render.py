@@ -28,6 +28,8 @@ CASES = {
                                     bottom="SCAN [ME]"),
     "no-bottom": Request(content="https://example.org", design="38c3", text="Hello",
                          bottom=""),
+    "fednet-night": Request(content="https://wiki.attraktor.org/Lasercutter", design="fednet",
+                             text="Laser cutter"),
     "side-up-attraktor": Request(content="https://wiki.attraktor.org/Laser", text="Laser",
                                  side=True),
     "side-long-40c3": Request(content="https://example.org/" + "/".join(["segment"] * 12),

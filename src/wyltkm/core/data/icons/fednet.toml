@@ -1,0 +1,9 @@
+name = "fednet"
+title = "FedNet"
+type = "dir"
+path = "fednet"
+recolour = true
+
+[licence]
+name = "unclear"
+holder = "after the Federation emblem of the film Starship Troopers (1997)"

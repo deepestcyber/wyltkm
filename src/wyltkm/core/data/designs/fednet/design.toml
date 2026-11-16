@@ -1,0 +1,78 @@
+name = "fednet"
+title = "FedNet"
+description = "Homage to the 'Would you like to know more?' broadcast banner: Phuture ODC, MORE in cyan, the Federation emblem"
+order = 50
+default_scheme = "night"
+
+# Phuture ODC (T-26) is commercial and not bundled: install it as a system font
+# or into fonts/ of a data directory. 0.2.0 used the file name without hyphen.
+# Colours after the broadcast banner: off-white text, MORE in cyan, the emblem
+# in orange; here on a dark background with cyan finder patterns.
+[colours]
+background = "#16181d"
+modules = "#fff7ef"
+finder_ring = "#67b1d0"
+icon = "#ff8a3d"
+top = "#fff7ef"
+bottom = "#fff7ef"
+highlight = "#67b1d0"
+
+[schemes.night]
+title = "Night"
+
+[schemes.night-subtle]
+title = "Night, subtle"
+icon = "#7d8996"
+
+[schemes.light]
+title = "Light"
+background = "#f2efe9"
+modules = "#3b3437"
+finder_ring = "#3b3437"
+icon = "#c2531f"
+top = "#3b3437"
+bottom = "#3b3437"
+highlight = "#2f7fa3"
+
+[schemes.light-subtle]
+title = "Light, subtle"
+background = "#f2efe9"
+modules = "#3b3437"
+finder_ring = "#3b3437"
+icon = "#8b939c"
+top = "#3b3437"
+bottom = "#3b3437"
+highlight = "#2f7fa3"
+
+[schemes.bw]
+title = "Black and white"
+background = "#ffffff"
+modules = "#000000"
+finder_ring = "#000000"
+icon = "#000000"
+top = "#000000"
+bottom = "#000000"
+highlight = "#000000"
+
+[qr]
+module_shape = "rounded"
+module_radius = 0.25
+finder_ring_shape = "rounded"
+finder_ring_radius = 1.5
+finder_centre_shape = "rounded"
+finder_centre_radius = 0.8
+
+[top]
+fonts = ["PhutureODC-Black.ttf", "PhutureODCBlack.ttf"]
+
+[bottom]
+type = "text"
+fonts = ["PhutureODC-Black.ttf", "PhutureODCBlack.ttf"]
+lines = ["WOULD YOU LIKE", "TO KNOW [MORE]?"]
+
+[defaults]
+icon = "fednet:emblem"
+
+[licence]
+name = "unclear"
+holder = "WYLTKM authors; inspired by the film Starship Troopers (1997)"
