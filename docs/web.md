@@ -100,6 +100,14 @@ The app is a WSGI app: `wyltkm.web:create_app()`. It reads the configuration
 like the CLI (config file, data directories, environment) once at start, and
 keeps no state, so it can run in several processes.
 
+The app must be served at the root of its host (its own vhost), not below a
+path: the page and its JavaScript use absolute paths like `/render.svg`.
+
+Two ways are described: a WSGI server behind a reverse proxy, for a server you
+control, and FastCGI under Apache, for shared hosting.
+
+### WSGI server behind a reverse proxy
+
 1. Install it in its own environment, with a WSGI server:
    `python -m venv /opt/wyltkm && /opt/wyltkm/bin/pip install 'wyltkm[web]' gunicorn`.
 2. Write the config file, e.g. `/etc/wyltkm/config.toml`, starting from
@@ -118,3 +126,72 @@ keeps no state, so it can run in several processes.
 
 The page loads no external resources: its fonts (Space Grotesk, Hack) are
 served from the package at `/ui-fonts/`.
+
+### Apache with FastCGI (shared hosting)
+
+For a host where you have a shell but no root, the system's Python is too old,
+and Apache runs the app through FastCGI with rewrites in `.htaccess`. Paths
+below use `/srv/wyltkm`; any directory outside the document root that the
+FastCGI process can read works.
+
+1. **Python.** Install [uv](https://docs.astral.sh/uv/), a single program in
+   your home directory, and let it put a prebuilt Python into the project
+   directory. No root and no compiler are needed; the host needs outbound
+   HTTPS and glibc 2.17 or newer (`ldd --version`):
+
+   ```sh
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   export UV_PYTHON_INSTALL_DIR=/srv/wyltkm/python
+   uv python install 3.12
+   ```
+
+2. **Environment and package.** Create a venv with that Python and install
+   WYLTKM with the web extra and `flup` (the FastCGI server):
+
+   ```sh
+   uv venv --python 3.12 /srv/wyltkm/venv
+   uv pip install --python /srv/wyltkm/venv/bin/python 'wyltkm[web]' flup
+   ```
+
+   Install from a git URL (`'wyltkm[web] @ git+https://github.com/deepestcyber/wyltkm'`)
+   or, without git on the host, from a wheel built elsewhere with `uv build`
+   (`'/path/wyltkm-<version>-py3-none-any.whl[web]'`). CairoSVG needs the
+   system's cairo library.
+
+3. **Config and fonts.** Write `/srv/wyltkm/config.toml` from
+   [examples/config.toml](examples/config.toml) with
+   `data_dirs = ["/srv/wyltkm"]` and `system_fonts = false`, and put fonts the
+   package does not bundle into `/srv/wyltkm/fonts/`, e.g. `AgencyFB-Bold.ttf`
+   for the Attraktor design (optionally with `AgencyFB-Bold.ttf.licence.toml`).
+   Check with:
+
+   ```sh
+   export WYLTKM_CONFIG=/srv/wyltkm/config.toml
+   /srv/wyltkm/venv/bin/wyltkm config
+   /srv/wyltkm/venv/bin/wyltkm fonts
+   /srv/wyltkm/venv/bin/wyltkm render https://example.org -o /tmp/test.png
+   ```
+
+4. **FastCGI script and rewrites.** Put
+   [examples/qr.fcgi](examples/qr.fcgi) (executable, shebang pointing to the
+   venv's Python) and [examples/htaccess](examples/htaccess) (as `.htaccess`)
+   into the document root of the vhost. The script sets `WYLTKM_CONFIG`
+   itself, since with mod_fcgid a `SetEnv` in `.htaccess` often does not reach
+   the process. Do not keep directories named `icons` or `static` in the
+   document root; they would catch requests meant for the app.
+
+5. **Switch and restart.** FastCGI processes keep running; a changed
+   `qr.fcgi` usually makes mod_fcgid start new ones, otherwise restart them
+   the way the host allows. Each process loads the icon index and fonts once.
+
+Updating:
+
+- WYLTKM: run the `uv pip install` command again, with
+  `--reinstall-package wyltkm`.
+- Python: `uv python install 3.13`, create a new venv, install into it,
+  change the shebang of `qr.fcgi`, then remove the old venv and Python. Until
+  then, changing the shebang back is the way back. The venv depends on the
+  Python it was made with, so do not remove that Python while the venv is in
+  use.
+- If FastCGI runs as another user than yours (no suEXEC), that user must be
+  able to read `/srv/wyltkm/python` and the venv.
