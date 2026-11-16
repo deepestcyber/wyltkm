@@ -23,10 +23,10 @@ wyltkm render https://wiki.attraktor.org/Laser \
 | `-d`, `--design` | Design name (default from config, else `attraktor`) |
 | `-s`, `--scheme` | Colour scheme of the design (default: its main colours) |
 | `-i`, `--icon` | Icon name `source:name`, or `none` |
-| `--icon-file` | SVG file to use as icon |
-| `-w`, `--width` | Image width in px (default 250) |
+| `--icon-file` | SVG file to use as icon; not together with `--icon` |
+| `-w`, `--width` | Image width in px (default 250, 50 to 10000) |
 | `--border` / `--no-border` | Quiet zone of 4 modules (default from design) |
-| `--transparent` | No background |
+| `--background` / `--transparent` | With or without background (default from design) |
 | `--side-text` / `--no-side-text` | Readable content text along the right side (default off) |
 | `--side-font` | Font file name for the side text (default from design) |
 | `-f`, `--format` | `svg` or `png`; default from the extension of `-o`, else `svg` |

@@ -15,21 +15,23 @@ Status values: `open`, `in progress`, `done`.
 
 | # | Part | Status |
 | --- | --- | --- |
-| 1 | Colour schemes in the design format | open |
+| 1 | Colour schemes in CLI and web | open |
 | 2 | Read the 40c3 style guide, define main version and schemes | open |
 | 3 | 40c3 design | open |
 | 4 | Design previews | open |
 | 5 | Docs: adding a design | open |
 
-## 1. Colour schemes in the design format
+## 1. Colour schemes in CLI and web
 
 Status: open
 
-- `[schemes.<name>]` tables as in [designs.md](../designs.md), inherited by
-  child designs.
-- `Request.scheme`, CLI `--scheme`, web parameter `scheme`; unknown scheme is
-  an error.
-- `wyltkm designs` and `/api/designs` list schemes with title and colours.
+The format and loader come with 0001 (part 8). Here:
+
+- `wyltkm designs` and `wyltkm designs show` list schemes with name, title
+  and colours, and mark the default scheme.
+- `/api/designs` as in [web.md](../web.md), with schemes; built here.
+- Web parameter `scheme` and a simple scheme selection in the current
+  templates; the polished picker is 0006.
 
 ## 2. Read the 40c3 style guide, define main version and schemes
 
@@ -50,7 +52,8 @@ Status: open
 
 Status: open
 
-- `designs/40c3/design.toml` with main colours and schemes, text blocks in
+- `designs/40c3/design.toml` with named schemes (the main version as
+  `default_scheme`), text blocks in
   the 40c3 fonts (Jersey 10, Hack), licence record (CC0).
 - Golden-file tests for the main version and each scheme; decode test per
   scheme.
@@ -59,8 +62,11 @@ Status: open
 
 Status: open
 
-- A small preview per design and scheme (rendered sample), used by
-  `wyltkm designs` and the web pickers.
+- Preview per design and scheme: a sample image rendered on request from
+  fixed sample content, cached per process.
+- Route `/designs/<name>/preview.svg?scheme=`, preview URLs in
+  `/api/designs` ([web.md](../web.md)).
+- CLI: `wyltkm designs show <name> --preview -o file.svg` writes the sample.
 
 ## 5. Docs: adding a design
 

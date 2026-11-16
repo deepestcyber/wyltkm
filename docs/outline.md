@@ -18,8 +18,9 @@ Goals of the rewrite:
 
 - A clean split: CLI and web only use the public core API, and can produce
   exactly the same images for the same request.
-- Designs as data files, so new designs (40c3 and later) need no code.
-  Attraktor stays the default design.
+- Designs as data files, so new designs (40c3 and later) need no code. No
+  design is special to the program; the default design is a setting
+  (`attraktor` out of the box).
 - SVG output whose QR code consists of paths only, usable for laser cutters
   and plotters.
 - All free Font Awesome icons, plus Carbon, 40c3 assets, local directories and
@@ -48,8 +49,9 @@ Goals of the rewrite:
 | Compatibility | Clean break: new URL parameters and icon names, no layer for old links. |
 | Web UI | Server-rendered Flask templates, small vanilla JS for live preview and icon search. No npm, no build step. |
 | Packaging | `pyproject.toml` (hatchling), `uv.lock`, Python ≥ 3.12, `src/` layout. Web dependencies are the optional extra `wyltkm[web]`. |
-| Tests | pytest; golden-file tests for rendered SVGs. |
-| Asset zips | The Font Awesome zip and the 40c3 style guide zip are committed and packaged as they are. |
+| Tests | pytest; golden-file tests for rendered SVGs, run with bundled fonts only and system fonts off, so they give the same result everywhere. |
+| Asset zips | The Font Awesome zip, the 40c3 style guide zip and the Carbon icon zip are committed and packaged as they are. |
+| Error correction | Always level H; not configurable. |
 
 ## Architecture
 
@@ -75,10 +77,15 @@ Goals of the rewrite:
 - `Library` is built from the config and holds the design registry, the icon
   sources and the font resolver. It is created once per process (the web app
   keeps one).
-- `Request` is a plain, validated value: content, text, design name, colour
-  scheme, icon name or uploaded icon, width, border, background, side text
-  on or off and its font, licence metadata on or off. Defaults
-  come from the design. All validation lives here, so CLI and web share it.
+- `Request` is a plain value: content, text, design name, colour scheme,
+  icon name or uploaded icon, width, border, background, side text on or off
+  and its font, licence metadata on or off. Fields left empty (`None`) mean
+  "default": from the config (design) or from the design (scheme, icon,
+  border, background, side font). Creating a `Request` checks everything
+  that needs no library: syntax of names, width range, content length.
+  `render_*` then checks what needs the library: that design, scheme, icon
+  and font exist. Both kinds of check live in the core, so CLI and web share
+  them.
 - `render_svg(library, request)` and `render_png(library, request)` are the
   entry points. They return a result with the image, warnings, and the
   licences of the parts used. Everything else in `wyltkm.core` is internal.

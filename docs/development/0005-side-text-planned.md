@@ -28,10 +28,10 @@ Status values: `open`, `in progress`, `done`.
 
 Status: open
 
-- `[side]` with `fonts`, `direction`, `min_size`, `max_columns`;
-  `colours.side`, also in schemes.
-- Built-in designs: Hack as default side font, side colour as their top text
-  colour.
+- The loader knows the keys from 0001 (part 8), so designs with `[side]` load
+  already. Here they take effect.
+- Built-in designs: Hack as default side font (the key's default), side
+  colour as their top text colour (the colour's fallback).
 
 ## 2. Request: `side`, `side_font`
 
@@ -46,12 +46,12 @@ Status: open
 
 Status: open
 
-- List of fonts from `fonts/` of the data directories and, if
-  `system_fonts`, the system font directories; by file name, without
-  duplicates (first found wins, as in lookup).
+- List of fonts from `fonts/` of the data directories, the side default font
+  of every design, and, if `system_fonts`, the system font directories; by
+  file name, without duplicates (first found wins, as in lookup).
 - Display name per font for the web selection: the file name without
   extension is enough for now.
-- `wyltkm fonts` lists them; `/api/fonts` serves them.
+- `wyltkm fonts` lists them; `/api/fonts` is built here.
 
 ## 4. Layout: rotation, sizing, gap
 

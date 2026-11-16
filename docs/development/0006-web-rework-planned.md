@@ -16,7 +16,7 @@ Status values: `open`, `in progress`, `done`.
 | 2 | Form and live preview | open |
 | 3 | Design picker | open |
 | 4 | Icon picker with search and upload | open |
-| 5 | JSON endpoints | open |
+| 5 | Caching | open |
 | 6 | Help page, licences page and footer | open |
 | 7 | Deployment docs and example config | open |
 
@@ -55,13 +55,15 @@ Status: open
   `/icons/...` previews in the current design's colour.
 - Upload of an own SVG, with the limits from the config; preview via POST.
 
-## 5. JSON endpoints
+## 5. Caching
 
 Status: open
 
-- `/api/designs`, `/api/icons`, `/icons/<source>/<name>.svg` as in
-  [web.md](../web.md). Cache headers for icons and rendered images
-  (output is deterministic).
+- The JSON endpoints are built in earlier units (`/api/licences` 0001,
+  `/api/designs` and previews 0003, `/api/icons` and icons 0004,
+  `/api/fonts` 0005); this unit uses them.
+- Cache headers for icons, previews and rendered images (output is
+  deterministic).
 
 ## 6. Help page, licences page and footer
 

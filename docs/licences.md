@@ -12,26 +12,28 @@ Every icon source, design and bundled font has a licence record:
 
 ```toml
 [licence]
-name = "CC BY 4.0"                     # short name, SPDX id where one exists
-url = "https://creativecommons.org/licenses/by/4.0/"
+name = "CC-BY-4.0"                     # SPDX id where one exists, else a short name
+url = "https://fontawesome.com/license/free"
 holder = "Fonticons, Inc."
 attribution = "Icon from Font Awesome Free, https://fontawesome.com, CC BY 4.0"
-requires_attribution = true
+requires_attribution = true            # default false
 ```
+
+`requires_attribution` is set by whoever writes the record; for the known
+licences below, the "Attribution" column says what we set.
 
 - Icon sources have it in their source TOML ([icons.md](icons.md)).
 - Designs have it in `design.toml`, for their own assets.
-- Fonts: a `licence.toml` next to the bundled font files; for fonts of the
-  install, an optional `<fontfile>.licence.toml` next to the font. A font
-  without a record is reported as "licence unknown".
+- Fonts: one `<fontfile>.licence.toml` next to each font file (e.g.
+  `Hack-Regular.ttf.licence.toml`), for bundled fonts and fonts of the
+  install alike. A font without a record (always the case for system fonts)
+  is reported as "licence unknown".
 
 ## Per render
 
-The render result lists the records of the parts actually used (the chosen
-icon's source, the design's assets if any are drawn, the fonts used for text,
-including the side text font).
-Sorted, without duplicates.
-
+The render result lists the records of the parts actually used: the design
+(always, since its look is used), the chosen icon's source, the fonts used for
+text, including the side text font. Sorted, without duplicates.
 - **In the image file** (on by default, opt-out):
   - SVG: the records go into a `<metadata>` element (plain text and RDF with
     the licence URLs). It does not affect drawing or laser cutting.
@@ -41,7 +43,7 @@ Sorted, without duplicates.
   `--no-licence-metadata`, web checkbox and parameter `licence_metadata=0`.
   The licence report in CLI and web is shown either way.
 - **CLI**: after rendering, a short summary goes to stderr when any part
-  requires attribution; `--licences` always prints the full list.
+  requires attribution or its licence is "unclear" or unknown; `--licences` always prints the full list.
   `wyltkm licences` lists the licences of all sources, designs and fonts.
 - **Web**: a box under the preview shows the licences of the current image,
   with the attribution text ready to copy. A licences page lists all
@@ -52,7 +54,7 @@ Sorted, without duplicates.
 | Part | Licence | Attribution |
 | --- | --- | --- |
 | Font Awesome Free icons | CC BY 4.0 | required |
-| IBM Carbon icons | Apache 2.0 | notice |
+| IBM Carbon icons | Apache 2.0 | not required for images; the licence text ships with the zip |
 | 40c3 style guide assets | CC0 ([source](https://events.ccc.de/congress/2026/infos/styleguide/)) | not required |
 | Hack (font) | MIT/Bitstream Vera licence, file in the style guide zip | — |
 | Jersey 10 (font) | SIL OFL 1.1, file in the style guide zip | — |

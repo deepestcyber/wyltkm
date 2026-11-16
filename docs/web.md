@@ -35,9 +35,10 @@ Layout and visual design are worked out in the web plan.
 | --- | --- | --- |
 | `/` | GET | The page; form values from the query parameters |
 | `/render.svg`, `/render.png` | GET | Image for the query parameters |
-| `/render.svg`, `/render.png` | POST | Image for form data, including an uploaded icon |
+| `/render.svg`, `/render.png` | POST | Image for form data (`multipart/form-data`), same fields, plus an uploaded icon in `icon_file` |
 | `/api/fonts` | GET | Fonts users can pick for the side text, as JSON |
-| `/api/designs` | GET | Designs as JSON (name, title, description, colours, schemes, licence) |
+| `/api/designs` | GET | Designs as JSON (name, title, description, colours, schemes, licence, preview URLs) |
+| `/designs/<name>/preview.svg?scheme=` | GET | Preview of a design (sample content, rendered on request, cached) |
 | `/api/licences?<render parameters>` | GET | Licences of the parts an image with these parameters uses, as JSON |
 | `/licences` | GET | Licences of all sources, designs and fonts |
 | `/api/icons?q=&source=&limit=` | GET | Icon search as JSON |
@@ -49,25 +50,25 @@ Query parameters of `/render.*` and `/`:
 | Parameter | Meaning |
 | --- | --- |
 | `content` | Data in the QR code |
-| `text` | Top text |
+| `text` | Top text; line breaks (`\n`, `%0A` in URLs) separate lines |
 | `design` | Design name |
 | `scheme` | Colour scheme of the design |
 | `icon` | Icon name or `none` |
 | `width` | Image width in px |
 | `border` | `1` or `0` |
-| `transparent` | `1` or `0` |
+| `background` | `1` or `0` (`0`: transparent); default from design |
 | `side` | `1`: readable side text |
 | `side_font` | Font file name for the side text |
 | `licence_metadata` | `0`: no licence info in the image file (default `1`) |
-| `download` | `1`: send as attachment, with a file name from the text |
+| `download` | `1`: send as attachment; file name from the slugified top text (all lines), else `wyltkm-qr` |
 
-Invalid parameters give `400` with a short message. Unknown designs or icons
-give `404`.
+Invalid parameters give `400` with a short message, including an unknown
+scheme or side font. Unknown designs or icons give `404`.
 
 ## Limits
 
-From the `[web]` table of the config file: maximum width, maximum upload
-size. The content length is limited by what a QR code can hold at the chosen
+From the `[web]` table of the config file: maximum width, and size, element
+and depth limits for uploads. The content length is limited by what a QR code can hold at the chosen
 error correction.
 
 ## Deployment

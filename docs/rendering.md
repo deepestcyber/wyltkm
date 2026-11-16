@@ -7,17 +7,23 @@ How `wyltkm.core` turns a request into an image.
 The main column, from top to bottom, all parts as wide as the QR code:
 
 1. Optional border (quiet zone) of 4 modules.
-2. Top text (optional; may have several lines), scaled to the QR width.
-3. Gap of 2 modules.
-4. QR code, with the icon centred in it (optional).
-5. Gap of 2 modules.
-6. Bottom part from the design: a text block (usually "WOULD YOU LIKE /
-   TO KNOW MORE?", justified to full width) or an SVG graphic, scaled to the
-   QR width. Text blocks are described in [designs.md](designs.md).
-7. Optional border of 4 modules.
+2. Top text (only if the request has one; may have several lines), scaled to
+   the QR width, followed by a gap of 2 modules.
+3. QR code, with the icon centred in it (optional).
+4. Bottom part from the design (unless `type = "none"`), after a gap of 2
+   modules: a text block (usually "WOULD YOU LIKE / TO KNOW MORE?", justified
+   to full width) or an SVG graphic, scaled to the QR width. Text blocks are
+   described in [designs.md](designs.md).
+5. Optional border of 4 modules.
+
+Gaps exist only next to a part that is there.
 
 Optionally, a readable side text to the right of the main column (see below),
 separated by a gap of 2 modules, inside the border.
+
+The requested `width` is in px, default 250. The core accepts 50 to 10000;
+the web app may set a lower maximum (`[web] max_width` in the config file,
+default 4000).
 
 The layout is computed in module units: every part's size follows from the
 number of modules (text blocks are as wide as the QR code, so their height is
@@ -53,14 +59,15 @@ design's background colour helps.
 ## QR code
 
 - The module matrix comes from `qrcode` (no image factory, only the matrix).
-- Error correction is H by default, so the centre can be left empty for the
-  icon. A request may lower it when there is no icon.
+- Error correction is always level H (about 30 % of the code can be lost),
+  so the centre can be left empty for the icon. It is not configurable.
 - The three finder patterns are drawn separately as an outer ring and an
   inner square, each with its own colour and shape from the design.
 - Data modules are drawn in the design's module shape.
-- With an icon, a centred square of modules is left out. Its size is derived
-  from the number of modules and the error correction level, and is always
-  odd so it is centred. (Today's formula is kept and documented in the code.)
+- With an icon, a centred square of modules is left out. Its side is
+  `floor(0.3 × sqrt(n² − 128))` modules for a code of `n × n` modules (the
+  128 are the finder patterns), made odd by subtracting 1 if needed so it
+  is centred. This is the formula of 0.2.2, which assumes level H.
 
 ### Shapes
 
@@ -105,8 +112,9 @@ licence info (SVG `<metadata>`, PNG `tEXt`; see [licences.md](licences.md)).
 | `svg` | The assembled SVG, size in px (`width`, `height`, `viewBox`) |
 | `png` | The same SVG rasterised with cairosvg at the requested width |
 
-A transparent background leaves out the background rectangle (SVG) or makes
-the PNG background transparent.
+The background is a filled path covering the whole image, like everything
+else. A transparent background leaves it out (SVG) or makes the PNG
+background transparent.
 
 ## Determinism
 

@@ -54,8 +54,9 @@ Status: open
 Status: open
 
 - Source `40c3` on the style guide zip: `Assets/Icons_Deco`, `Assets/Citizens`,
-  `Assets/Logos`, with readable names (`icon-cat`, `citizen-blahaj`,
-  `logo-0`).
+  `Assets/Logos`. Names from the file-name rule ([icons.md](../icons.md)),
+  e.g. `icons-deco/icon-cat`, `citizens/blahaj`, `logos/40c3-logo-a`; a
+  `rename` table only where that is unreadable.
 - These are multi-coloured: `recolour = false` by default, maybe a
   per-icon or per-folder override.
 - Licence CC0, from the style guide page; two assets use a clip path and
@@ -73,7 +74,9 @@ Status: open
 
 - Search by name and metadata across sources, ranked (exact name, name
   prefix, label, search term).
-- Used by `wyltkm icons search` and `/api/icons`.
+- Used by `wyltkm icons search`.
+- `/api/icons` and `/icons/<source>/<name>.svg` built here
+  ([web.md](../web.md)); the web picker using them is 0006.
 
 ## 7. Uploaded icons
 
@@ -90,4 +93,11 @@ Status: open
 Status: open
 
 - `wyltkm icons`, `icons list`, `icons search`, `icons show`.
-- Licence and attribution per source available to the web footer.
+- Licence records per source, shown by `wyltkm licences` and the web
+  licences page.
+
+## Open questions
+
+- Should `recolour` be settable per folder or per icon within a source (e.g.
+  40c3 deco icons mono, citizens in colour)? The source format has it per
+  source only.

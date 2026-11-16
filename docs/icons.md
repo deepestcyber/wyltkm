@@ -16,8 +16,14 @@ icon has a name of the form `source:name`.
 Names contain only `a-z`, `0-9`, `-` and `/` (for styles or folders). They
 are validated before any file access, so no name can leave its source.
 
+File names are turned into icon names by a fixed rule: path below the
+source's prefix, extension `.svg` removed, lower-cased, `_` and spaces
+replaced by `-`. A source may add a `rename` table for nicer names (e.g.
+`"Icon_Cat" = "icon-cat"` for 40c3, `"attraktor" = "logo"`). Files whose
+name does not fit after that are skipped and logged at startup.
+
 The request may also carry an uploaded icon instead of a name (see below), or
-`none`. Without an icon, the design's default icon is used.
+`none` for no icon. Without either, the design's default icon is used.
 
 ## Source types
 
@@ -62,12 +68,14 @@ name of a built-in one replaces it.
 | `fa` | All of Font Awesome Free, read from its release zip. Updating means replacing the zip and the version in `fa.toml`. Labels and search terms come from `metadata/icons.json` inside the zip. | Icons CC BY 4.0 |
 | `carbon` | All IBM Carbon icons, from the SVGs of the npm package `@carbon/icons`, repacked into a zip by a small update script | Apache 2.0 |
 | `40c3` | Deco icons, citizens and logos from the 40c3 style guide zip | CC0 |
-| `attraktor` | Attraktor logo, colour and mono | Attraktor e.V. |
+| `attraktor` | Attraktor logo, colour and mono | unclear, holder Attraktor e.V. |
 
 ## Colouring
 
-With `recolour = true`, every shape of the icon gets the design's icon colour
-and other fill and stroke settings are removed. With `recolour = false`, the
+With `recolour = true`, every visible shape of the icon gets the design's
+icon colour and other fill and stroke settings are removed. Shapes that are
+invisible (`fill="none"` without a stroke, e.g. the bounding box in every
+Carbon icon) stay invisible. With `recolour = false`, the
 icon keeps its own colours (e.g. the colour Attraktor logo, 40c3 citizens).
 
 ## Normalising
@@ -108,8 +116,12 @@ plans now.
 ## Uploaded icons
 
 - CLI: `--icon-file path/to/icon.svg`.
-- Web: file upload in the form. The file goes through the same normalising,
-  with a size limit (default 256 KiB) and a limit on elements.
+- Web: file upload in the form field `icon_file`. The file goes through the
+  same normalising, with limits from the config: size (`max_upload_bytes`,
+  default 256 KiB), number of elements (`max_upload_elements`, default
+  5000) and nesting depth (`max_upload_depth`, default 20).
+- A request has either an icon name or an uploaded icon, never both; CLI and
+  web reject the combination.
 - Uploaded icons are not stored on the server. A link to a rendered image
   cannot carry an uploaded icon; the web page renders it from the form data.
 

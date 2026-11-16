@@ -13,16 +13,16 @@ Status values: `open`, `in progress`, `done`.
 | --- | --- | --- |
 | 1 | Config file and `Config` | open |
 | 2 | Data directories | open |
-| 3 | Font resolver | open |
-| 4 | Bundled free fonts | open |
-| 5 | `wyltkm config` and `wyltkm fonts` | open |
+| 3 | Font resolver: data directories and switch | open |
+| 4 | `wyltkm config` and `wyltkm fonts` | open |
 
 ## 1. Config file and `Config`
 
 Status: open
 
 - Search order and format as in [configuration.md](../configuration.md);
-  strict validation.
+  strict validation. `default_design` (default `attraktor`), `system_fonts`,
+  `data_dirs`, `[web]` limits.
 - `Library.from_config()` used by CLI and web.
 
 ## 2. Data directories
@@ -32,26 +32,19 @@ Status: open
 - Search order from config, `WYLTKM_DATA_DIRS`, XDG, package data.
 - Designs and icon sources from data directories, with override logging.
 
-## 3. Font resolver
+## 3. Font resolver: data directories and switch
 
 Status: open
 
-- By file name in design dir, data dirs, system font dirs (recursively).
-  No lookup by family name.
+- Extends the basic lookup of 0001 (part 4) to the full order in
+  [configuration.md](../configuration.md): design directories, `fonts/` of
+  the data directories, system font directories (recursively). File names
+  only, no family names.
 - `system_fonts = false` switches system lookup off.
-- Fallback to ziafont's default font, with a warning.
+- `<fontfile>.licence.toml` read for fonts in data directories.
 - Cache resolved fonts per process.
 
-## 4. Bundled free fonts
-
-Status: open
-
-- Pilowlava, Space Grotesk, Hack, Jersey 10 with licence files and licence
-  records in `core/data/fonts/`. Hack and Jersey 10 come from the 40c3 style guide zip;
-  Pilowlava and Space Grotesk from their upstream releases.
-- `static/Pilowlava-Atome.otf` of the web app stays where the web needs it.
-
-## 5. `wyltkm config` and `wyltkm fonts`
+## 4. `wyltkm config` and `wyltkm fonts`
 
 Status: open
 
