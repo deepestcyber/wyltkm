@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 - 2026-11-16
 ### Added
 - `[...]` in the top text is drawn in the design's highlight colour, as in the
   bottom line; `[[` and `]]` give a bracket.

@@ -1,6 +1,6 @@
 [project]
 name = "wyltkm"
-version = "0.3.1"
+version = "0.4.0"
 description = "Would you like to know more? QR codes with text, icons and designs"
 readme = "README.md"
 requires-python = ">=3.12"
