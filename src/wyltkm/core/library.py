@@ -55,7 +55,7 @@ class Library:
                 self._icons[key] = n
                 while len(self._icons) > self.ICON_CACHE_SIZE:
                     self._icons.popitem(last=False)
-        return src, Normalised(copy.deepcopy(n.group), n.viewbox, list(n.warnings))
+        return src, Normalised(copy.deepcopy(n.group), n.viewbox, list(n.warnings), n.ink)
 
     @classmethod
     def builtin(cls, system_fonts: bool = True, default_design: str = DEFAULT_DESIGN,

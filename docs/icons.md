@@ -107,7 +107,11 @@ Every icon goes through the same steps before it is placed:
    classes).
 3. Convert primitives to paths ([rendering.md](rendering.md)).
 4. Recolour if the source says so.
-5. Scale into the empty centre square, keeping the aspect ratio.
+5. Scale into the empty centre square, keeping the aspect ratio. What is
+   fitted is the icon's viewBox grown to everything the icon actually draws:
+   some icons draw outside their viewBox (389 of Font Awesome 7, e.g.
+   `fa:solid/elevator`), and would otherwise overlap the code. Icon previews
+   use the same box, so nothing is cut off.
 
 ### Strokes, clip paths and gradients
 

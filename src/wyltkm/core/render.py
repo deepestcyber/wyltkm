@@ -242,7 +242,7 @@ def render_icon(library: Library, name: str, colour: str | None = None) -> str:
     """A single icon as a standalone SVG (normalised, paths only), recoloured
     with ``colour`` if given and the source recolours this icon."""
     src, n = library.icon(name, colour)
-    vx, vy, vw, vh = n.viewbox
+    vx, vy, vw, vh = n.box
     root = ET.Element("svg", {"xmlns": svgmod.SVG_NS,
                               "viewBox": f"{num(vx)} {num(vy)} {num(vw)} {num(vh)}"})
     root.append(n.group)

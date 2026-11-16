@@ -74,6 +74,9 @@ design's background colour helps.
   `floor(0.3 × sqrt(n² − 128))` modules for a code of `n × n` modules (the
   128 are the finder patterns), made odd by subtracting 1 if needed so it
   is centred. This is the formula of 0.2.2, which assumes level H.
+- The icon is fitted into that square less half a module on each side, by
+  the extent of what it draws, not only by its declared viewBox
+  ([icons.md](icons.md), "Normalising").
 
 ### Shapes
 

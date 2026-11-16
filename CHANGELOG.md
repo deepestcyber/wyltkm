@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 - 2026-11-16
+### Fixed
+- Icons that draw outside their own viewBox (389 Font Awesome icons, e.g.
+  `fa:solid/elevator`) overlapped the QR code. Icons are now fitted by what
+  they actually draw; previews no longer cut them off.
+
 ## 0.4.0 - 2026-11-16
 ### Added
 - `[...]` in the top text is drawn in the design's highlight colour, as in the

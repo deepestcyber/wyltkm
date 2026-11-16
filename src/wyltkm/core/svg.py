@@ -14,6 +14,7 @@ import defusedxml.ElementTree as SafeET
 from defusedxml import DefusedXmlException
 
 from . import geometry
+from .bounds import ink_box
 from .errors import DataError, InvalidRequest
 
 SVG_NS = "http://www.w3.org/2000/svg"
@@ -44,10 +45,26 @@ class Normalised:
     group: ET.Element
     viewbox: tuple[float, float, float, float]
     warnings: list[str] = field(default_factory=list)
+    ink: tuple[float, float, float, float] | None = None
+    """Box around what is actually drawn; may reach outside the viewBox."""
+
+    @property
+    def box(self) -> tuple[float, float, float, float]:
+        """The viewBox, grown to contain everything drawn: what placing and
+        previews use, so nothing sticks out (Font Awesome 7 draws outside
+        its viewBox for some icons)."""
+        vx, vy, vw, vh = self.viewbox
+        if self.ink is None:
+            return self.viewbox
+        ix, iy, iw, ih = self.ink
+        x0, y0 = min(vx, ix), min(vy, iy)
+        x1, y1 = max(vx + vw, ix + iw), max(vy + vh, iy + ih)
+        return (x0, y0, x1 - x0, y1 - y0)
 
     @property
     def aspect(self) -> float:
-        return self.viewbox[3] / self.viewbox[2]
+        bx, by, bw, bh = self.box
+        return bh / bw
 
 
 def _local(tag: str) -> str:
@@ -285,13 +302,13 @@ def normalise(data: bytes, *, recolour: str | None = None, id_prefix: str = "i-"
                                ("gradients", norm.gradient)) if on]
     if reasons:
         warnings.append(f"{where} is not laser-friendly: uses {', '.join(reasons)}")
-    return Normalised(group=group, viewbox=vb, warnings=warnings)
+    return Normalised(group=group, viewbox=vb, warnings=warnings, ink=ink_box(group))
 
 
 def place(n: Normalised, x: float, y: float, w: float, h: float) -> ET.Element:
     """Wrap ``n`` in a group that fits it into the box, keeping its aspect
     ratio, centred."""
-    vx, vy, vw, vh = n.viewbox
+    vx, vy, vw, vh = n.box
     s = min(w / vw, h / vh)
     ox = x + (w - vw * s) / 2 - vx * s
     oy = y + (h - vh * s) / 2 - vy * s

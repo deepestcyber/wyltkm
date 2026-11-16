@@ -104,6 +104,7 @@ src/wyltkm/
     request.py         Request and validation
     render.py          layout and SVG assembly, PNG
     geometry.py        path data of basic shapes, number formatting
+    bounds.py          extent of what an SVG draws (paths, transforms)
     qr.py              QR matrix and path generation
     text.py            text blocks to paths (ziafont)
     svg.py             SVG parsing, sanitising, primitive-to-path conversion, recolouring
