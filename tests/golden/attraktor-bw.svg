@@ -4,7 +4,7 @@
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
 <cc:Work rdf:about="">
 <dc:rights>Made with WYLTKM. Licences of the parts of this image:
-- Design attraktor-bw: unclear, Attraktor e.V., https://www.attraktor.org
+- Design attraktor: unclear, Attraktor e.V., https://www.attraktor.org
 - Font DejaVuSans.ttf (fallback): Bitstream-Vera, Bitstream, Inc.; DejaVu changes public domain, https://dejavu-fonts.github.io/License.html
 - Icons Attraktor: unclear, Attraktor e.V., https://www.attraktor.org</dc:rights>
 <cc:license rdf:resource="https://www.attraktor.org" />

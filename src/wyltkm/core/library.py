@@ -94,5 +94,16 @@ class Library:
                 continue
         return self.fonts.pickable(designs)
 
+    def ordered_designs(self) -> list[Design]:
+        """Loadable designs in list order: the default design first, then by
+        ``order``, then by name. Broken designs are left out."""
+        designs = []
+        for name in self.designs.names():
+            try:
+                designs.append(self.designs.get(name))
+            except Exception:  # broken designs are reported by the CLI
+                continue
+        return sorted(designs, key=lambda d: (d.name != self.default_design, d.order, d.name))
+
     def design(self, name: str | None = None) -> Design:
         return self.designs.get(name or self.default_design)

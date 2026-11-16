@@ -5,29 +5,37 @@
 
 ## Interface
 
-One page:
+One page, two columns (on phones the preview comes first):
 
-- Form on one side: content, top text, design (with small previews), colour
-  scheme (shown only when the design has schemes), icon picker with search
-  (name and Font Awesome search terms, filter by source), icon upload, width,
-  border, background, readable side text (checkbox, with a font selection
-  shown when it is on), licence info in the file (checkbox, on by default).
-- Preview on the other side, updated live while typing (debounced), with
-  download buttons for SVG and PNG and a link to the current settings.
-- Warnings from the core (missing font, not laser-friendly icon) shown next
-  to the preview.
-- Licence box under the preview: licences of the parts in the current image,
-  attribution text ready to copy ([licences.md](licences.md)).
-- Footer: version, source link, link to the licences page.
+- **Form** in cards: link or text in the code and top text; design as small
+  previews, with the design's schemes below as chips (colour dot and name); icon
+  search over all sources with a source filter and a grid of hits drawn in
+  the design's icon colour, "Design" and "None" choices, and an upload for an
+  own SVG; options as segmented buttons (background, border, side text with
+  a font field, width, licence info in the file).
+- **Preview**: the image lies on a cutting mat with a module-like grid,
+  framed by crop marks, with its size and number of modules underneath. It
+  follows every change after a short pause; the address bar keeps the
+  current settings, so the page can be bookmarked or shared ("Copy link").
+- **Download SVG** (main action) and **Download PNG**, file name from the top
+  text. With an uploaded icon, the downloads post the form instead.
+- Warnings from the core (missing font, not laser-friendly icon) and the
+  licences of the parts of the current image, with the attribution text
+  ready to copy ([licences.md](licences.md)), below the preview.
+- Header with Help, Licences and a theme switch (system, dark, light;
+  remembered in the browser); footer with version, source and licences.
+
+Look: quiet graphite surfaces in dark and light, one accent (the blue of the
+Attraktor favicon), Space Grotesk for the interface and Hack for figures. The
+colour of the page comes from the code in the preview.
 
 Form handling has no WTForms or flask-wtf: parameters are read into the core
-`Request`, which validates them for CLI and web alike, and errors are shown
-next to the fields. There are no sessions or accounts, so no CSRF tokens.
+`Request`, which validates them for CLI and web alike. There are no sessions
+or accounts, so no CSRF tokens.
 
-It works without JavaScript as a plain form with a preview button. JavaScript
-is small vanilla code shipped as a static file: no npm, no build step.
-
-Layout and visual design are worked out in the web plan.
+Without JavaScript the page is a plain form: "Update preview" and the icon
+search button send it, and everything but the upload works. The JavaScript
+is one small vanilla file (`static/app.js`): no npm, no build step.
 
 ## HTTP interface
 
@@ -39,6 +47,8 @@ Layout and visual design are worked out in the web plan.
 | `/api/fonts` | GET | Fonts users can pick for the side text, as JSON |
 | `/api/designs` | GET | Designs as JSON (name, title, description, colours, schemes, licence, preview URLs) |
 | `/designs/<name>/preview.svg?scheme=` | GET | Preview of a design (sample content, rendered on request, cached) |
+| `/api/render-info?<render parameters>` | GET, POST | Size, number of modules, warnings and licences of the image, as JSON (POST with an uploaded icon) |
+| `/ui-fonts/<file>` | GET | The two fonts of the page itself |
 | `/api/licences?<render parameters>` | GET | Licences of the parts an image with these parameters uses, as JSON |
 | `/licences` | GET | Licences of all sources, designs and fonts |
 | `/api/icons?q=&source=&limit=` | GET | Icon search as JSON (name, label, URL) |
@@ -75,14 +85,24 @@ error correction.
 ## Deployment
 
 The app is a WSGI app: `wyltkm.web:create_app()`. It reads the configuration
-like the CLI (config file, data directories, environment) once at start. Run it with any WSGI
-server, e.g.:
+like the CLI (config file, data directories, environment) once at start, and
+keeps no state, so it can run in several processes.
 
-```sh
-gunicorn 'wyltkm.web:create_app()' --bind 0.0.0.0:8000
-```
+1. Install it in its own environment, with a WSGI server:
+   `python -m venv /opt/wyltkm && /opt/wyltkm/bin/pip install 'wyltkm[web]' gunicorn`.
+2. Write the config file, e.g. `/etc/wyltkm/config.toml`, starting from
+   [examples/config.toml](examples/config.toml). For a server, set
+   `system_fonts = false` and put every font the designs need into `fonts/`
+   of a data directory, with a licence record next to each
+   ([configuration.md](configuration.md)). `wyltkm config` and `wyltkm fonts`
+   (with `WYLTKM_CONFIG` set) show what the app will use.
+3. Run it, e.g. with the systemd unit in
+   [examples/wyltkm.service](examples/wyltkm.service):
+   `gunicorn --workers 3 --bind 127.0.0.1:8000 'wyltkm.web:create_app()'`,
+   with `WYLTKM_CONFIG` pointing to the config file.
+4. Put a reverse proxy (nginx, Caddy) in front for TLS. Rendered images,
+   previews and icons carry `ETag` and `Cache-Control` headers, so the proxy
+   or browsers can cache them.
 
-Set `WYLTKM_CONFIG` to the config file of the install and put fonts and extra
-designs or icon sources into a data directory (see
-[configuration.md](configuration.md)). The app keeps no state; it can run in
-several processes.
+The page loads no external resources: its fonts (Space Grotesk, Hack) are
+served from the package at `/ui-fonts/`.

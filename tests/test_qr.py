@@ -33,8 +33,8 @@ CONTENTS = ["x", "https://wiki.attraktor.org/Laser", "https://example.org/" + "a
             "Hällo Wörld"]
 
 
-DESIGNS = [("attraktor", None), ("attraktor-bw", None), ("38c3", None), ("38c3-light", None),
-           ("38c3-lighter", None),
+DESIGNS = [("attraktor", None), ("attraktor", "bw"), ("38c3", None), ("38c3", "light"),
+           ("38c3", "lighter"),
            *(("40c3", s) for s in ("green", "teal", "lavender", "lilac", "pink", "rose",
                                    "orange", "yellow", "sage", "taupe", "light", "light-brown"))]
 

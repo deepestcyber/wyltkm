@@ -1,6 +1,7 @@
 name = "40c3"
 title = "40c3"
 description = "40th Chaos Communication Congress: Model Citizens. Tricolore of A, B and one colour; Jersey 10"
+order = 10                    # position in lists, lower first
 default_scheme = "green"
 
 # Shared by all schemes: B (near black) background, A (pale green) details.

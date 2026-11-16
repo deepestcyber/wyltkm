@@ -1,64 +1,62 @@
 {% extends 'base.html' %}
+{% block title %}Help · Would you like to know more?{% endblock %}
+{% block body %}
+<main class="page">
+<h1>Would you like to know more about “Would you like to know more?”</h1>
 
-{% block header %}
-    <h1>Would you like to know more about &quot;Would you like to know more?&quot;?</h1>
-{% endblock %}
-
-{% block content %}
-<h2>What is this?</h2>
 <p>
-    <i>WYLTKM?</i> is a generator for QR-Codes. It was created for the Makerspace
-    <a href="https://attraktor.org">Attraktor e.V.</a> in Hamburg, Germany.
-    <i>WYLTKM?</i> allows everyone in the Makerspace, to easily create QR-Codes that
-    provide access to information on various projects. The created QR-Codes have a
-    design that is easily recognised, so that you will be able to quickly spot them
-    wherever they are installed.
-</p><p>
-    You can find <a href="https://wiki.attraktor.org/Would_you_like_to_know_more%3F">more about this project</a>
-    in the Attraktor Wiki (in German).
+  WYLTKM makes QR codes that lead from a thing to more information about it: a machine in the
+  workshop, a project on the shelf, a talk or an assembly at congress. Each code has a short text
+  on top, an icon in the middle and the line “would you like to know more?” at the bottom, so it is
+  recognised as such wherever it hangs. It was made for the maker space
+  <a href="https://www.attraktor.org">Attraktor e.V.</a> in Hamburg.
 </p>
 
-<h2>How do I use it?</h2>
+<h2>Making a code</h2>
+<ul>
+  <li>Enter the link (or any text) that the code should contain, and a short title for the top.
+    The preview follows as you type.</li>
+  <li>Pick a design. Some designs, like 40c3, offer several colour schemes; they appear as swatches
+    below the designs.</li>
+  <li>Search an icon by name or meaning (“cat”, “laser”, “github”). Icons come from Font Awesome,
+    IBM Carbon, the 40c3 style guide and the Attraktor logos. You can also upload your own SVG; it
+    is only used for this image and not stored.</li>
+  <li>Download it as SVG for print and the laser cutter, or as PNG for screens. “Copy link” gives a
+    link to exactly these settings.</li>
+</ul>
+
+<h2>Options</h2>
+<ul>
+  <li><strong>Border</strong>: a QR code needs a calm area around it, four modules wide, to scan
+    reliably. “Quiet zone” adds it to the image. Leave it out when the code will sit on a large
+    plain area anyway.</li>
+  <li><strong>Background</strong>: transparent leaves out the background colour, for stickers and
+    engraving.</li>
+  <li><strong>Side text</strong>: prints the content of the code as readable text along the right
+    side, for people without a scanner. Long links wrap into several columns.</li>
+  <li><strong>Width</strong>: the width of the whole image in pixels (at most {{ max_width }}).
+    For SVG it only sets the default size; the image scales without loss.</li>
+</ul>
+
+<h2>Printing and laser cutting</h2>
 <p>
-    Simply enter the URL you want to link to and a short descriptive text as a heading,
-    choose a design and an icon, and use the preview button. When you are done, download the
-    image as SVG or PNG.
+  The SVG consists of filled paths only: the code, the text (as outlines, no fonts needed) and the
+  icon. It can be scaled to any size and loaded into laser cutter and plotter software as it is.
+  A few icons use strokes or clip paths, which some laser software ignores; the page warns about
+  those. Test a printed code with a phone before making many.
 </p>
 
-<h2>What is this SVG?</h2>
+<h2>Licences</h2>
 <p>
-    The image is created as a Scalable Vector Graphic that consists of filled paths only
-    (no fonts or text elements included). The images can be scaled to any size you need without quality loss.
-    They are suitable for laser cutters, plotters and the like.
+  Each image is made of parts with their own licences: the design, the icon and the fonts. The
+  page lists them under the preview, and by default the image file contains them as well. Some
+  icons, like those from Font Awesome, require attribution. See <a href="/licences">all licences</a>.
 </p>
 
-<h2>What is the &quot;border&quot;?</h2>
+<h2>Command line and source</h2>
 <p>
-    QR-Codes require a <i>quiet zone</i> around it, that should consist of a background coloured space
-    the size of four of the QR-Codes &quot;pixels&quot;. Scanners often work without the quiet zone,
-    but all diversions from the standard make it more likely that the scanning fails. When displayed
-    on the edge of a monitor with a dark frame, scanning might fail (the light colours used for
-    the code don't help either). So the default of adding the border helps while designing.
-    When you integrate the code somewhere you should take care about that yourself. It might be more convenient
-    to have the SVG without a border, so that why there is the option.
+  The same images can be made on the command line with <code>wyltkm render</code>. The program is
+  open source: <a href="{{ APP_INFO.source }}">{{ APP_INFO.source }}</a>.
 </p>
-
-<h2>How it is done?</h2>
-<p>
-    The codes are generated by a Python library, which is used by this Flask web app and by
-    the command line tool <code>wyltkm</code>. The program is open source and can be found on GitHub:<br>
-    <a href="{{ APP_INFO.source }}">{{ APP_INFO.source }}</a>
-</p><p>
-    The program is written for this special purpose, so it might not fit anyone else's needs. But feel
-    free to take a look, create a fork, or participate by opening pull requests.
-</p>
-
-<h2>Where are the icons from?</h2>
-<p>
-    The Attraktor Logo belongs to the <a href="https://attraktor.org">Attraktor e.V.</a> <br>
-    The <code>fa:</code> icons are from <a href="https://fontawesome.com">Font Awesome Free</a> (CC BY 4.0). <br>
-    The <code>carbon:</code> icons are IBM Carbon icons (Apache 2.0), taken from the
-    <a href="https://events.ccc.de/congress/2024/infos/styleguide.html">38C3 styleguide</a>. <br>
-    See the <a href="/licences">licences page</a> for details.
-</p>
+</main>
 {% endblock %}

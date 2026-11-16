@@ -3,29 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Would you like to know more?</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>{% block title %}Would you like to know more?{% endblock %}</title>
+<script>
+  try { var t = localStorage.getItem("wyltkm-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
 <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
 <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </head>
 <body>
-<header>{% block header %}{% endblock %}</header>
-<nav>
-<a href="/">QR code</a> &ndash; <a href="/help">Help</a> &ndash; <a href="/licences">Licences</a>
-</nav>
-
-<section class="content">
-    {% block content %}{% endblock %}
-</section>
-
-<footer>
-    WYLTKM v{{ APP_INFO.version }}
-    &ndash;
-    <a href="{{ APP_INFO.source }}">Source</a>
-    &ndash;
-    <a href="{{ APP_INFO.info }}">More information (German)</a>
-    &ndash;
+<header class="top">
+  <a class="brand" href="/"><img src="{{ url_for('static', filename='favicon.svg') }}" alt="" width="24" height="24">
+    <span>WYLTKM <span class="muted">would you like to know more?</span></span></a>
+  <nav>
+    <a href="/help">Help</a>
     <a href="/licences">Licences</a>
+    <button type="button" class="theme" id="theme" title="Theme: follows the system" hidden>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 1 0 12.5z" fill="currentColor"/></svg>
+      <span class="label">System</span>
+    </button>
+  </nav>
+</header>
+{% block body %}{% endblock %}
+<footer class="bottom">
+  <span>WYLTKM {{ APP_INFO.version }}</span>
+  <a href="{{ APP_INFO.source }}">Source</a>
+  <a href="{{ APP_INFO.info }}">More information (German)</a>
+  <a href="/licences">Licences</a>
 </footer>
 </body>
 </html>

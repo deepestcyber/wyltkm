@@ -13,7 +13,9 @@
 - Icons are named `source:name` (e.g. `fa:solid/cat`, `carbon:boot`,
   `attraktor:logo`). Clean break: old URL parameters and icon names are gone.
 - Packaging with `pyproject.toml` and uv; Python 3.12 or later.
-- `attraktor-bw` uses the mono Attraktor logo.
+- Design variants are schemes: the black and white Attraktor design is the
+  scheme `bw` of `attraktor` (`-d attraktor -s bw`, with the mono logo), and
+  38c3 light and lighter are the schemes `light` and `lighter` of `38c3`.
 ### Added
 - Command line tool `wyltkm` (`render`, `designs`, `icons`, `licences`, `web`).
 - Licence records for designs, icon sources and fonts; each image lists the

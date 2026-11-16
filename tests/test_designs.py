@@ -105,9 +105,56 @@ def test_schemes_and_merge_order(tmp_path):
     assert [p.name for p in child.dirs] == ["child", "parent"]
 
 
-def test_scheme_on_design_without_schemes(library):
+def test_scheme_on_design_without_schemes(tmp_path):
+    _write(tmp_path, "plain", '''
+        title = "Plain"
+        [colours]
+        background = "#ffffff"
+        modules = "#000000"
+        ''')
     with pytest.raises(InvalidRequest):
-        library.design("attraktor").colours("main")
+        DesignRegistry([tmp_path]).get("plain").colours("main")
+
+
+def test_scheme_fonts(library, tmp_path):
+    d = library.design("38c3")
+    assert d.top_style("pilowlava").fonts == d.top_style().fonts == ("Pilowlava-Regular.otf",)
+    assert d.top_style("light").fonts == ("SpaceGrotesk-Regular.otf",)
+    assert d.bottom_style("light").fonts == ("Pilowlava-Regular.otf",)
+    assert d.bottom_style("lighter").fonts == ("SpaceGrotesk-Regular.otf",)
+    assert d.bottom_style("lighter").align == "justify"  # only the fonts change
+    assert d.side_fonts("lighter") == ("Hack-Regular.ttf",)
+    _write(tmp_path, "x", '''
+        title = "X"
+        default_scheme = "a"
+        [colours]
+        background = "#ffffff"
+        modules = "#000000"
+        [schemes.a]
+        title = "A"
+        fonts = { middle = ["x.ttf"] }
+        ''')
+    with pytest.raises(DataError, match="schemes.a.fonts"):
+        DesignRegistry([tmp_path]).get("x")
+
+
+def test_scheme_default_icon(library, tmp_path):
+    d = library.design("attraktor")
+    assert d.default_icon() == d.default_icon("colour") == "attraktor:logo"
+    assert d.default_icon("bw") == "attraktor:logo-mono"
+    assert d.colours("bw")["icon"] == "#000000"
+    _write(tmp_path, "x", '''
+        title = "X"
+        default_scheme = "a"
+        [colours]
+        background = "#ffffff"
+        modules = "#000000"
+        [schemes.a]
+        title = "A"
+        default_icon = "nonsense"
+        ''')
+    with pytest.raises(DataError, match="default_icon"):
+        DesignRegistry([tmp_path]).get("x")
 
 
 @pytest.mark.parametrize("body, msg", [
@@ -139,3 +186,14 @@ def test_unknown_and_override(tmp_path, library):
         ''')
     from wyltkm.core.designs import BUILTIN_DIR
     assert DesignRegistry([tmp_path, BUILTIN_DIR]).get("attraktor").title == "Mine"
+
+
+def test_order(library, tmp_path):
+    assert [d.name for d in library.ordered_designs()] == ["attraktor", "40c3", "38c3"]
+    _write(tmp_path, "zz", 'title = "Z"\norder = 1\n[colours]\nbackground = "#ffffff"\n'
+                           'modules = "#000000"\n')
+    _write(tmp_path, "aa", 'title = "A"\n[colours]\nbackground = "#ffffff"\nmodules = "#000000"\n')
+    from wyltkm.core import Library
+    from wyltkm.core.designs import BUILTIN_DIR
+    lib = Library(DesignRegistry([tmp_path, BUILTIN_DIR]), library.icons, library.fonts)
+    assert [d.name for d in lib.ordered_designs()] == ["attraktor", "zz", "40c3", "38c3", "aa"]

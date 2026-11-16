@@ -32,6 +32,8 @@ class Result:
     warnings: list[str] = field(default_factory=list)
     licences: list[Licence] = field(default_factory=list)
     png: bytes | None = None
+    modules: int = 0
+    """Modules per side of the QR code."""
 
     @property
     def licence_notes(self) -> list[Licence]:
@@ -76,7 +78,7 @@ def _icon(library: Library, request: Request, design, colour: str, parts: _Parts
         parts.licence(UPLOAD_LICENCE)
         parts.warnings.extend(n.warnings)
         return n
-    name = request.icon if request.icon is not None else design.defaults.icon
+    name = request.icon if request.icon is not None else design.default_icon(request.scheme)
     if name == NO_ICON:
         return None
     src, n = library.icon(name, colour)
@@ -122,11 +124,11 @@ def render_svg(library: Library, request: Request) -> Result:
     top = None
     if request.lines:
         lines = [[textmod.Run(line)] for line in request.lines]
-        top = _text_block(library, design, design.top, lines, n, parts)
+        top = _text_block(library, design, design.top_style(request.scheme), lines, n, parts)
 
     bottom_text = bottom_svg = None
     if design.bottom.type == "text":
-        bottom_text = _text_block(library, design, design.bottom.style,
+        bottom_text = _text_block(library, design, design.bottom_style(request.scheme),
                                   [list(line) for line in design.bottom.lines], n, parts)
     elif design.bottom.type == "svg":
         bottom_svg = svgmod.normalise(
@@ -145,7 +147,7 @@ def render_svg(library: Library, request: Request) -> Result:
     y = float(border)
     if top is not None:
         body.append(_paths_group(top, border, y, colours["top"], colours["top"]))
-        y += top.height + design.top.gap
+        y += top.height + design.top_style(request.scheme).gap
     qr_y = y
     g = ET.Element("g", transform=f"translate({num(border)} {num(qr_y)})")
     if q.modules:
@@ -160,12 +162,12 @@ def render_svg(library: Library, request: Request) -> Result:
     body.append(g)
     y += n
     if bottom_text is not None:
-        y += design.bottom.style.gap
+        y += design.bottom_style(request.scheme).gap
         body.append(_paths_group(bottom_text, border, y, colours["bottom"],
                                  colours["highlight"]))
         y += bottom_text.height
     elif bottom_svg is not None:
-        y += design.bottom.style.gap
+        y += design.bottom_style(request.scheme).gap
         h = n * bottom_svg.aspect
         body.append(svgmod.place(bottom_svg, border, y, n, h))
         y += h
@@ -180,7 +182,7 @@ def render_svg(library: Library, request: Request) -> Result:
                 raise InvalidRequest(f"font {request.side_font} is not available for the side text")
             font = library.fonts.load(path)
         else:
-            font = library.fonts.resolve(design.side.fonts, list(design.dirs), parts.warnings)
+            font = library.fonts.resolve(design.side_fonts(request.scheme), list(design.dirs), parts.warnings)
         length = main_bottom - border
         sb = sidemod.block(font.font, request.content, length, design.side.min_size,
                            design.side.max_size, design.side.max_columns, parts.warnings)
@@ -218,7 +220,7 @@ def render_svg(library: Library, request: Request) -> Result:
     svg = ET.tostring(root, encoding="unicode", xml_declaration=False)
     svg = '<?xml version="1.0" encoding="UTF-8"?>\n' + svg + "\n"
     return Result(svg=svg, width=width, height=height, warnings=parts.warnings,
-                  licences=parts.licences)
+                  licences=parts.licences, modules=n)
 
 
 def render_icon(library: Library, name: str, colour: str | None = None) -> str:

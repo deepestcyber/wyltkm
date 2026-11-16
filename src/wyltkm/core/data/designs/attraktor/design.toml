@@ -1,6 +1,7 @@
 name = "attraktor"
 title = "Attraktor"
-description = "Attraktor e.V. blue and greys, Agency FB"
+description = "Attraktor e.V. blue and greys, or black and white; Agency FB"
+default_scheme = "colour"
 
 [colours]
 background = "#ffffff"
@@ -11,6 +12,20 @@ icon = "#4b4b4d"
 top = "#4b4b4d"
 bottom = "#4b4b4d"
 highlight = "#67b8dc"
+
+[schemes.colour]
+title = "Colour"
+
+[schemes.bw]
+title = "Black and white"
+default_icon = "attraktor:logo-mono"
+modules = "#000000"
+icon = "#000000"
+finder_ring = "#000000"
+finder_centre = "#000000"
+top = "#000000"
+bottom = "#000000"
+highlight = "#000000"
 
 [qr]
 module_shape = "rounded"

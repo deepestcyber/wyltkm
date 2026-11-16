@@ -6,7 +6,7 @@ import copy
 import logging
 import re
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from importlib import resources
 from pathlib import Path
 
@@ -35,7 +35,7 @@ COLOURS = ("background", "modules", *COLOUR_FALLBACKS)
 REQUIRED_COLOURS = ("background", "modules")
 COLOUR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
-TOP_KEYS = {"name", "title", "description", "extends", "default_scheme", "colours", "schemes",
+TOP_KEYS = {"name", "title", "description", "order", "extends", "default_scheme", "colours", "schemes",
             "qr", "top", "bottom", "side", "defaults", "licence"}
 TABLE_KEYS = {
     "qr": {"module_shape", "module_radius", "finder_ring_shape", "finder_ring_radius",
@@ -45,6 +45,8 @@ TABLE_KEYS = {
     "side": {"fonts", "direction", "gap", "min_size", "max_size", "max_columns"},
     "defaults": {"icon", "border", "background"},
 }
+SCHEME_FONT_KEYS = {"top", "bottom", "side"}
+"""Fonts a scheme may change, in its ``fonts`` table."""
 MODULE_SHAPES = {"square", "rounded", "dot"}
 FINDER_SHAPES = {"square", "rounded", "circle"}
 ALIGNS = {"center", "justify"}
@@ -93,6 +95,14 @@ class Scheme:
     title: str
     colours: dict[str, str]
     """Fully resolved colours (fallbacks applied)."""
+    icon: str | None = None
+    """Default icon of this scheme, instead of the design's."""
+    top: "TextStyle | None" = None
+    """Top text style with this scheme's fonts, if it sets them."""
+    bottom: "TextStyle | None" = None
+    """Bottom text style with this scheme's fonts, if it sets them."""
+    side_fonts: tuple[str, ...] | None = None
+    """Side text fonts of this scheme, if it sets them."""
 
 
 @dataclass(frozen=True)
@@ -100,6 +110,8 @@ class Design:
     name: str
     title: str
     description: str
+    order: float
+    """Position in lists: lower first, then by name."""
     dirs: tuple[Path, ...]
     """Directory of the design, then those of its parents."""
     base_colours: dict[str, str]
@@ -124,6 +136,35 @@ class Design:
                 f"design {self.name} has no scheme {name!r}; "
                 f"schemes: {', '.join(self.schemes)}")
         return self.schemes[name].colours
+
+    def _scheme(self, scheme: str | None) -> "Scheme | None":
+        if not self.schemes:
+            return None
+        return self.schemes.get(scheme or self.default_scheme)
+
+    def top_style(self, scheme: str | None = None) -> TextStyle:
+        """Top text style for a scheme (the scheme's if it sets one)."""
+        s = self._scheme(scheme)
+        return s.top if s is not None and s.top is not None else self.top
+
+    def bottom_style(self, scheme: str | None = None) -> TextStyle:
+        """Bottom text style for a scheme (the scheme's if it sets one)."""
+        s = self._scheme(scheme)
+        return s.bottom if s is not None and s.bottom is not None else self.bottom.style
+
+    def side_fonts(self, scheme: str | None = None) -> tuple[str, ...]:
+        """Default side text fonts for a scheme."""
+        s = self._scheme(scheme)
+        return s.side_fonts if s is not None and s.side_fonts is not None else self.side.fonts
+
+    def default_icon(self, scheme: str | None = None) -> str:
+        """The icon used when the request names none: the scheme's, if it
+        sets one, else the design's."""
+        if self.schemes:
+            s = self.schemes.get(scheme or self.default_scheme)
+            if s is not None and s.icon is not None:
+                return s.icon
+        return self.defaults.icon
 
 
 def _luminance(colour: str) -> float:
@@ -212,7 +253,7 @@ class DesignRegistry:
         if parent:
             praw, pdirs = self._raw(parent, (*chain, name))
             # name, title, description, licence belong to the design itself
-            for k in ("name", "title", "description", "extends", "licence"):
+            for k in ("name", "title", "description", "order", "extends", "licence"):
                 praw.pop(k, None)
             return _merge(praw, raw), [d, *pdirs]
         return raw, [d]
@@ -240,6 +281,13 @@ def _check_keys(raw: dict, path: Path):
     for sname, s in (raw.get("schemes") or {}).items():
         if not isinstance(s, dict):
             raise DataError(f"{path}: schemes.{sname} must be a table")
+        if "fonts" in s:
+            if not isinstance(s["fonts"], dict):
+                raise DataError(f"{path}: schemes.{sname}.fonts must be a table")
+            extra = set(s["fonts"]) - SCHEME_FONT_KEYS
+            if extra:
+                raise DataError(f"{path}: unknown keys in [schemes.{sname}.fonts]: "
+                                f"{', '.join(sorted(extra))}")
 
 
 def _str(v, where, default=None):
@@ -302,6 +350,7 @@ def _build(raw: dict, dirs: list[Path]) -> Design:
     colours_raw = raw.get("colours") or {}
     schemes_raw = raw.get("schemes") or {}
     schemes = {}
+    scheme_fonts: dict[str, dict] = {}
     for sname, s in schemes_raw.items():
         if not valid_name(sname):
             raise DataError(f"{where}: invalid scheme name {sname!r}")
@@ -309,8 +358,13 @@ def _build(raw: dict, dirs: list[Path]) -> Design:
         stitle = _str(s.pop("title", None), f"{where}: schemes.{sname}.title")
         if not stitle:
             raise DataError(f"{where}: schemes.{sname} needs a title")
+        scheme_fonts[sname] = s.pop("fonts", None) or {}
+        sicon = _str(s.pop("default_icon", None), f"{where}: schemes.{sname}.default_icon")
+        if sicon is not None and sicon != NO_ICON and not valid_icon_name(sicon):
+            raise DataError(f"{where}: schemes.{sname}.default_icon must be source:name or none")
         schemes[sname] = Scheme(sname, stitle,
-                                _resolve_colours({**colours_raw, **s}, f"{where}, scheme {sname}"))
+                                _resolve_colours({**colours_raw, **s}, f"{where}, scheme {sname}"),
+                                sicon)
     default_scheme = raw.get("default_scheme")
     if schemes:
         if default_scheme not in schemes:
@@ -356,6 +410,15 @@ def _build(raw: dict, dirs: list[Path]) -> Design:
             raise DataError(f"{where}: bottom.svg {file} not found")
         bottom = Bottom(type=btype, style=bottom.style, svg=found, recolour=bottom.recolour)
 
+    for sname, sf in scheme_fonts.items():
+        swhere = f"{where}: schemes.{sname}.fonts"
+        schemes[sname] = replace(
+            schemes[sname],
+            top=replace(top, fonts=_fonts(sf["top"], f"{swhere}.top")) if "top" in sf else None,
+            bottom=replace(bottom.style, fonts=_fonts(sf["bottom"], f"{swhere}.bottom"))
+            if "bottom" in sf else None,
+            side_fonts=_fonts(sf["side"], f"{swhere}.side") if "side" in sf else None)
+
     s = raw.get("side") or {}
     side = Side(
         fonts=_fonts(s.get("fonts"), f"{where}: side.fonts", Side.fonts),
@@ -382,6 +445,7 @@ def _build(raw: dict, dirs: list[Path]) -> Design:
 
     return Design(name=name, title=title,
                   description=_str(raw.get("description"), f"{where}: description", ""),
+                  order=_num(raw.get("order"), f"{where}: order", 100.0, -1000, 1000),
                   dirs=tuple(dirs), base_colours=base, schemes=schemes,
                   default_scheme=default_scheme if schemes else None, qr=qr, top=top,
                   bottom=bottom, side=side, defaults=defaults, licence=licence)

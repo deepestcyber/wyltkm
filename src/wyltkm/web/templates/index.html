@@ -1,98 +1,108 @@
 {% extends 'base.html' %}
+{% macro seg(name, options, value) -%}
+<span class="seg" role="radiogroup">
+{%- for v, label in options %}
+  <label><input type="radio" name="{{ name }}" value="{{ v }}"{% if (value or '') == v %} checked{% endif %}><span>{{ label }}</span></label>
+{%- endfor %}
+</span>
+{%- endmacro %}
+{% block body %}
+<main class="app">
+<form id="qr" action="/" method="get" class="controls">
+  <section class="card stack">
+    <div>
+      <label class="field" for="content">Link or text in the code</label>
+      <input id="content" name="content" type="text" value="{{ args.content }}" autocomplete="off" spellcheck="false">
+    </div>
+    <div>
+      <label class="field" for="text">Top text</label>
+      <textarea id="text" name="text" rows="2">{{ args.text or '' }}</textarea>
+    </div>
+  </section>
 
-{% block header %}
-    <h1>Would you like to know more?</h1>
-{% endblock %}
-
-{% block content %}
-<form class="cf" action="/" method="get">
-    <h4><label for="text">Top text</label></h4>
-    <textarea id="text" name="text" cols="50" rows="3">{{ args.text or '' }}</textarea>
-
-    <h4><label for="content">Content</label></h4>
-    <input id="content" name="content" size="50" value="{{ args.content }}">
-    <small>The data inside the QR code; typically a URL.</small>
-
-    <h4><label for="design">Design</label></h4>
-    <select id="design" name="design">
+  <section class="card">
+    <h2>Design</h2>
+    <div class="designs" role="radiogroup">
     {% for d in designs %}
-        <option value="{{ d.name }}"{% if (args.design or default_design) == d.name %} selected{% endif %}>{{ d.title }}</option>
-    {% endfor %}
-    </select>
-    {% if design and design.schemes %}
-    <select name="scheme">
-    {% for s in design.schemes.values() %}
-        <option value="{{ s.name }}"{% if (args.scheme or design.default_scheme) == s.name %} selected{% endif %}>{{ s.title }}</option>
-    {% endfor %}
-    </select>
-    {% endif %}
-
-    <h4><label for="icon">Icon</label></h4>
-    <input id="icon" name="icon" size="40" value="{{ args.icon or '' }}" placeholder="design default; none; or e.g. fa:solid/cat">
-    <br>
-    <label>Search icons: <input name="icon_q" value="{{ icon_q or '' }}" placeholder="e.g. cat"></label>
-    <button type="submit">Search</button>
-    {% if icon_q %}
-    <div class="icon-hits">
-    {% for h in icon_hits %}
-        <label title="{{ h.name }}{% if h.label %} – {{ h.label }}{% endif %}"><input type="radio" name="icon" value="{{ h.name }}"{% if args.icon == h.name %} checked{% endif %}><img src="/icons/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" width="24" height="24" alt="{{ h.name }}"></label>
-    {% else %}
-        <p>No icons found.</p>
+      <label class="design" title="{{ d.description }}">
+        <input type="radio" name="design" value="{{ d.name }}"{% if (args.design or default_design) == d.name %} checked{% endif %} data-icon-colour="{{ d.colours.icon }}">
+        <img src="{{ d.preview }}" alt="" loading="lazy" width="96" height="128">
+        <span>{{ d.title }}</span>
+      </label>
     {% endfor %}
     </div>
+    <div class="schemes" id="schemes"{% if not (design and design.schemes) %} hidden{% endif %}>
+    {% if design and design.schemes %}
+      {% for s in design.schemes.values() %}
+      <label class="chip">
+        <input type="radio" name="scheme" value="{{ s.name }}"{% if scheme == s.name %} checked{% endif %}>
+        <span><i class="dot" style="background: {{ s.colours.finder_ring }}; box-shadow: 0 0 0 2px {{ s.colours.background }}"></i>{{ s.title }}</span>
+      </label>
+      {% endfor %}
     {% endif %}
+    </div>
+  </section>
 
-    <h4>Background</h4>
-    <label><input type="radio" name="background" value=""{% if not args.background %} checked{% endif %}>Design default</label>
-    <label><input type="radio" name="background" value="1"{% if args.background == '1' %} checked{% endif %}>Colour</label>
-    <label><input type="radio" name="background" value="0"{% if args.background == '0' %} checked{% endif %}>Transparent</label>
+  <section class="card">
+    <h2>Icon</h2>
+    <div class="row">
+      <input type="search" name="icon_q" id="icon_q" value="{{ icon_q }}" placeholder="Search icons" autocomplete="off">
+      <select name="icon_source" id="icon_source" aria-label="Icon source">
+        <option value="">All</option>
+        {% for s in icon_sources %}<option value="{{ s.name }}"{% if icon_source == s.name %} selected{% endif %}>{{ s.name }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn nojs">Search</button>
+    </div>
+    <div class="icons" id="icons" style="--icon-colour: {{ icon_colour }}">
+      <label class="icon text" title="The design's icon"><input type="radio" name="icon" value=""{% if not args.icon %} checked{% endif %}><span>Design</span></label>
+      <label class="icon text" title="No icon"><input type="radio" name="icon" value="{{ no_icon }}"{% if args.icon == no_icon %} checked{% endif %}><span>None</span></label>
+      {% if args.icon and args.icon != no_icon and args.icon not in icon_hits|map(attribute='name') %}
+      <label class="icon" title="{{ args.icon }}"><input type="radio" name="icon" value="{{ args.icon }}" checked><img src="/icons/{{ args.icon.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" alt="{{ args.icon }}" width="20" height="20"></label>
+      {% endif %}
+      {% for h in icon_hits %}
+      <label class="icon" title="{{ h.name }}{% if h.label %} · {{ h.label }}{% endif %}"><input type="radio" name="icon" value="{{ h.name }}"{% if args.icon == h.name %} checked{% endif %}><img src="/icons/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" alt="{{ h.name }}" width="20" height="20" loading="lazy"></label>
+      {% endfor %}
+    </div>
+    <p class="hint"><span class="mono" id="icon-name">{{ current_icon }}</span>
+      <span class="jsonly">· <label class="upload">Upload your own SVG<input type="file" name="icon_file" id="icon_file" accept=".svg,image/svg+xml"></label>
+      <button type="button" class="linkish" id="icon_file_clear" hidden>remove upload</button></span></p>
+  </section>
 
-    <h4>Border</h4>
-    <label><input type="radio" name="border" value=""{% if not args.border %} checked{% endif %}>Design default</label>
-    <label><input type="radio" name="border" value="1"{% if args.border == '1' %} checked{% endif %}>Yes</label>
-    <label><input type="radio" name="border" value="0"{% if args.border == '0' %} checked{% endif %}>No</label>
-
-    <h4>Readable side text</h4>
-    <label><input type="checkbox" name="side" value="1"{% if args.side == '1' %} checked{% endif %}>Show the content as text along the right side</label>
-    <br>
-    <label>Font: <select name="side_font">
-        <option value=""{% if not args.side_font %} selected{% endif %}>Design default</option>
-    {% for f in side_fonts %}
-        <option value="{{ f }}"{% if args.side_font == f %} selected{% endif %}>{{ f.rsplit('.', 1)[0] }}</option>
-    {% endfor %}
-    </select></label>
-
-    <h4><label for="width">Width</label></h4>
-    <input id="width" name="width" type="number" min="50" max="{{ max_width }}" value="{{ args.width or 250 }}">
-
-    <h4>Licence info in file</h4>
-    <label><input type="radio" name="licence_metadata" value=""{% if args.licence_metadata != '0' %} checked{% endif %}>Yes</label>
-    <label><input type="radio" name="licence_metadata" value="0"{% if args.licence_metadata == '0' %} checked{% endif %}>No</label>
-
-    <p><button type="submit">Preview</button></p>
+  <section class="card">
+    <h2>Options</h2>
+    <div class="opt"><span>Background</span>{{ seg('background', [('', 'Design'), ('1', 'Colour'), ('0', 'Transparent')], args.background) }}</div>
+    <div class="opt"><span>Border</span>{{ seg('border', [('', 'Design'), ('1', 'Quiet zone'), ('0', 'None')], args.border) }}</div>
+    <div class="opt"><span>Side text</span>{{ seg('side', [('', 'Off'), ('1', 'Content as text')], args.side) }}</div>
+    <div class="opt" id="side-font-row"{% if args.side != '1' %} hidden{% endif %}><label for="side_font">Side font</label>
+      <span><input type="text" name="side_font" id="side_font" list="fonts" value="{{ args.side_font or '' }}" placeholder="Design default" autocomplete="off">
+      <datalist id="fonts">{% for f in side_fonts %}<option value="{{ f }}">{% endfor %}</datalist></span></div>
+    <div class="opt"><label for="width">Width</label><span class="row"><input id="width" name="width" type="number" min="50" max="{{ max_width }}" step="10" value="{{ args.width or 250 }}"><span class="hint">px, whole image</span></span></div>
+    <div class="opt"><span>Licence info</span>{{ seg('licence_metadata', [('', 'In the file'), ('0', 'Leave out')], args.licence_metadata) }}</div>
+  </section>
+  <p class="nojs"><button type="submit" class="btn primary">Update preview</button></p>
 </form>
 
-<div class="preview">
-    <h2>Preview</h2>
-    {% if error %}
-    <p class="error">{{ error }}</p>
-    {% else %}
-    <img src="/render.png?{{ img_args }}" alt="QR code preview"><br>
-    <a href="/render.svg?{{ img_args }}&amp;download=1">Download SVG</a>
-    &ndash;
-    <a href="/render.png?{{ img_args }}&amp;download=1">Download PNG</a>
-    {% for w in result.warnings %}
-    <p class="warning">Warning: {{ w }}</p>
-    {% endfor %}
-    <div class="licences">
-        <h3>Licences of this image</h3>
-        <ul>
-        {% for lic in result.licences %}
-            <li>{{ lic.part }}: {% if lic.url %}<a href="{{ lic.url }}">{{ lic.name }}</a>{% else %}{{ lic.name }}{% endif %}{% if lic.holder %}, {{ lic.holder }}{% endif %}
-            {% if lic.requires_attribution %}<br>Attribution required: <code>{{ lic.attribution }}</code>{% endif %}</li>
-        {% endfor %}
-        </ul>
+<aside class="preview">
+  <div class="mat">
+    <div class="sheet" id="sheet"{% if error %} hidden{% endif %}>
+      <span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
+      <img id="preview" src="/render.svg?{{ query }}" alt="QR code preview"{% if result %} width="{{ result.width }}"{% endif %}>
+      <div class="dims mono" id="dims">{% if result %}{{ result.width }} × {{ result.height|round|int }} px · {{ result.modules }} modules{% endif %}</div>
     </div>
-    {% endif %}
-</div>
+    <p class="error" id="error"{% if not error %} hidden{% endif %}>{{ error or '' }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn primary" id="dl-svg" href="/render.svg?{{ query }}&amp;download=1">Download SVG</a>
+    <a class="btn" id="dl-png" href="/render.png?{{ query }}&amp;download=1">Download PNG</a>
+    <button type="button" class="btn quiet" id="copy-link" hidden>Copy link</button>
+  </div>
+  <ul class="warnings" id="warnings">{% if result %}{% for w in result.warnings %}<li>{{ w }}</li>{% endfor %}{% endif %}</ul>
+  <div class="licences" id="licences">
+    {% if result %}{% for lic in result.licences %}
+    <p>{{ lic.part }}: {% if lic.url %}<a href="{{ lic.url }}">{{ lic.name }}</a>{% else %}{{ lic.name }}{% endif %}{% if lic.holder %}, {{ lic.holder }}{% endif %}
+      {%- if lic.requires_attribution %}<br><span class="attribution">Attribution required: <code>{{ lic.attribution }}</code></span>{% endif %}</p>
+    {% endfor %}{% endif %}
+  </div>
+</aside>
+</main>
 {% endblock %}

@@ -87,8 +87,9 @@ Lengths are in modules (the size of one QR module) unless stated otherwise.
 | `name` | yes | | Must match the directory name; `a-z`, `0-9`, `-` |
 | `title` | yes | | Shown in CLI and web |
 | `description` | no | `""` | |
+| `order` | no | `100` | Position in lists (CLI, web): lower first, then by name; the default design is always first |
 | `extends` | no | none | Design to inherit from |
-| `default_scheme` | with schemes | | See "Colour schemes" |
+| `default_scheme` | with schemes | | See "Schemes" |
 | `colours.background` | yes | | |
 | `colours.modules` | yes | | Data modules |
 | `colours.finder_ring` | no | `modules` | |
@@ -121,6 +122,10 @@ Lengths are in modules (the size of one QR module) unless stated otherwise.
 | `side.max_size` | no | `3` | Maximum cap height, so short content does not get huge letters |
 | `side.max_columns` | no | `4` | |
 | `defaults.icon` | no | `none` | Icon when the request names none; `none` for no icon |
+| `schemes.<name>.title` | yes | | Name of the scheme in CLI and web |
+| `schemes.<name>.default_icon` | no | `defaults.icon` | Default icon of this scheme, e.g. a mono logo for a black and white scheme |
+| `schemes.<name>.fonts.top`, `.bottom`, `.side` | no | the design's | Fonts of this scheme, lists of file names |
+| `schemes.<name>.<colour>` | no | from `[colours]` | Any colour key, as in `[colours]` |
 | `defaults.border` | no | `false` | |
 | `defaults.background` | no | `true` | `false`: transparent |
 | `licence` | no | none | Licence record ([licences.md](licences.md)); without it, "licence unknown" |
@@ -159,12 +164,13 @@ apart; the built-in designs use Hack.
 Static graphics are possible with `type = "svg"`, for designs whose bottom is
 a logo rather than text.
 
-### Colour schemes
+### Schemes
 
-A design may offer several colour schemes. Then every scheme has a name,
-including the main one, and `default_scheme` says which one is used when the
-request names none. `[colours]` holds the values all schemes share; each
-`[schemes.<name>]` sets a `title` and overrides colours:
+A design may offer several schemes: variants that change its colours, its
+fonts or its default icon, while the rest of the design stays. Then every
+scheme has a name, including the main one, and `default_scheme` says which
+one is used when the request names none. `[colours]` holds the values all
+schemes share; each `[schemes.<name>]` sets a `title` and overrides colours:
 
 ```toml
 default_scheme = "green"
@@ -192,10 +198,17 @@ modules = "#3B5831"
   for it is an error.
 - The request names a scheme (`--scheme`, `scheme=`); without one,
   `default_scheme` is used. An unknown scheme is an error.
-- The web app shows a second selection with the schemes when the chosen
-  design has any; the default scheme is preselected.
+- The web app shows the schemes of the chosen design as chips with a colour
+  dot and the title; the default scheme is preselected.
+- A scheme may set fonts in a `fonts` table, with `top`, `bottom` and
+  `side` as lists of font file names, e.g.
+  `fonts = { top = ["SpaceGrotesk-Regular.otf"] }`. Fonts it does not set
+  are the design's. Alignment and gaps stay those of the design. (`top` and
+  `bottom` directly in a scheme are colours, as in `[colours]`.)
 - Text blocks follow the scheme's colours. A bottom SVG follows them only
   with `recolour = true`.
+- Besides colours, a scheme may set `default_icon`, used when the request
+  names no icon; `icon` in a scheme is the icon colour, like in `[colours]`.
 
 ### Inheritance
 
@@ -222,11 +235,8 @@ modules = "#3B5831"
 
 | Name | Based on | Notes |
 | --- | --- | --- |
-| `attraktor` | | Default design out of the box. Attraktor blue and greys, Agency FB (not bundled, install it). Licence of the design unclear, marked as such. |
-| `attraktor-bw` | `attraktor` | Black on white |
-| `38c3` | | 38c3 style guide (CC0), Pilowlava |
-| `38c3-light` | `38c3` | Space Grotesk on top |
-| `38c3-lighter` | `38c3-light` | Space Grotesk on top and bottom |
+| `attraktor` | | Default design out of the box. Agency FB (not bundled, install it). Schemes `colour` (default: Attraktor blue and greys, colour logo) and `bw` (black on white, mono logo). Licence of the design unclear, marked as such. |
+| `38c3` | | 38c3 style guide (CC0). Schemes with the same colours and different fonts: `pilowlava` (default, Pilowlava everywhere), `light` (Space Grotesk on top), `lighter` (Space Grotesk on top and bottom) |
 | `40c3` | | 40c3 "Model Citizens", Jersey 10, square modules, the 40c3 logo as icon. Twelve schemes, default `green` |
 
 The 40c3 style guide (`40c3-styleguide-full-latest.zip`,

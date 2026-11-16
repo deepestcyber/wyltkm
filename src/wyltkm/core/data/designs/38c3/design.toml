@@ -1,6 +1,8 @@
 name = "38c3"
 title = "38c3"
-description = "38th Chaos Communication Congress style, Pilowlava"
+description = "38th Chaos Communication Congress style; Pilowlava, or lighter with Space Grotesk"
+order = 20                    # position in lists, lower first
+default_scheme = "pilowlava"
 
 [colours]
 background = "#0f000a"
@@ -11,6 +13,18 @@ icon = "#ff5053"
 top = "#ff5053"
 bottom = "#ff5053"
 highlight = "#b2aaff"
+
+# The schemes share the colours and differ in the fonts.
+[schemes.pilowlava]
+title = "Pilowlava"
+
+[schemes.light]
+title = "Light"
+fonts = { top = ["SpaceGrotesk-Regular.otf"] }
+
+[schemes.lighter]
+title = "Lighter"
+fonts = { top = ["SpaceGrotesk-Regular.otf"], bottom = ["SpaceGrotesk-Regular.otf"] }
 
 [qr]
 module_shape = "rounded"

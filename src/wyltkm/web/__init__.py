@@ -4,17 +4,18 @@ with a WSGI server: ``gunicorn 'wyltkm.web:create_app()'``."""
 from __future__ import annotations
 
 import functools
-import io
+import hashlib
+import re
 import urllib.parse
 
-from flask import Flask, Response, abort, jsonify, render_template, request, send_file
+from flask import Flask, Response, jsonify, render_template, request, send_from_directory
 from slugify import slugify
 
 from wyltkm import __version__
-import re
-
 from wyltkm.core import (InvalidRequest, Library, Request, UnknownDesign, UnknownIcon,
                          WebConfig, WyltkmError, render_icon, render_png, render_svg)
+from wyltkm.core.fonts import BUNDLED_DIR
+from wyltkm.core.licences import for_font
 from wyltkm.core.request import DEFAULT_WIDTH, NO_ICON, preview_request
 
 APP_INFO = {
@@ -25,6 +26,10 @@ APP_INFO = {
 DEFAULT_CONTENT = "https://wiki.attraktor.org"
 PARAMS = ("content", "text", "design", "scheme", "icon", "width", "border", "background",
           "licence_metadata", "side", "side_font")
+UI_FONTS = {"SpaceGrotesk-Regular.otf", "Hack-Regular.ttf"}
+"""Bundled fonts the web page itself uses."""
+CACHE_SECONDS = 3600
+COLOUR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
 def _flag(value: str | None, name: str) -> bool | None:
@@ -68,6 +73,21 @@ def request_from(values, files=None, default_content: str | None = None,
     )
 
 
+def _cached(data: bytes, mimetype: str, max_age: int = CACHE_SECONDS) -> Response:
+    """Response with ETag and cache time; answers 304 when the client has it.
+    Output is deterministic, so a hash of it is a good ETag."""
+    resp = Response(data, mimetype=mimetype)
+    resp.set_etag(hashlib.sha256(data).hexdigest()[:32])
+    resp.cache_control.public = True
+    resp.cache_control.max_age = max_age
+    return resp.make_conditional(request)
+
+
+def _licence_json(lic) -> dict:
+    return {"part": lic.part, "name": lic.name, "url": lic.url, "holder": lic.holder,
+            "attribution": lic.attribution, "requires_attribution": lic.requires_attribution}
+
+
 def create_app(library: Library | None = None) -> Flask:
     """The Flask app. Without ``library``, it is made from config file and
     environment (``Library.from_config()``)."""
@@ -80,53 +100,86 @@ def create_app(library: Library | None = None) -> Flask:
         status = 404 if isinstance(e, (UnknownDesign, UnknownIcon)) else 400
         return Response(str(e) + "\n", status=status, mimetype="text/plain")
 
+    def designs_info() -> list[dict]:
+        """Designs for the picker, the default design first."""
+        out = []
+        for d in lib.ordered_designs():
+            name = d.name
+            base = f"/designs/{name}/preview.svg"
+            out.append({
+                "name": d.name, "title": d.title, "description": d.description,
+                "default": name == lib.default_design,
+                "colours": d.colours(),
+                "default_scheme": d.default_scheme,
+                "default_icon": d.defaults.icon,
+                "schemes": [{"name": s.name, "title": s.title, "colours": s.colours,
+                             "icon": d.default_icon(s.name),
+                             "preview": f"{base}?scheme={s.name}"} for s in d.schemes.values()],
+                "preview": base,
+                "licence": {"name": d.licence.name, "url": d.licence.url,
+                            "holder": d.licence.holder},
+            })
+        return out
+
     @app.route("/")
     def index():
         args = {k: v for k, v in request.args.items() if k in PARAMS and v != ""}
-        # the icon name field comes first, a picked search hit after it: the
-        # last value given wins
-        icons = [v for v in request.args.getlist("icon") if v]
-        if icons:
-            args["icon"] = icons[-1]
         args.setdefault("content", DEFAULT_CONTENT)
-        result = error = None
+        result = error = design = None
         try:
             req = request_from(args, web=web)
-            result = render_svg(lib, req)
             design = lib.design(req.design)
+            result = render_svg(lib, req)
         except WyltkmError as e:
             error = str(e)
-            design = None
-        img_args = urllib.parse.urlencode(args)
         icon_q = request.args.get("icon_q", "").strip()
-        icon_hits = lib.icons.search(icon_q, limit=60) if icon_q else []
-        icon_colour = "#000000"
+        icon_source = request.args.get("icon_source", "")
+        try:
+            icon_hits = (lib.icons.search(icon_q, icon_source or None, limit=64)
+                         if icon_q else [])
+        except WyltkmError:
+            icon_hits = []
+        icon_colour = "#85858b"
+        scheme = None
         if design is not None:
+            scheme = args.get("scheme") or design.default_scheme
             try:
                 icon_colour = design.colours(args.get("scheme"))["icon"]
             except WyltkmError:
                 pass
-        return render_template("index.html", APP_INFO=APP_INFO, args=args, result=result,
-                               error=error, design=design, designs=lib.designs.all(),
-                               default_design=lib.default_design, icon_q=icon_q,
-                               icon_hits=icon_hits, icon_colour=icon_colour,
-                               side_fonts=list(lib.pickable_fonts()),
-                               no_icon=NO_ICON, img_args=img_args, max_width=web.max_width)
+        current_icon = NO_ICON
+        if args.get("icon"):
+            current_icon = args["icon"]
+        elif design is not None:
+            try:
+                current_icon = design.default_icon(args.get("scheme"))
+            except WyltkmError:
+                pass
+        return render_template(
+            "index.html", APP_INFO=APP_INFO, args=args, result=result, error=error,
+            design=design, scheme=scheme, designs=designs_info(),
+            default_design=lib.default_design, icon_q=icon_q, icon_source=icon_source,
+            icon_sources=lib.icons.sources(), icon_hits=icon_hits, icon_colour=icon_colour,
+            current_icon=current_icon,
+            side_fonts=list(lib.pickable_fonts()) if args.get("side") == "1" else [],
+            no_icon=NO_ICON, query=urllib.parse.urlencode(args), max_width=web.max_width,
+            max_upload_bytes=web.max_upload_bytes)
 
     def render_route(fmt: str):
-        values = request.form if request.method == "POST" else request.args
+        post = request.method == "POST"
+        values = request.form if post else request.args
         try:
-            req = request_from(values, request.files if request.method == "POST" else None,
-                               web=web)
+            req = request_from(values, request.files if post else None, web=web)
             result = render_png(lib, req) if fmt == "png" else render_svg(lib, req)
         except WyltkmError as e:
             return error_response(e)
         data = result.png if fmt == "png" else result.svg.encode("utf-8")
         mimetype = "image/png" if fmt == "png" else "image/svg+xml"
-        download = values.get("download") == "1"
-        name = slugify(req.text) if req.text.strip() else "wyltkm-qr"
-        return send_file(io.BytesIO(data), mimetype=mimetype, as_attachment=download,
-                         download_name=f"{name or 'wyltkm-qr'}.{fmt}")
+        resp = Response(data, mimetype=mimetype) if post else _cached(data, mimetype)
+        name = (slugify(req.text) if req.text.strip() else "") or "wyltkm-qr"
+        disposition = "attachment" if values.get("download") == "1" else "inline"
+        resp.headers["Content-Disposition"] = f'{disposition}; filename="{name}.{fmt}"'
+        return resp
 
     @app.route("/render.svg", methods=["GET", "POST"])
     def render_svg_route():
@@ -135,6 +188,20 @@ def create_app(library: Library | None = None) -> Flask:
     @app.route("/render.png", methods=["GET", "POST"])
     def render_png_route():
         return render_route("png")
+
+    @app.route("/api/render-info", methods=["GET", "POST"])
+    def api_render_info():
+        """Size, warnings and licences of the image for the given values."""
+        post = request.method == "POST"
+        try:
+            req = request_from(request.form if post else request.args,
+                               request.files if post else None, web=web)
+            result = render_svg(lib, req)
+        except WyltkmError as e:
+            return error_response(e)
+        return jsonify({"width": result.width, "height": result.height,
+                        "modules": result.modules, "warnings": result.warnings,
+                        "licences": [_licence_json(lic) for lic in result.licences]})
 
     @functools.lru_cache(maxsize=256)
     def preview_svg(name: str, scheme: str | None) -> str:
@@ -147,29 +214,11 @@ def create_app(library: Library | None = None) -> Flask:
             svg = preview_svg(name, request.args.get("scheme") or None)
         except WyltkmError as e:
             return error_response(e)
-        return Response(svg, mimetype="image/svg+xml")
+        return _cached(svg.encode("utf-8"), "image/svg+xml")
 
     @app.route("/api/designs")
     def api_designs():
-        out = []
-        for name in lib.designs.names():
-            try:
-                d = lib.designs.get(name)
-            except WyltkmError:
-                continue
-            base = f"/designs/{name}/preview.svg"
-            out.append({
-                "name": d.name, "title": d.title, "description": d.description,
-                "default": name == lib.default_design,
-                "colours": d.colours(),
-                "default_scheme": d.default_scheme,
-                "schemes": [{"name": s.name, "title": s.title, "colours": s.colours,
-                             "preview": f"{base}?scheme={s.name}"} for s in d.schemes.values()],
-                "preview": base,
-                "licence": {"name": d.licence.name, "url": d.licence.url,
-                            "holder": d.licence.holder},
-            })
-        return jsonify(out)
+        return jsonify(designs_info())
 
     @app.route("/api/icons")
     def api_icons():
@@ -195,15 +244,13 @@ def create_app(library: Library | None = None) -> Flask:
     @app.route("/icons/<source>/<path:name>.svg")
     def icon_svg(source, name):
         colour = request.args.get("colour") or None
-        if colour is not None and not re.match(r"^#[0-9a-fA-F]{6}$", colour):
+        if colour is not None and not COLOUR_RE.match(colour):
             return error_response(InvalidRequest("colour must be #rrggbb"))
         try:
             svg = render_icon(lib, f"{source}:{name}", colour)
         except WyltkmError as e:
             return error_response(e)
-        resp = Response(svg, mimetype="image/svg+xml")
-        resp.cache_control.max_age = 86400
-        return resp
+        return _cached(svg.encode("utf-8"), "image/svg+xml", max_age=86400)
 
     @app.route("/api/fonts")
     def api_fonts():
@@ -216,10 +263,13 @@ def create_app(library: Library | None = None) -> Flask:
             result = render_svg(lib, request_from(request.args, web=web))
         except WyltkmError as e:
             return error_response(e)
-        return jsonify([{
-            "part": lic.part, "name": lic.name, "url": lic.url, "holder": lic.holder,
-            "attribution": lic.attribution, "requires_attribution": lic.requires_attribution,
-        } for lic in result.licences])
+        return jsonify([_licence_json(lic) for lic in result.licences])
+
+    @app.route("/ui-fonts/<name>")
+    def ui_font(name):
+        if name not in UI_FONTS:
+            return Response("not found\n", status=404, mimetype="text/plain")
+        return send_from_directory(BUNDLED_DIR, name, max_age=86400 * 30)
 
     @app.route("/licences")
     def licences_page():
@@ -229,12 +279,13 @@ def create_app(library: Library | None = None) -> Flask:
                 designs.append(lib.designs.get(name).licence)
             except WyltkmError:
                 pass
+        fonts = [for_font(path) for path in lib.fonts.available().values()]
         return render_template("licences.html", APP_INFO=APP_INFO, designs=designs,
-                               sources=[s.licence for s in lib.icons.sources()])
+                               sources=[s.licence for s in lib.icons.sources()], fonts=fonts)
 
     @app.route("/help")
     def help_page():
-        return render_template("help.html", APP_INFO=APP_INFO)
+        return render_template("help.html", APP_INFO=APP_INFO, max_width=web.max_width)
 
     @app.errorhandler(413)
     def too_large(_):

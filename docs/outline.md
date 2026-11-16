@@ -38,7 +38,7 @@ Goals of the rewrite:
 | --- | --- |
 | Rendering | Own SVG composition (QR from the module matrix, text via ziafont, icons as nested groups). PNG via cairosvg. reportlab and svglib are dropped. |
 | QR elements | Paths only: modules, finder patterns, text glyphs and icons. No `rect`, `circle`, `use` or strokes. Strokes, clip paths or gradients inside an icon are kept and reported as "not laser-friendly". |
-| Designs | TOML files, one directory per design, with inheritance and optional colour schemes. Built-ins ship in the package; installs can add or override designs. |
+| Designs | TOML files, one directory per design, with inheritance and optional schemes (variants of colours, fonts and default icon). Built-ins ship in the package; installs can add or override designs. |
 | Side text | Opt-in per image by the user; design gives default font, colour, direction and minimum size; long content wraps into columns. |
 | Licences | Every part (icon source, design assets, fonts) carries licence data. Each render result lists the licences of the parts it used; web and CLI show them. The image file embeds them as metadata unless the request opts out. |
 | Icons | Named `source:name`. Sources are zips or directories, configurable. Font Awesome is read from its release zip directly. |
@@ -77,7 +77,7 @@ Goals of the rewrite:
 - `Library` is built from the config and holds the design registry, the icon
   sources and the font resolver. It is created once per process (the web app
   keeps one).
-- `Request` is a plain value: content, text, design name, colour scheme,
+- `Request` is a plain value: content, text, design name, scheme,
   icon name or uploaded icon, width, border, background, side text on or off
   and its font, licence metadata on or off. Fields left empty (`None`) mean
   "default": from the config (design) or from the design (scheme, icon,

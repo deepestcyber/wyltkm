@@ -101,11 +101,12 @@ class FontResolver:
         searched. By file name, first found wins, sorted by name."""
         out = dict(self.available())
         for d in designs:
-            for name in d.side.fonts:
-                path = self.find(name, list(d.dirs))
-                if path is not None:
-                    out.setdefault(name, path)
-                    break
+            for scheme in [None, *d.schemes]:
+                for name in d.side_fonts(scheme):
+                    path = self.find(name, list(d.dirs))
+                    if path is not None:
+                        out.setdefault(name, path)
+                        break
         if self.system_fonts:
             for name, path in self._system().items():
                 out.setdefault(name, path)

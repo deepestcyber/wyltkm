@@ -144,7 +144,8 @@ def designs(ctx):
     if ctx.invoked_subcommand is not None:
         return
     lib = _library()
-    for name in lib.designs.names():
+    ordered = [d.name for d in lib.ordered_designs()]
+    for name in ordered + [n for n in lib.designs.names() if n not in ordered]:
         try:
             d = lib.designs.get(name)
         except WyltkmError as e:
@@ -191,7 +192,7 @@ def designs_show(name, preview_scheme, output):
     if d.schemes:
         click.echo(f"  schemes (default {d.default_scheme}):")
         for s in d.schemes.values():
-            click.echo(f"    {s.name}: {s.title}")
+            click.echo(f"    {s.name}: {s.title}" + (f" (default icon {s.icon})" if s.icon else ""))
             _colours(s.colours, "      ")
     else:
         click.echo("  colours:")
@@ -199,12 +200,7 @@ def designs_show(name, preview_scheme, output):
     q = d.qr
     click.echo(f"  qr: modules {q.module_shape}, finder ring {q.finder_ring_shape}, "
                f"finder centre {q.finder_centre_shape}")
-    click.echo("  fonts:")
-    for role, fonts in (("top", d.top.fonts), ("bottom", d.bottom.style.fonts),
-                        ("side", d.side.fonts)):
-        if role == "bottom" and d.bottom.type != "text":
-            continue
-        _font_line(lib, role, fonts, d)
+    _design_fonts(lib, d, "  ")
     if d.bottom.type == "text":
         lines = [''.join(f"[{r.text}]" if r.highlight else r.text for r in line)
                  for line in d.bottom.lines]
@@ -227,16 +223,31 @@ def _colours(colours: dict[str, str], indent: str):
         click.echo(f"{indent}{k:14} {v}{note}")
 
 
-def _font_line(lib: Library, role: str, fonts, d):
+def _design_fonts(lib: Library, d, indent: str):
+    """Fonts of a design, and of each scheme that changes them."""
+    groups = [(None, "fonts:")] if not d.schemes else [
+        (s, f"fonts of scheme {s}:") for s in d.schemes
+        if s == d.default_scheme or d.schemes[s].top or d.schemes[s].bottom
+        or d.schemes[s].side_fonts]
+    for scheme, title in groups:
+        click.echo(f"{indent}{title}")
+        roles = [("top", d.top_style(scheme).fonts), ("side", d.side_fonts(scheme))]
+        if d.bottom.type == "text":
+            roles.insert(1, ("bottom", d.bottom_style(scheme).fonts))
+        for role, fonts in roles:
+            _font_line(lib, role, fonts, d, indent + "  ")
+
+
+def _font_line(lib: Library, role: str, fonts, d, indent: str = "    "):
     if not fonts:
-        click.echo(f"    {role:7} fallback font (none set)")
+        click.echo(f"{indent}{role:7} fallback font (none set)")
         return
     for name in fonts:
         path = lib.fonts.find(name, list(d.dirs))
         if path:
-            click.echo(f"    {role:7} {name} -> {path}")
+            click.echo(f"{indent}{role:7} {name} -> {path}")
             return
-    click.echo(f"    {role:7} {', '.join(fonts)} NOT FOUND, fallback font used")
+    click.echo(f"{indent}{role:7} {', '.join(fonts)} NOT FOUND, fallback font used")
 
 
 @main.group(invoke_without_command=True)
@@ -373,11 +384,7 @@ def fonts():
             click.echo(f"  {name}: BROKEN: {e}")
             continue
         click.echo(f"  {name}:")
-        for role, fonts_ in (("top", d.top.fonts), ("bottom", d.bottom.style.fonts),
-                             ("side", d.side.fonts)):
-            if role == "bottom" and d.bottom.type != "text":
-                continue
-            _font_line(lib, role, fonts_, d)
+        _design_fonts(lib, d, "    ")
 
 
 @main.command()
