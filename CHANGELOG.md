@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 - 2026-11-16
+### Fixed
+- Icon previews and the icon browser page work behind Apache on Debian and
+  Ubuntu: icon images are served at `/icon/...` and the browser page at
+  `/browse`, since those Apache servers map `/icons/` to their own directory
+  server-wide.
+
 ## 0.3.0 - 2026-11-16
 ### Changed
 - Complete rewrite: core library (`wyltkm.core`), command line tool
