@@ -10,6 +10,9 @@ from wyltkm.core import Request, render_png, render_svg
 GOLDEN = Path(__file__).parent / "golden"
 NS = "{http://www.w3.org/2000/svg}"
 
+FORTY_SCHEMES = ["green", "teal", "lavender", "lilac", "pink", "rose", "orange", "yellow",
+                 "sage", "taupe", "light", "light-brown"]
+
 CASES = {
     "attraktor-default": Request(content="https://wiki.attraktor.org/Laser", text="Laser cutter"),
     "attraktor-border-cat": Request(content="https://example.org", text="Cat", icon="fa:solid/cat",
@@ -20,6 +23,8 @@ CASES = {
     "38c3-light-carbon": Request(content="https://events.ccc.de", design="38c3-light",
                                  text="Boot", icon="carbon:boot", background=False),
     "38c3-lighter": Request(content="x", design="38c3-lighter", text="Lighter", icon="none"),
+    **{f"40c3-{s}": Request(content="https://events.ccc.de/congress/2026", design="40c3",
+                            scheme=s, text="Model Citizens") for s in FORTY_SCHEMES},
 }
 
 

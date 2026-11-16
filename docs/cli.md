@@ -46,7 +46,8 @@ icon source of the install is faulty).
 
 ```sh
 wyltkm designs                 # list designs and their colour schemes
-wyltkm designs show 40c3       # resolved values, source file, fonts found
+wyltkm designs show 40c3       # resolved values, fonts found, contrast
+wyltkm designs show 40c3 --preview pink -o p.png   # sample image of a scheme
 wyltkm icons                   # list sources
 wyltkm icons list fa           # list icons of a source
 wyltkm icons search cat        # search all sources

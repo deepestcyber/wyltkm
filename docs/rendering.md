@@ -8,10 +8,10 @@ The main column, from top to bottom, all parts as wide as the QR code:
 
 1. Optional border (quiet zone) of 4 modules.
 2. Top text (only if the request has one; may have several lines), scaled to
-   the QR width, followed by a gap of 2 modules.
+   the QR width, followed by the design's gap (default 2 modules).
 3. QR code, with the icon centred in it (optional).
-4. Bottom part from the design (unless `type = "none"`), after a gap of 2
-   modules: a text block (usually "WOULD YOU LIKE / TO KNOW MORE?", justified
+4. Bottom part from the design (unless `type = "none"`), after the design's
+   gap (default 2 modules): a text block (usually "WOULD YOU LIKE / TO KNOW MORE?", justified
    to full width) or an SVG graphic, scaled to the QR width. Text blocks are
    described in [designs.md](designs.md).
 5. Optional border of 4 modules.

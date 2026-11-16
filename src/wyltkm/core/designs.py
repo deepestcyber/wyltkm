@@ -40,8 +40,8 @@ TOP_KEYS = {"name", "title", "description", "extends", "default_scheme", "colour
 TABLE_KEYS = {
     "qr": {"module_shape", "module_radius", "finder_ring_shape", "finder_ring_radius",
            "finder_centre_shape", "finder_centre_radius"},
-    "top": {"fonts", "align", "line_spacing"},
-    "bottom": {"type", "lines", "fonts", "align", "line_spacing", "svg", "recolour"},
+    "top": {"fonts", "align", "gap", "line_gap"},
+    "bottom": {"type", "lines", "fonts", "align", "gap", "line_gap", "svg", "recolour"},
     "side": {"fonts", "direction", "min_size", "max_columns"},
     "defaults": {"icon", "border", "background"},
 }
@@ -54,7 +54,10 @@ ALIGNS = {"center", "justify"}
 class TextStyle:
     fonts: tuple[str, ...] = ()
     align: str = "center"
-    line_spacing: float = 1.05
+    gap: float = 2.0
+    """Space between this text (or graphic) and the QR code, in modules."""
+    line_gap: float = 2.0
+    """Space between the lines, in modules."""
 
 
 @dataclass(frozen=True)
@@ -118,6 +121,23 @@ class Design:
                 f"design {self.name} has no scheme {name!r}; "
                 f"schemes: {', '.join(self.schemes)}")
         return self.schemes[name].colours
+
+
+def _luminance(colour: str) -> float:
+    channels = [int(colour[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def contrast(a: str, b: str) -> float:
+    """WCAG contrast ratio of two ``#rrggbb`` colours (1 to 21)."""
+    hi, lo = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+MIN_CONTRAST = 3.0
+"""Below this contrast against the background, ``wyltkm designs show`` warns;
+QR codes then may not scan everywhere."""
 
 
 def _merge(base: dict, over: dict) -> dict:
@@ -263,7 +283,9 @@ def _text_style(t: dict, where: str, align_default: str) -> TextStyle:
     return TextStyle(
         fonts=_fonts(t.get("fonts"), f"{where}.fonts"),
         align=_choice(t.get("align"), f"{where}.align", ALIGNS, align_default),
-        line_spacing=_num(t.get("line_spacing"), f"{where}.line_spacing", 1.05, 0.1, 10),
+        gap=_num(t.get("gap"), f"{where}.gap", 2.0, 0, 20),
+        line_gap=_num(t.get("line_gap"), f"{where}.line_gap",
+                      _num(t.get("gap"), f"{where}.gap", 2.0, 0, 20), 0, 20),
     )
 
 

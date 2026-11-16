@@ -12,7 +12,8 @@ from wyltkm.core import (DataError, InvalidRequest, Library, Request, UnknownDes
                          UnknownIcon, WyltkmError, render_png, render_svg)
 from wyltkm.core.fonts import BUNDLED_DIR, FALLBACK_LICENCE
 from wyltkm.core import licences as licmod
-from wyltkm.core.request import DEFAULT_WIDTH, MAX_WIDTH, MIN_WIDTH
+from wyltkm.core.designs import MIN_CONTRAST, contrast
+from wyltkm.core.request import DEFAULT_WIDTH, MAX_WIDTH, MIN_WIDTH, preview_request
 
 EXIT_INVALID = 1
 EXIT_NOT_FOUND = 3
@@ -145,11 +146,29 @@ def designs(ctx):
 
 @designs.command("show")
 @click.argument("name")
-def designs_show(name):
-    """Show the resolved values of design NAME."""
+@click.option("--preview", "preview_scheme", is_flag=False, flag_value="", default=None,
+              metavar="[SCHEME]", help="Write a sample image of the design (and scheme) "
+              "instead of showing its values; use with -o.")
+@click.option("-o", "--output", type=click.Path(dir_okay=False, allow_dash=True), default="-",
+              show_default=True, help="Output file for --preview; svg or png by extension.")
+def designs_show(name, preview_scheme, output):
+    """Show the resolved values of design NAME, or write a preview image."""
     lib = _library()
     try:
         d = lib.designs.get(name)
+        if preview_scheme is not None:
+            req = preview_request(name, preview_scheme or None, d.title)
+            png = output != "-" and output.lower().endswith(".png")
+            result = render_png(lib, req) if png else render_svg(lib, req)
+            data = result.png if png else result.svg.encode("utf-8")
+            if output == "-":
+                sys.stdout.buffer.write(data)
+                sys.stdout.flush()
+            else:
+                Path(output).write_bytes(data)
+            for w in result.warnings:
+                click.echo(f"warning: {w}", err=True)
+            return
     except WyltkmError as e:
         raise _fail(e) from e
     click.echo(f"{d.name}: {d.title}")
@@ -187,8 +206,14 @@ def designs_show(name):
 
 
 def _colours(colours: dict[str, str], indent: str):
+    bg = colours["background"]
     for k, v in colours.items():
-        click.echo(f"{indent}{k:14} {v}")
+        note = ""
+        if k in ("modules", "finder_ring", "finder_centre"):
+            ratio = contrast(v, bg)
+            note = f"  contrast {ratio:.1f}" + (
+                "  LOW, may not scan everywhere" if ratio < MIN_CONTRAST else "")
+        click.echo(f"{indent}{k:14} {v}{note}")
 
 
 def _font_line(lib: Library, role: str, fonts, d):

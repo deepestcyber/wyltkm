@@ -18,7 +18,6 @@ from .library import Library
 from .request import NO_ICON, Request
 
 BORDER = 4
-GAP = 2
 
 UPLOAD_LICENCE = Licence(part="Icon (uploaded)", name="uploaded by the user")
 
@@ -50,7 +49,7 @@ class _Parts:
 
 def _text_block(library: Library, design, style, lines, width, parts: _Parts):
     font = library.fonts.resolve(style.fonts, list(design.dirs), parts.warnings)
-    blk = textmod.block(font.font, lines, width, style.align, style.line_spacing)
+    blk = textmod.block(font.font, lines, width, style.align, style.line_gap)
     if blk is not None:
         parts.licence(font.licence)
     return blk
@@ -146,7 +145,7 @@ def render_svg(library: Library, request: Request) -> Result:
     y = float(border)
     if top is not None:
         body.append(_paths_group(top, border, y, colours["top"], colours["top"]))
-        y += top.height + GAP
+        y += top.height + design.top.gap
     qr_y = y
     g = ET.Element("g", transform=f"translate({num(border)} {num(qr_y)})")
     if q.modules:
@@ -161,12 +160,12 @@ def render_svg(library: Library, request: Request) -> Result:
     body.append(g)
     y += n
     if bottom_text is not None:
-        y += GAP
+        y += design.bottom.style.gap
         body.append(_paths_group(bottom_text, border, y, colours["bottom"],
                                  colours["highlight"]))
         y += bottom_text.height
     elif bottom_svg is not None:
-        y += GAP
+        y += design.bottom.style.gap
         h = n * bottom_svg.aspect
         body.append(svgmod.place(bottom_svg, border, y, n, h))
         y += h

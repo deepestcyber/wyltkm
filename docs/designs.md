@@ -51,14 +51,16 @@ finder_centre_radius = 1.0
 [top]                         # text block; the text comes from the request
 fonts = ["AgencyFB-Bold.ttf"]
 align = "center"
-line_spacing = 1.05
+gap = 2                       # to the QR code, in modules
+line_gap = 2                  # between lines; default: gap
 
 [bottom]                      # text block with fixed text from the design
 type = "text"
 fonts = ["AgencyFB-Bold.ttf"]
 lines = ["WOULD YOU LIKE", "TO KNOW [MORE]?"]
 align = "justify"
-line_spacing = 1.05
+gap = 2                       # to the QR code, in modules
+line_gap = 2                  # between lines; default: gap
 
 [side]                        # readable side text, when the user switches it on
 fonts = ["Hack-Regular.ttf"]
@@ -104,10 +106,12 @@ Lengths are in modules (the size of one QR module) unless stated otherwise.
 | `qr.finder_centre_radius` | no | `1.0` | Corner radius for `rounded` |
 | `top.fonts` | no | `[]` | Font file names, first one found is used; empty: ziafont's built-in font |
 | `top.align` | no | `center` | `center`, `justify` |
-| `top.line_spacing` | no | `1.05` | Line distance in font sizes |
+| `top.gap` | no | `2` | Space between top text and QR code |
+| `top.line_gap` | no | `gap` | Space between lines, from the ink of one line to the ink of the next |
 | `bottom.type` | no | `none` | `text`, `svg`, `none` |
 | `bottom.lines` | for `text` | | Lines of text, with `[...]` highlight markers |
-| `bottom.fonts`, `.align`, `.line_spacing` | no | `[]`, `justify`, `1.05` | As for `top` |
+| `bottom.fonts`, `.align` | no | `[]`, `justify` | As for `top` |
+| `bottom.gap`, `.line_gap` | no | `2`, `gap` | As for `top`; `gap` also applies to a bottom graphic |
 | `bottom.svg` | for `svg` | | File relative to the design directory |
 | `bottom.recolour` | no | `false` | For `svg`: fill all shapes with `colours.bottom` |
 | `side.fonts` | no | `["Hack-Regular.ttf"]` | Default font for the side text |
@@ -137,6 +141,12 @@ the font as glyph outlines:
 - `[...]` in `lines` marks text drawn in `colours.highlight`; the brackets
   are not drawn. `[[` and `]]` give a literal bracket. Text from the request
   (top text) is never parsed for markers.
+- Lines are spaced by the ink: `line_gap` is the space from the lowest point
+  of one line to the highest point of the next, the same way `gap` is
+  measured to the QR code. With the default (`line_gap` = `gap`), the space
+  between the lines equals the space to the code, whatever the font's own
+  line height. An empty line between two lines takes the height of a capital
+  letter plus one `line_gap`.
 - Kerning from the font is applied where ziafont provides it.
 
 The readable side text is not a text block: it is sized along the image
@@ -215,7 +225,7 @@ modules = "#3B5831"
 | `38c3` | | 38c3 style guide (CC0), Pilowlava |
 | `38c3-light` | `38c3` | Space Grotesk on top |
 | `38c3-lighter` | `38c3-light` | Space Grotesk on top and bottom |
-| `40c3` | | 40c3 main version plus further colour schemes; worked out in [0003](development/0003-designs-planned.md) |
+| `40c3` | | 40c3 "Model Citizens", Jersey 10, square modules. Twelve schemes, default `green` |
 
 The 40c3 style guide (`40c3-styleguide-full-latest.zip`,
 [source](https://events.ccc.de/congress/2026/infos/styleguide/)) gives a
@@ -224,11 +234,42 @@ citizens and patterns. Design and assets are CC0; the fonts have their own
 licences. The style guide allows a lot of variation: the main version is the
 design's default scheme, the other combinations are further schemes.
 
+The style guide's "Tricolore" is A (`#DFEED5`), B (`#031202`) and one colour
+of your choice; its key colours are 0 (green), A and B. The `40c3` design
+follows that:
+
+- Dark schemes on B, one per palette colour that stands out on B: `green`
+  (0, the main version), `teal` (1), `lavender` (2), `lilac` (3), `pink`
+  (4), `rose` (5), `orange` (6), `yellow` (7), `sage` (8), `taupe` (10). The
+  colour is used for modules, finder rings, top text and the highlighted
+  "MORE"; A for finder centres, icon and the bottom line.
+- Light schemes on A: `light` with dark green (9) and B, `light-brown` with
+  brown (11) and B. Colours 9 and 11 are too dark for the dark schemes.
+- Headings in the style guide are Jersey 10, so are top text and bottom
+  line; square modules and finder patterns go with its pixel look.
+- Every scheme keeps a contrast of at least 4.5 between code and background,
+  and is tested to scan.
+
 ## Adding a design
 
-1. Create `designs/<name>/design.toml` in a data directory (or in the package
-   for a built-in one).
-2. Put assets and fonts it needs next to it, or in `fonts/` of a data
-   directory.
-3. Check it with `wyltkm designs show <name>` and render a sample with
-   `wyltkm render`.
+1. Pick a data directory (see [configuration.md](configuration.md); for
+   your own user `~/.local/share/wyltkm`) and create
+   `designs/<name>/design.toml` in it. For a built-in design, use
+   `src/wyltkm/core/data/designs/` instead. `<name>`: lower case letters,
+   digits and `-`.
+2. Write the file: at least `name`, `title`, `colours.background` and
+   `colours.modules`; everything else has defaults (key table above). Start
+   from a built-in design, or use `extends` to change only a few values of
+   one.
+3. Put fonts the design needs next to `design.toml` or into `fonts/` of the
+   data directory, by file name, each with a `<fontfile>.licence.toml`
+   ([licences.md](licences.md)). Add a `[licence]` table for the design.
+4. Check it: `wyltkm designs show <name>` shows the resolved values, where
+   each font is found, and the contrast of the code against the background
+   (below 3 it is marked LOW). Mistakes in the file are reported with the
+   file name.
+5. Look at it: `wyltkm designs show <name> --preview -o preview.png` (add a
+   scheme name after `--preview` for a scheme), or render a real code with
+   `wyltkm render`. Scan it with a phone.
+6. For a built-in design, add it to the tests: a golden-file case in
+   `tests/test_render.py` and the decode test in `tests/test_qr.py`.

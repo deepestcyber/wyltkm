@@ -36,7 +36,7 @@ docs in [../](../) in the same change.
 | --- | --- | --- |
 | 0001 | [Core split](0001-core-split-completed.md) | completed |
 | 0002 | [Configuration and fonts](0002-config-and-fonts-completed.md) | completed |
-| 0003 | [Designs](0003-designs-planned.md) | planned |
+| 0003 | [Designs](0003-designs-completed.md) | completed |
 | 0004 | [Icon sources](0004-icon-sources-planned.md) | planned |
 | 0005 | [Readable side text](0005-side-text-planned.md) | planned |
 | 0006 | [Web rework](0006-web-rework-planned.md) | planned |

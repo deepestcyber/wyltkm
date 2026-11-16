@@ -33,12 +33,17 @@ CONTENTS = ["x", "https://wiki.attraktor.org/Laser", "https://example.org/" + "a
             "Hällo Wörld"]
 
 
-@pytest.mark.parametrize("design", ["attraktor", "attraktor-bw", "38c3", "38c3-light",
-                                    "38c3-lighter"])
+DESIGNS = [("attraktor", None), ("attraktor-bw", None), ("38c3", None), ("38c3-light", None),
+           ("38c3-lighter", None),
+           *(("40c3", s) for s in ("green", "teal", "lavender", "lilac", "pink", "rose",
+                                   "orange", "yellow", "sage", "taupe", "light", "light-brown"))]
+
+
+@pytest.mark.parametrize("design, scheme", DESIGNS)
 @pytest.mark.parametrize("icon", ["none", "fa:solid/cat"])
-def test_codes_decode(library, design, icon):
-    bg = library.design(design).colours()["background"]
+def test_codes_decode(library, design, scheme, icon):
+    bg = library.design(design).colours(scheme)["background"]
     for content in CONTENTS:
-        r = render_png(library, Request(content=content, design=design, icon=icon, width=500,
-                                        text="Test"))
-        assert content in _decode(r.png, bg), (design, icon, content)
+        r = render_png(library, Request(content=content, design=design, scheme=scheme,
+                                        icon=icon, width=500, text="Test"))
+        assert content in _decode(r.png, bg), (design, scheme, icon, content)

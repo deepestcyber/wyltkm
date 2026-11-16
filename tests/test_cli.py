@@ -41,6 +41,20 @@ def test_inspect_commands():
     assert "fa" in runner.invoke(main, ["icons"]).output
 
 
+def test_designs_schemes_and_preview(tmp_path):
+    runner = CliRunner()
+    assert "schemes: green, teal" in runner.invoke(main, ["designs"]).output
+    r = runner.invoke(main, ["designs", "show", "40c3"])
+    assert "schemes (default green)" in r.output and "contrast" in r.output
+    out = tmp_path / "p.png"
+    r = runner.invoke(main, ["designs", "show", "40c3", "--preview", "pink", "-o", str(out)])
+    assert r.exit_code == 0 and out.read_bytes().startswith(b"\x89PNG")
+    r = runner.invoke(main, ["designs", "show", "38c3", "--preview"])
+    assert r.exit_code == 0 and r.stdout.startswith("<?xml")
+    r = runner.invoke(main, ["render", "x", "-d", "40c3", "-s", "light"])
+    assert r.exit_code == 0
+
+
 def test_config_and_fonts_commands():
     runner = CliRunner()
     r = runner.invoke(main, ["config"])

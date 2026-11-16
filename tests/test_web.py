@@ -47,6 +47,19 @@ def test_upload(client):
     assert r.status_code == 400
 
 
+def test_api_designs_and_previews(client):
+    data = {d["name"]: d for d in client.get("/api/designs").get_json()}
+    assert data["attraktor"]["default"] and data["attraktor"]["schemes"] == []
+    forty = data["40c3"]
+    assert forty["default_scheme"] == "green" and len(forty["schemes"]) == 12
+    r = client.get(forty["schemes"][4]["preview"])
+    assert r.status_code == 200 and r.mimetype == "image/svg+xml" and b"#eb5d9d" in r.data
+    assert client.get(data["38c3"]["preview"]).status_code == 200
+    assert client.get("/designs/nope/preview.svg").status_code == 404
+    assert client.get("/designs/40c3/preview.svg?scheme=nope").status_code == 400
+    assert client.get("/designs/attraktor/preview.svg?scheme=x").status_code == 400
+
+
 def test_api_licences(client):
     data = client.get("/api/licences?content=x&icon=fa:solid/cat").get_json()
     assert any(lic["requires_attribution"] for lic in data)

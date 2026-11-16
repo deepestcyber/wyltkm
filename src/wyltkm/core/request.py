@@ -46,6 +46,16 @@ def fits_qr(content: str) -> bool:
     return True
 
 
+PREVIEW_CONTENT = "https://example.org/would-you-like-to-know-more"
+
+
+def preview_request(design: str, scheme: str | None = None, title: str = "Preview",
+                    width: int = 200) -> "Request":
+    """The fixed sample request used for design previews."""
+    return Request(content=PREVIEW_CONTENT, text=title, design=design, scheme=scheme,
+                   width=width, border=True)
+
+
 @dataclass(frozen=True)
 class Request:
     """What to render. ``None`` means "default" (from config or design)."""

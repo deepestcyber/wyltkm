@@ -93,9 +93,18 @@ class TextBlock:
     """Path data of highlighted text."""
 
 
+def _cap_height(font: ziafont.Font) -> float:
+    g = font.glyph("H")
+    return g.bbox.ymax if g.operators else font.info.layout.ascent
+
+
 def block(font: ziafont.Font, lines: list[list[Run]], width: float, align: str = "center",
-          line_spacing: float = 1.05) -> TextBlock | None:
-    """Lay out ``lines`` to fill ``width``. Returns None if there is no ink."""
+          line_gap: float = 2.0) -> TextBlock | None:
+    """Lay out ``lines`` to fill ``width``. Returns None if there is no ink.
+
+    ``line_gap`` is the space between the ink of one line and the ink of the
+    next, in the units of ``width``; an empty line takes the height of a
+    capital letter plus one gap."""
     laid = [_layout_line(font, runs) for runs in lines]
     inks = []
     for glyphs in laid:
@@ -112,21 +121,20 @@ def block(font: ziafont.Font, lines: list[list[Run]], width: float, align: str =
     if widest <= 0:
         return None
     scale = width / widest
-    em = font.info.layout.unitsperem
-    pitch = line_spacing * em * scale
+    empty_line = _cap_height(font) * scale + line_gap
 
-    first = next(ink for ink in inks if ink)
-    baseline = first[2] * scale
+    y = 0.0  # top of the ink of the next line
     last_bottom = 0.0
     parts = {False: [], True: []}
     started = False
     for glyphs, ink in zip(laid, inks):
         if ink is None:
             if started:
-                baseline += pitch
+                y += empty_line
             continue
         started = True
-        left, right, _, bottom = ink
+        left, right, top, bottom = ink
+        baseline = y + top * scale
         natural = (right - left) * scale
         inked_idx = [i for i, g in enumerate(glyphs) if g.inked]
         lo, hi = inked_idx[0], inked_idx[-1]
@@ -141,7 +149,7 @@ def block(font: ziafont.Font, lines: list[list[Run]], width: float, align: str =
             d = "".join(op.path(x, baseline, scale) for op in g.glyph.operators)
             parts[g.highlight].append(_close(d))
         last_bottom = baseline - bottom * scale
-        baseline += pitch
+        y = last_bottom + line_gap
     return TextBlock(width=width, height=last_bottom, normal="".join(parts[False]),
                      highlight="".join(parts[True]))
 

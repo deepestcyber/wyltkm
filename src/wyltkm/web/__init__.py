@@ -3,6 +3,7 @@ with a WSGI server: ``gunicorn 'wyltkm.web:create_app()'``."""
 
 from __future__ import annotations
 
+import functools
 import io
 import urllib.parse
 
@@ -12,7 +13,7 @@ from slugify import slugify
 from wyltkm import __version__
 from wyltkm.core import (InvalidRequest, Library, Request, UnknownDesign, UnknownIcon,
                          WebConfig, WyltkmError, render_png, render_svg)
-from wyltkm.core.request import DEFAULT_WIDTH, NO_ICON
+from wyltkm.core.request import DEFAULT_WIDTH, NO_ICON, preview_request
 
 APP_INFO = {
     "version": __version__,
@@ -118,6 +119,41 @@ def create_app(library: Library | None = None) -> Flask:
     @app.route("/render.png", methods=["GET", "POST"])
     def render_png_route():
         return render_route("png")
+
+    @functools.lru_cache(maxsize=256)
+    def preview_svg(name: str, scheme: str | None) -> str:
+        design = lib.designs.get(name)
+        return render_svg(lib, preview_request(name, scheme, design.title)).svg
+
+    @app.route("/designs/<name>/preview.svg")
+    def design_preview(name):
+        try:
+            svg = preview_svg(name, request.args.get("scheme") or None)
+        except WyltkmError as e:
+            return error_response(e)
+        return Response(svg, mimetype="image/svg+xml")
+
+    @app.route("/api/designs")
+    def api_designs():
+        out = []
+        for name in lib.designs.names():
+            try:
+                d = lib.designs.get(name)
+            except WyltkmError:
+                continue
+            base = f"/designs/{name}/preview.svg"
+            out.append({
+                "name": d.name, "title": d.title, "description": d.description,
+                "default": name == lib.default_design,
+                "colours": d.colours(),
+                "default_scheme": d.default_scheme,
+                "schemes": [{"name": s.name, "title": s.title, "colours": s.colours,
+                             "preview": f"{base}?scheme={s.name}"} for s in d.schemes.values()],
+                "preview": base,
+                "licence": {"name": d.licence.name, "url": d.licence.url,
+                            "holder": d.licence.holder},
+            })
+        return jsonify(out)
 
     @app.route("/api/licences")
     def api_licences():
