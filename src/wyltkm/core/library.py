@@ -18,11 +18,16 @@ class Library:
     process; it caches loaded designs and fonts."""
 
     def __init__(self, designs: DesignRegistry, icons: IconRegistry, fonts: FontResolver,
-                 default_design: str = DEFAULT_DESIGN):
+                 default_design: str = DEFAULT_DESIGN, upload_max_elements: int = 5000,
+                 upload_max_depth: int = 20):
         self.designs = designs
         self.icons = icons
         self.fonts = fonts
         self.default_design = default_design
+        self.upload_max_elements = upload_max_elements
+        self.upload_max_depth = upload_max_depth
+        self.config = None
+        """The ``Config`` this library was made from, if any."""
 
     @classmethod
     def builtin(cls, system_fonts: bool = True, default_design: str = DEFAULT_DESIGN,
@@ -37,6 +42,19 @@ class Library:
                                system_fonts=system_fonts),
             default_design=default_design,
         )
+
+    @classmethod
+    def from_config(cls, config=None) -> Library:
+        """Library for a configuration; reads the configuration from config
+        file and environment when none is given (see docs/configuration.md)."""
+        from .config import load
+        config = config if config is not None else load()
+        lib = cls.builtin(system_fonts=config.system_fonts, default_design=config.default_design,
+                          data_dirs=config.data_dirs)
+        lib.upload_max_elements = config.web.max_upload_elements
+        lib.upload_max_depth = config.web.max_upload_depth
+        lib.config = config
+        return lib
 
     def design(self, name: str | None = None) -> Design:
         return self.designs.get(name or self.default_design)

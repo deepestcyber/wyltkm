@@ -15,7 +15,7 @@ file with its parts and their progress.
   `completed` when done. On a change of state the file is renamed; number and
   name stay the same.
 
-Example: `0001-core-split-active.md` becomes `0001-core-split-completed.md`.
+Example: `0001-core-split-completed.md` becomes `0001-core-split-completed.md`.
 
 ## Content
 
@@ -34,8 +34,8 @@ docs in [../](../) in the same change.
 
 | # | Unit | State |
 | --- | --- | --- |
-| 0001 | [Core split](0001-core-split-active.md) | active |
-| 0002 | [Configuration and fonts](0002-config-and-fonts-planned.md) | planned |
+| 0001 | [Core split](0001-core-split-completed.md) | completed |
+| 0002 | [Configuration and fonts](0002-config-and-fonts-completed.md) | completed |
 | 0003 | [Designs](0003-designs-planned.md) | planned |
 | 0004 | [Icon sources](0004-icon-sources-planned.md) | planned |
 | 0005 | [Readable side text](0005-side-text-planned.md) | planned |

@@ -1,6 +1,6 @@
 # Core split
 
-Status: active (2026-11-16); all parts done, waiting for review
+Status: completed (2026-11-16)
 
 Split the project into core library, CLI and web app, on a new renderer that
 builds the SVG itself and emits paths only. At the end, everything 0.2.2 can

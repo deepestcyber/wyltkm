@@ -69,8 +69,9 @@ def _paths_group(blk: textmod.TextBlock, x: float, y: float, normal: str,
 def _icon(library: Library, request: Request, design, colour: str, parts: _Parts):
     if request.icon_svg is not None:
         n = svgmod.normalise(request.icon_svg, recolour=None, id_prefix="icon-",
-                             where="uploaded icon", untrusted=True, max_elements=5000,
-                             max_depth=20)
+                             where="uploaded icon", untrusted=True,
+                             max_elements=library.upload_max_elements,
+                             max_depth=library.upload_max_depth)
         parts.licence(UPLOAD_LICENCE)
         parts.warnings.extend(n.warnings)
         return n

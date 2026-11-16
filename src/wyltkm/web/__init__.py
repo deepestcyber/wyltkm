@@ -11,7 +11,7 @@ from slugify import slugify
 
 from wyltkm import __version__
 from wyltkm.core import (InvalidRequest, Library, Request, UnknownDesign, UnknownIcon,
-                         WyltkmError, render_png, render_svg)
+                         WebConfig, WyltkmError, render_png, render_svg)
 from wyltkm.core.request import DEFAULT_WIDTH, NO_ICON
 
 APP_INFO = {
@@ -22,7 +22,6 @@ APP_INFO = {
 DEFAULT_CONTENT = "https://wiki.attraktor.org"
 PARAMS = ("content", "text", "design", "scheme", "icon", "width", "border", "background",
           "licence_metadata")
-MAX_WIDTH = 4000
 
 
 def _flag(value: str | None, name: str) -> bool | None:
@@ -34,7 +33,7 @@ def _flag(value: str | None, name: str) -> bool | None:
 
 
 def request_from(values, files=None, default_content: str | None = None,
-                 max_width: int = MAX_WIDTH) -> Request:
+                 web: WebConfig = WebConfig()) -> Request:
     """Build a core ``Request`` from query or form values."""
     content = values.get("content") or default_content or ""
     width = values.get("width") or str(DEFAULT_WIDTH)
@@ -42,11 +41,13 @@ def request_from(values, files=None, default_content: str | None = None,
         width = int(width)
     except ValueError:
         raise InvalidRequest("width must be a whole number") from None
-    if width > max_width:
-        raise InvalidRequest(f"width must be at most {max_width}")
+    if width > web.max_width:
+        raise InvalidRequest(f"width must be at most {web.max_width}")
     icon_svg = None
     if files is not None and files.get("icon_file") and files["icon_file"].filename:
-        icon_svg = files["icon_file"].read()
+        icon_svg = files["icon_file"].read(web.max_upload_bytes + 1)
+        if len(icon_svg) > web.max_upload_bytes:
+            raise InvalidRequest(f"icon file is larger than {web.max_upload_bytes} bytes")
     metadata = _flag(values.get("licence_metadata"), "licence_metadata")
     return Request(
         content=content,
@@ -63,9 +64,12 @@ def request_from(values, files=None, default_content: str | None = None,
 
 
 def create_app(library: Library | None = None) -> Flask:
+    """The Flask app. Without ``library``, it is made from config file and
+    environment (``Library.from_config()``)."""
+    lib = library or Library.from_config()
+    web = lib.config.web if lib.config is not None else WebConfig()
     app = Flask(__name__)
-    app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
-    lib = library or Library.builtin()
+    app.config["MAX_CONTENT_LENGTH"] = web.max_upload_bytes + 64 * 1024
 
     def error_response(e: WyltkmError):
         status = 404 if isinstance(e, (UnknownDesign, UnknownIcon)) else 400
@@ -80,7 +84,7 @@ def create_app(library: Library | None = None) -> Flask:
         args.setdefault("content", DEFAULT_CONTENT)
         result = error = None
         try:
-            req = request_from(args)
+            req = request_from(args, web=web)
             result = render_svg(lib, req)
             design = lib.design(req.design)
         except WyltkmError as e:
@@ -90,12 +94,13 @@ def create_app(library: Library | None = None) -> Flask:
         return render_template("index.html", APP_INFO=APP_INFO, args=args, result=result,
                                error=error, design=design, designs=lib.designs.all(),
                                default_design=lib.default_design, icons=icon_names(),
-                               no_icon=NO_ICON, img_args=img_args)
+                               no_icon=NO_ICON, img_args=img_args, max_width=web.max_width)
 
     def render_route(fmt: str):
         values = request.form if request.method == "POST" else request.args
         try:
-            req = request_from(values, request.files if request.method == "POST" else None)
+            req = request_from(values, request.files if request.method == "POST" else None,
+                               web=web)
             result = render_png(lib, req) if fmt == "png" else render_svg(lib, req)
         except WyltkmError as e:
             return error_response(e)
@@ -117,7 +122,7 @@ def create_app(library: Library | None = None) -> Flask:
     @app.route("/api/licences")
     def api_licences():
         try:
-            result = render_svg(lib, request_from(request.args))
+            result = render_svg(lib, request_from(request.args, web=web))
         except WyltkmError as e:
             return error_response(e)
         return jsonify([{

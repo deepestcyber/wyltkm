@@ -11,6 +11,7 @@ Public API::
 Everything else in this package is internal.
 """
 
+from .config import Config, WebConfig
 from .errors import DataError, InvalidRequest, UnknownDesign, UnknownIcon, WyltkmError
 from .library import Library
 from .licences import Licence
@@ -18,6 +19,6 @@ from .render import Result, licence_text, render_png, render_svg
 from .request import Request
 
 __all__ = [
-    "DataError", "InvalidRequest", "Library", "Licence", "Request", "Result", "UnknownDesign",
+    "Config", "DataError", "InvalidRequest", "WebConfig", "Library", "Licence", "Request", "Result", "UnknownDesign",
     "UnknownIcon", "WyltkmError", "licence_text", "render_png", "render_svg",
 ]

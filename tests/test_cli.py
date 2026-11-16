@@ -39,3 +39,19 @@ def test_inspect_commands():
     assert r.exit_code == 0 and "SpaceGrotesk-Regular.otf" in r.output
     assert runner.invoke(main, ["designs", "show", "nope"]).exit_code == 3
     assert "fa" in runner.invoke(main, ["icons"]).output
+
+
+def test_config_and_fonts_commands():
+    runner = CliRunner()
+    r = runner.invoke(main, ["config"])
+    assert r.exit_code == 0 and "none (defaults)" in r.output and "missing" in r.output
+    r = runner.invoke(main, ["fonts"])
+    assert r.exit_code == 0 and "Hack-Regular.ttf" in r.output and "38c3-lighter" in r.output
+
+
+def test_broken_config(tmp_path, monkeypatch):
+    path = tmp_path / "c.toml"
+    path.write_text("nope = 1\n")
+    monkeypatch.setenv("WYLTKM_CONFIG", str(path))
+    r = CliRunner().invoke(main, ["designs"])
+    assert r.exit_code == 4 and "unknown keys" in r.output

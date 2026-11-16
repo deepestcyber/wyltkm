@@ -84,6 +84,17 @@ class FontResolver:
             return self._system().get(name)
         return None
 
+    def available(self) -> dict[str, Path]:
+        """Font files in the font directories (not system fonts), by file
+        name; the first one found wins, as in lookup."""
+        out: dict[str, Path] = {}
+        for base in self.font_dirs:
+            if base.is_dir():
+                for f in sorted(base.iterdir()):
+                    if f.is_file() and f.name.lower().endswith(FONT_SUFFIXES):
+                        out.setdefault(f.name, f)
+        return out
+
     def load(self, path: Path | None) -> FontRef:
         if path not in self._loaded:
             if path is None:

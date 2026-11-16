@@ -25,7 +25,9 @@ max_upload_elements = 5000
 max_upload_depth = 20
 ```
 
-Unknown keys are an error.
+Unknown keys are an error. Relative paths in `data_dirs` are relative to the
+config file. If `WYLTKM_CONFIG` names a file that does not exist, that is an
+error, not a fallback to the other places.
 
 ## Data directories
 
@@ -47,7 +49,8 @@ Searched in this order:
 5. The package's own data (built-in designs, icons, bundled fonts).
 
 Directories that do not exist are skipped. `wyltkm config` prints the config
-file and the data directories in use.
+file and every data directory it looked at, marked as used, missing or
+duplicate; `wyltkm fonts` shows where each font of each design is found.
 
 ## Fonts
 
@@ -86,7 +89,7 @@ operator put in place.
 Fonts with a free licence that allows redistribution ship in the package,
 each with its licence file and a licence record ([licences.md](licences.md)):
 Pilowlava, Space Grotesk, Hack, Jersey 10. The exact files and their origin
-are listed in [0001](development/0001-core-split-active.md), part 4.
+are listed in [0001](development/0001-core-split-completed.md), part 4.
 
 Agency FB, the font of the Attraktor design, is not free. Install it in a
 font directory (for a server: `fonts/` of a data directory; for local work:

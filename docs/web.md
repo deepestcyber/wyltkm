@@ -73,7 +73,8 @@ error correction.
 
 ## Deployment
 
-The app is a WSGI app: `wyltkm.web:create_app()`. Run it with any WSGI
+The app is a WSGI app: `wyltkm.web:create_app()`. It reads the configuration
+like the CLI (config file, data directories, environment) once at start. Run it with any WSGI
 server, e.g.:
 
 ```sh

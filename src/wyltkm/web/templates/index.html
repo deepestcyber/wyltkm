@@ -47,7 +47,7 @@
     <label><input type="radio" name="border" value="0"{% if args.border == '0' %} checked{% endif %}>No</label>
 
     <h4><label for="width">Width</label></h4>
-    <input id="width" name="width" type="number" min="50" max="4000" value="{{ args.width or 250 }}">
+    <input id="width" name="width" type="number" min="50" max="{{ max_width }}" value="{{ args.width or 250 }}">
 
     <h4>Licence info in file</h4>
     <label><input type="radio" name="licence_metadata" value=""{% if args.licence_metadata != '0' %} checked{% endif %}>Yes</label>

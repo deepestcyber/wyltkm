@@ -25,8 +25,18 @@ class _Fail(click.ClickException):
         self.exit_code = code
 
 
+_LIBRARY: Library | None = None
+
+
 def _library() -> Library:
-    return Library.builtin()
+    """The library from config file and environment (created once)."""
+    global _LIBRARY
+    if _LIBRARY is None:
+        try:
+            _LIBRARY = Library.from_config()
+        except WyltkmError as e:
+            raise _fail(e) from e
+    return _LIBRARY
 
 
 def _fail(e: WyltkmError) -> _Fail:
@@ -223,6 +233,50 @@ def licences():
         if f.suffix.lower() in (".ttf", ".otf"):
             click.echo(f"  {licmod.for_font(f).text()}")
     click.echo(f"  {FALLBACK_LICENCE.text()}")
+
+
+@main.command("config")
+def config_cmd():
+    """Show the config file and the data directories in use."""
+    lib = _library()
+    cfg = lib.config
+    click.echo(f"config file:    {cfg.path or 'none (defaults)'}")
+    click.echo(f"default design: {cfg.default_design}")
+    click.echo(f"system fonts:   {'on' if cfg.system_fonts else 'off'}")
+    click.echo("data directories (in search order):")
+    used = set(cfg.data_dirs)
+    for d in cfg.candidates:
+        state = "used" if d.path in used else ("duplicate" if d.exists else "missing")
+        click.echo(f"  {d.path}  [{d.origin}, {state}]")
+    click.echo(f"  {BUNDLED_DIR.parent}  [package, used]")
+    w = cfg.web
+    click.echo(f"web: max_width {w.max_width}, max_upload_bytes {w.max_upload_bytes}, "
+               f"max_upload_elements {w.max_upload_elements}, "
+               f"max_upload_depth {w.max_upload_depth}")
+
+
+@main.command()
+def fonts():
+    """Show available fonts, and the fonts each design needs and where they
+    are found."""
+    lib = _library()
+    click.echo("Fonts in font directories:")
+    for name, path in lib.fonts.available().items():
+        click.echo(f"  {name}  {path}  ({licmod.for_font(path).name})")
+    click.echo(f"System fonts: {'searched' if lib.fonts.system_fonts else 'not searched'}")
+    click.echo("Fonts of the designs:")
+    for name in lib.designs.names():
+        try:
+            d = lib.designs.get(name)
+        except WyltkmError as e:
+            click.echo(f"  {name}: BROKEN: {e}")
+            continue
+        click.echo(f"  {name}:")
+        for role, fonts_ in (("top", d.top.fonts), ("bottom", d.bottom.style.fonts),
+                             ("side", d.side.fonts)):
+            if role == "bottom" and d.bottom.type != "text":
+                continue
+            _font_line(lib, role, fonts_, d)
 
 
 @main.command()
