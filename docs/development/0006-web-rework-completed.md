@@ -1,6 +1,6 @@
 # Web rework
 
-Status: active (2026-11-16); all parts done, waiting for review
+Status: completed (2026-11-16)
 
 A web interface that is easy to use and looks good: live preview, design
 picker, icon search and upload, clean download. Server-rendered, small vanilla
@@ -157,3 +157,4 @@ Done:
   icons failed before); a test normalises every built-in icon. Icon zips stay
   open: reading the zip's table of contents for every icon made that test
   take about a minute, now the whole suite runs in about 25 s.
+- 40c3 got a scheme `bw` (black on white) for engraving.

@@ -53,7 +53,7 @@ def test_api_designs_and_previews(client):
     assert [s["icon"] for s in data["attraktor"]["schemes"]] == ["attraktor:logo",
                                                                   "attraktor:logo-mono"]
     forty = data["40c3"]
-    assert forty["default_scheme"] == "green" and len(forty["schemes"]) == 12
+    assert forty["default_scheme"] == "green" and len(forty["schemes"]) == 13
     r = client.get(forty["schemes"][4]["preview"])
     assert r.status_code == 200 and r.mimetype == "image/svg+xml" and b"#eb5d9d" in r.data
     assert client.get(data["38c3"]["preview"]).status_code == 200

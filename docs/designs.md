@@ -237,7 +237,7 @@ modules = "#3B5831"
 | --- | --- | --- |
 | `attraktor` | | Default design out of the box. Agency FB (not bundled, install it). Schemes `colour` (default: Attraktor blue and greys, colour logo) and `bw` (black on white, mono logo). Licence of the design unclear, marked as such. |
 | `38c3` | | 38c3 style guide (CC0). Schemes with the same colours and different fonts: `pilowlava` (default, Pilowlava everywhere), `light` (Space Grotesk on top), `lighter` (Space Grotesk on top and bottom) |
-| `40c3` | | 40c3 "Model Citizens", Jersey 10, square modules, the 40c3 logo as icon. Twelve schemes, default `green` |
+| `40c3` | | 40c3 "Model Citizens", Jersey 10, square modules, the 40c3 logo as icon. Thirteen schemes (including `bw` for engraving), default `green` |
 
 The 40c3 style guide (`40c3-styleguide-full-latest.zip`,
 [source](https://events.ccc.de/congress/2026/infos/styleguide/)) gives a
@@ -257,6 +257,8 @@ follows that:
   "MORE"; A for finder centres, icon and the bottom line.
 - Light schemes on A: `light` with dark green (9) and B, `light-brown` with
   brown (11) and B. Colours 9 and 11 are too dark for the dark schemes.
+- `bw`: black on white, for engraving and plain print; the logo turns black
+  too.
 - Headings in the style guide are Jersey 10, so are top text and bottom
   line; square modules and finder patterns go with its pixel look.
 - Every scheme keeps a contrast of at least 4.5 between code and background,

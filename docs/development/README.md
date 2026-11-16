@@ -39,4 +39,4 @@ docs in [../](../) in the same change.
 | 0003 | [Designs](0003-designs-completed.md) | completed |
 | 0004 | [Icon sources](0004-icon-sources-completed.md) | completed |
 | 0005 | [Readable side text](0005-side-text-completed.md) | completed |
-| 0006 | [Web rework](0006-web-rework-active.md) | active |
+| 0006 | [Web rework](0006-web-rework-completed.md) | completed |

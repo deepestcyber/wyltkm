@@ -11,7 +11,7 @@ GOLDEN = Path(__file__).parent / "golden"
 NS = "{http://www.w3.org/2000/svg}"
 
 FORTY_SCHEMES = ["green", "teal", "lavender", "lilac", "pink", "rose", "orange", "yellow",
-                 "sage", "taupe", "light", "light-brown"]
+                 "sage", "taupe", "light", "light-brown", "bw"]
 
 CASES = {
     "attraktor-default": Request(content="https://wiki.attraktor.org/Laser", text="Laser cutter"),

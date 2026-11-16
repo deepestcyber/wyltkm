@@ -129,3 +129,15 @@ icon = "#031202"
 top = "#584744"
 bottom = "#031202"
 highlight = "#584744"
+
+# Black and white, for engraving and plain print; the logo takes the icon colour.
+[schemes.bw]
+title = "Black and white"
+background = "#ffffff"
+modules = "#000000"
+finder_ring = "#000000"
+finder_centre = "#000000"
+icon = "#000000"
+top = "#000000"
+bottom = "#000000"
+highlight = "#000000"

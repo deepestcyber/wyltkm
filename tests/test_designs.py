@@ -22,7 +22,7 @@ def test_40c3_contrast(library):
     """All 40c3 schemes keep a clear contrast between code and background."""
     from wyltkm.core.designs import contrast
     d = library.design("40c3")
-    assert d.default_scheme == "green" and len(d.schemes) == 12
+    assert d.default_scheme == "green" and len(d.schemes) == 13
     for s in d.schemes.values():
         c = s.colours
         for key in ("modules", "finder_ring", "finder_centre"):
