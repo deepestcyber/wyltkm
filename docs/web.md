@@ -10,8 +10,8 @@ One page, two columns (on phones the preview comes first):
 - **Form** in cards: link or text in the code and top text; design as small
   previews, with the design's schemes below as chips (colour dot and name); icon
   search over all sources with a source filter and a grid of hits drawn in
-  the design's icon colour, "Design" and "None" choices, and an upload for an
-  own SVG; options as segmented buttons (background, border, side text with
+  the design's colours, "Design" and "None" choices, a "Browse" button for
+  the icon browser, and an upload for an own SVG; options as segmented buttons (background, border, side text with
   a font field, width, licence info in the file).
 - **Preview**: the image lies on a cutting mat with a module-like grid,
   framed by crop marks, with its size and number of modules underneath. It
@@ -22,6 +22,16 @@ One page, two columns (on phones the preview comes first):
 - Warnings from the core (missing font, not laser-friendly icon) and the
   licences of the parts of the current image, with the attribution text
   ready to copy ([licences.md](licences.md)), below the preview.
+- **Icon browser**: a dialog in the page (the native `<dialog>`: Escape
+  closes it, focus stays inside) with all icons. Search field, sources as
+  chips with their number of icons, folders of the chosen source on the left
+  (e.g. solid, regular, brands), a grid that loads more icons while
+  scrolling, and a bar with the chosen icon's name, label, source and
+  licence. Click picks, double-click or Enter uses it, arrow keys move.
+  Without JavaScript, "Browse" opens the same view as the page
+  `/icons/browse` (paged, server-rendered); picking an icon there leads back
+  to the form with all settings. Icon tiles show the design's background and
+  icon colour, so each icon looks as it will in the code.
 - Header with Help, Licences and a theme switch (system, dark, light;
   remembered in the browser); footer with version, source and licences.
 
@@ -52,7 +62,9 @@ is one small vanilla file (`static/app.js`): no npm, no build step.
 | `/api/licences?<render parameters>` | GET | Licences of the parts an image with these parameters uses, as JSON |
 | `/licences` | GET | Licences of all sources, designs and fonts |
 | `/api/icons?q=&source=&limit=` | GET | Icon search as JSON (name, label, URL) |
-| `/api/icon-sources` | GET | Icon sources as JSON (name, title, number of icons, licence) |
+| `/api/icon-sources` | GET | Icon sources as JSON (name, title, number of icons, folders with counts, licence) |
+| `/api/icons/browse?q=&source=&folder=&offset=&limit=` | GET | All matching icons a page at a time (default 120), with the total; an empty `q` lists all |
+| `/icons/browse?q=&source=&folder=&offset=&<form parameters>` | GET | The icon browser as a page; links lead back to `/` with the form parameters and the picked icon |
 | `/icons/<source>/<name>.svg` | GET | Normalised icon, recoloured with `?colour=` |
 | `/help` | GET | Help page |
 

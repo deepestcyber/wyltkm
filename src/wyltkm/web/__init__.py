@@ -29,6 +29,7 @@ PARAMS = ("content", "text", "design", "scheme", "icon", "width", "border", "bac
 UI_FONTS = {"SpaceGrotesk-Regular.otf", "Hack-Regular.ttf"}
 """Bundled fonts the web page itself uses."""
 CACHE_SECONDS = 3600
+BROWSE_PAGE = 120
 COLOUR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
@@ -140,11 +141,13 @@ def create_app(library: Library | None = None) -> Flask:
         except WyltkmError:
             icon_hits = []
         icon_colour = "#85858b"
+        tile_bg = "transparent"
         scheme = None
         if design is not None:
             scheme = args.get("scheme") or design.default_scheme
             try:
                 icon_colour = design.colours(args.get("scheme"))["icon"]
+                tile_bg = design.colours(args.get("scheme"))["background"]
             except WyltkmError:
                 pass
         current_icon = NO_ICON
@@ -160,6 +163,7 @@ def create_app(library: Library | None = None) -> Flask:
             design=design, scheme=scheme, designs=designs_info(),
             default_design=lib.default_design, icon_q=icon_q, icon_source=icon_source,
             icon_sources=lib.icons.sources(), icon_hits=icon_hits, icon_colour=icon_colour,
+            tile_bg=tile_bg,
             current_icon=current_icon,
             side_fonts=list(lib.pickable_fonts()) if args.get("side") == "1" else [],
             no_icon=NO_ICON, query=urllib.parse.urlencode(args), max_width=web.max_width,
@@ -238,8 +242,64 @@ def create_app(library: Library | None = None) -> Flask:
     @app.route("/api/icon-sources")
     def api_icon_sources():
         return jsonify([{"name": s.name, "title": s.title, "count": len(s.files),
-                         "licence": {"name": s.licence.name, "url": s.licence.url}}
+                         "folders": [{"name": f, "count": c} for f, c in s.folders().items()],
+                         "licence": {"name": s.licence.name, "url": s.licence.url,
+                                     "requires_attribution": s.licence.requires_attribution}}
                         for s in lib.icons.sources()])
+
+    def browse_args():
+        """Query, source, folder and paging of the icon browser."""
+        q = request.args.get("q", "").strip()
+        source = request.args.get("source") or None
+        folder = request.args.get("folder") or None
+        try:
+            offset = max(0, int(request.args.get("offset") or 0))
+            limit = max(1, min(int(request.args.get("limit") or BROWSE_PAGE), 500))
+        except ValueError:
+            raise InvalidRequest("offset and limit must be whole numbers") from None
+        return q, source, folder, offset, limit
+
+    @app.route("/api/icons/browse")
+    def api_icons_browse():
+        """All icons matching the filters, a page at a time, with the total."""
+        try:
+            q, source, folder, offset, limit = browse_args()
+            hits = lib.icons.find(q, source, folder)
+        except WyltkmError as e:
+            return error_response(e)
+        return jsonify({"total": len(hits), "offset": offset,
+                        "hits": [{"name": h.name, "label": h.label,
+                                  "url": f"/icons/{h.name.replace(':', '/', 1)}.svg"}
+                                 for h in hits[offset:offset + limit]]})
+
+    @app.route("/icons/browse")
+    def icons_browse():
+        """The icon browser as a page (without JavaScript); a pick leads back
+        to the form with all its settings."""
+        try:
+            q, source, folder, offset, limit = browse_args()
+            hits = lib.icons.find(q, source, folder)
+        except WyltkmError as e:
+            return error_response(e)
+        form = {k: v for k, v in request.args.items() if k in PARAMS and k != "icon" and v}
+        colour, tile_bg = "#85858b", "transparent"
+        try:
+            design = lib.design(form.get("design"))
+            colour = design.colours(form.get("scheme"))["icon"]
+            tile_bg = design.colours(form.get("scheme"))["background"]
+        except WyltkmError:
+            pass
+
+        def link(**changes):
+            args = {**{k: v for k, v in request.args.items() if k not in ("offset",)}, **changes}
+            return "/icons/browse?" + urllib.parse.urlencode({k: v for k, v in args.items() if v})
+
+        return render_template(
+            "icons_browse.html", APP_INFO=APP_INFO, q=q, source=source, folder=folder,
+            hits=hits[offset:offset + limit], total=len(hits), offset=offset, limit=limit,
+            sources=lib.icons.sources(), colour=colour, tile_bg=tile_bg, link=link,
+            pick=lambda name: "/?" + urllib.parse.urlencode({**form, "icon": name}),
+            form=form)
 
     @app.route("/icons/<source>/<path:name>.svg")
     def icon_svg(source, name):

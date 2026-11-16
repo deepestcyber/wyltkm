@@ -148,3 +148,12 @@ Done:
   `fonts` table (`top`, `bottom`, `side`). The web form shows schemes as
   chips with a colour dot and the name, since colour swatches cannot tell
   font schemes apart.
+- Icon browser: a dialog in the page with all icons, search, sources,
+  folders and loading while scrolling; without JavaScript the page
+  `/icons/browse`. New `/api/icons/browse`, folders in `/api/icon-sources`,
+  `IconSource.folders()`, `IconRegistry.find()`. Icon tiles show the design's
+  background. Font Awesome alias files without metadata are left out (2163
+  instead of 2883 icons, no duplicates). `<switch>` is now handled (ten Carbon
+  icons failed before); a test normalises every built-in icon. Icon zips stay
+  open: reading the zip's table of contents for every icon made that test
+  take about a minute, now the whole suite runs in about 25 s.

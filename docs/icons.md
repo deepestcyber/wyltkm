@@ -151,4 +151,15 @@ query must match. Best matches first: the name is the word, the name starts
 with the word, the name contains it, the label contains it, a search term
 starts with it.
 
-Normalised icons are cached per process (256 icon and colour pairs).
+Normalised icons are cached per process (256 icon and colour pairs). Zip
+files stay open once read.
+
+Sources with metadata (Font Awesome, Carbon) only offer icons their metadata
+knows. Font Awesome's zip also holds alias files under older names (e.g.
+`arrow-alt-circle-up`); leaving them out avoids every such icon appearing
+twice when browsing. Icons are grouped in folders by the first part of their
+name (`fa:solid/...`, `40c3:citizens/...`); the browser in the web app lists
+them per source and folder.
+
+SVG features handled when normalising include `<switch>` (only its first
+usable child is drawn; ten Carbon icons use it).

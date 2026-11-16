@@ -19,7 +19,7 @@ from .errors import DataError, InvalidRequest
 SVG_NS = "http://www.w3.org/2000/svg"
 _NS = "{" + SVG_NS + "}"
 
-CONTAINERS = {"g", "defs", "clipPath", "linearGradient", "radialGradient"}
+CONTAINERS = {"g", "switch", "defs", "clipPath", "linearGradient", "radialGradient"}
 SHAPES = {"path", "rect", "circle", "ellipse", "line", "polyline", "polygon"}
 KEEP = CONTAINERS | SHAPES | {"stop"}
 
@@ -172,7 +172,7 @@ class _Normaliser:
         props = self.styles_of(tag, el)
         if props.get("display") == "none":
             return None
-        out_tag = "g" if tag == "svg" else ("path" if tag in SHAPES else tag)
+        out_tag = "g" if tag in ("svg", "switch") else ("path" if tag in SHAPES else tag)
         out = ET.Element(out_tag)
         if tag in SHAPES:
             d = _shape_to_path(tag, el)
@@ -199,6 +199,8 @@ class _Normaliser:
             c = self.convert(child, depth + 1)
             if c is not None:
                 out.append(c)
+                if tag == "switch":
+                    break  # a switch draws only its first usable child
         if tag in ("defs", "g", "clipPath") and len(out) == 0:
             return None  # nothing to draw or reference
         return out

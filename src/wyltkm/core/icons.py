@@ -55,9 +55,20 @@ class IconSource:
     prefix: str = ""
     _info: dict[str, IconInfo] | None = None
     _lock: threading.Lock = field(default_factory=threading.Lock)
+    _zip: zipfile.ZipFile | None = None
+    _zip_lock: threading.Lock = field(default_factory=threading.Lock)
 
     def names(self) -> list[str]:
         return sorted(self.files)
+
+    def folders(self) -> dict[str, int]:
+        """Folders (first part of the names) with their number of icons;
+        icons without a folder count under ``""``."""
+        out: dict[str, int] = {}
+        for icon in self.files:
+            folder = icon.split("/", 1)[0] if "/" in icon else ""
+            out[folder] = out.get(folder, 0) + 1
+        return dict(sorted(out.items()))
 
     def recolours(self, icon: str) -> bool:
         """Whether this icon is recoloured: the source setting, inverted for
@@ -74,8 +85,13 @@ class IconSource:
         try:
             if self.zip_path is None:
                 return Path(member).read_bytes()
-            with zipfile.ZipFile(self.zip_path) as z:
-                return z.read(member)
+            # the zip stays open: reading its table of contents for every
+            # icon would be slow; reads are serialised, ZipFile is not
+            # meant for parallel use
+            with self._zip_lock:
+                if self._zip is None:
+                    self._zip = zipfile.ZipFile(self.zip_path)
+                return self._zip.read(member)
         except (OSError, KeyError, zipfile.BadZipFile) as e:
             raise DataError(f"icon source {self.name}: cannot read {icon}: {e}") from e
 
@@ -195,6 +211,16 @@ def load_source(toml_path: Path) -> IconSource:
             log.info("%s: skipping %s, name %s already taken", where, rel_path, icon)
             continue
         src.files[icon] = member
+    if src.metadata:
+        # files the metadata does not know are aliases of older names (Font
+        # Awesome); leaving them out avoids duplicates when browsing
+        known = src._metadata()
+        if known:
+            unknown = [icon for icon in src.files if icon not in known]
+            for icon in unknown:
+                del src.files[icon]
+            if unknown:
+                log.info("%s: %d files without metadata left out", where, len(unknown))
     return src
 
 
@@ -240,8 +266,17 @@ class IconRegistry:
             raise UnknownIcon(f"unknown icon: {full}")
         return src, icon
 
-    def search(self, query: str, source: str | None = None, limit: int = 50) -> list[Hit]:
-        """Icons matching all words of ``query``, best first.
+    def search(self, query: str, source: str | None = None, limit: int = 50,
+               folder: str | None = None) -> list[Hit]:
+        """Icons matching all words of ``query``, best first; at most
+        ``limit`` (0: all). See ``find``."""
+        hits = self.find(query, source, folder)
+        return hits[:limit] if limit else hits
+
+    def find(self, query: str = "", source: str | None = None,
+             folder: str | None = None) -> list[Hit]:
+        """All icons matching all words of ``query`` (all icons for an empty
+        query), optionally only of one source and folder, best first.
 
         Rank per word: exact name (last part) 0, name starts with it 1, name
         contains it 2, label contains it 3, a search term starts with it 4.
@@ -249,10 +284,13 @@ class IconRegistry:
         """
         words = [w for w in re.split(r"[\s:]+", query.lower().strip()) if w]
         sources = [self.source(source)] if source else self.sources()
+        prefix = (folder.strip("/") + "/") if folder else ""
         hits: list[Hit] = []
         for src in sources:
             for icon in src.names():
-                info = src.info(icon) if words else IconInfo()
+                if prefix and not icon.startswith(prefix):
+                    continue
+                info = src.info(icon)
                 worst = 0
                 for w in words:
                     rank = _rank(w, icon, info)
@@ -262,7 +300,7 @@ class IconRegistry:
                 else:
                     hits.append(Hit(f"{src.name}:{icon}", info.label, worst))
         hits.sort(key=lambda h: (h.rank, h.name))
-        return hits[:limit] if limit else hits
+        return hits
 
 
 def _rank(word: str, icon: str, info: IconInfo) -> int | None:

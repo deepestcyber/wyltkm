@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Icons · Would you like to know more?{% endblock %}
+{% block body %}
+<main class="browse-page">
+  <form class="browse-head" action="/icons/browse" method="get">
+    {% for k, v in form.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+    {% if source %}<input type="hidden" name="source" value="{{ source }}">{% endif %}
+    {% if folder %}<input type="hidden" name="folder" value="{{ folder }}">{% endif %}
+    <input type="search" name="q" value="{{ q }}" placeholder="Search icons" aria-label="Search icons">
+    <button type="submit" class="btn">Search</button>
+    <a class="btn quiet nowrap" href="/?{{ form|urlencode }}">Back to the form</a>
+  </form>
+  <nav class="sources">
+    <a class="chip-link{% if not source %} on{% endif %}" href="{{ link(source='', folder='') }}">All</a>
+    {% for s in sources %}<a class="chip-link{% if source == s.name %} on{% endif %}" href="{{ link(source=s.name, folder='') }}">{{ s.name }} <span class="mono">{{ s.files|length }}</span></a>{% endfor %}
+  </nav>
+  <div class="browse-body">
+    <aside class="folders">
+      {% if source %}{% for s in sources if s.name == source %}
+        <a class="{% if not folder %}on{% endif %}" href="{{ link(folder='') }}">All folders</a>
+        {% for f, c in s.folders().items() if f %}<a class="{% if folder == f %}on{% endif %}" href="{{ link(folder=f) }}">{{ f }} <span class="mono">{{ c }}</span></a>{% endfor %}
+      {% endfor %}{% else %}<p class="hint">Choose a source to see its folders.</p>{% endif %}
+    </aside>
+    <div>
+      <p class="hint mono">{{ total }} icons{% if total > limit %} · {{ offset + 1 }}–{{ [offset + limit, total]|min }}{% endif %}</p>
+      <div class="browse-grid" style="--tile-bg: {{ tile_bg }}">
+        {% for h in hits %}<a class="icon" href="{{ pick(h.name) }}" title="{{ h.name }}{% if h.label %} · {{ h.label }}{% endif %}"><img src="/icons/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ colour|urlencode }}" alt="{{ h.name }}" width="24" height="24" loading="lazy"></a>{% endfor %}
+      </div>
+      <p class="pager">
+        {% if offset > 0 %}<a class="btn" href="{{ link(offset=[offset - limit, 0]|max) }}">Previous</a>{% endif %}
+        {% if offset + limit < total %}<a class="btn" href="{{ link(offset=offset + limit) }}">Next</a>{% endif %}
+      </p>
+    </div>
+  </div>
+</main>
+{% endblock %}

@@ -142,3 +142,18 @@ def test_ui_fonts_and_pages(client):
     assert b"Printing and laser cutting" in client.get("/help").data
     names = [d["name"] for d in client.get("/api/designs").get_json()]
     assert names[0] == "attraktor"
+
+
+def test_icon_browser(client):
+    data = client.get("/api/icons/browse?source=fa&folder=brands&limit=5").get_json()
+    assert data["offset"] == 0 and data["total"] > 500 and len(data["hits"]) == 5
+    page2 = client.get("/api/icons/browse?source=fa&folder=brands&limit=5&offset=5").get_json()
+    assert not {h["name"] for h in data["hits"]} & {h["name"] for h in page2["hits"]}
+    assert client.get("/api/icons/browse?offset=x").status_code == 400
+    assert client.get("/api/icons/browse?source=nope").status_code == 404
+    sources = {s["name"]: s for s in client.get("/api/icon-sources").get_json()}
+    assert {f["name"] for f in sources["40c3"]["folders"]} == {"citizens", "icons-deco", "logos"}
+    r = client.get("/icons/browse?source=40c3&folder=logos&design=40c3&text=Hi")
+    assert r.status_code == 200 and r.data.count(b'class="icon"') == 28
+    assert b"/?design=40c3&amp;text=Hi&amp;icon=40c3%3Alogos" in r.data
+    assert b'id="browser"' in client.get("/").data

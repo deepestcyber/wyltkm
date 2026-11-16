@@ -52,8 +52,9 @@
         {% for s in icon_sources %}<option value="{{ s.name }}"{% if icon_source == s.name %} selected{% endif %}>{{ s.name }}</option>{% endfor %}
       </select>
       <button type="submit" class="btn nojs">Search</button>
+      <a class="btn" id="browse-open" href="/icons/browse?{{ query }}">Browse</a>
     </div>
-    <div class="icons" id="icons" style="--icon-colour: {{ icon_colour }}">
+    <div class="icons" id="icons" style="--icon-colour: {{ icon_colour }}; --tile-bg: {{ tile_bg }}">
       <label class="icon text" title="The design's icon"><input type="radio" name="icon" value=""{% if not args.icon %} checked{% endif %}><span>Design</span></label>
       <label class="icon text" title="No icon"><input type="radio" name="icon" value="{{ no_icon }}"{% if args.icon == no_icon %} checked{% endif %}><span>None</span></label>
       {% if args.icon and args.icon != no_icon and args.icon not in icon_hits|map(attribute='name') %}
@@ -104,5 +105,27 @@
     {% endfor %}{% endif %}
   </div>
 </aside>
+
+<dialog id="browser" class="browser" aria-label="Browse icons">
+  <div class="browser-head">
+    <input type="search" id="browse-q" placeholder="Search icons" aria-label="Search icons" autocomplete="off">
+    <button type="button" class="btn quiet" id="browse-close" aria-label="Close">Close</button>
+  </div>
+  <nav class="sources" id="browse-sources"></nav>
+  <div class="browser-body">
+    <aside class="folders" id="browse-folders"></aside>
+    <div class="browser-main" id="browse-main">
+      <p class="hint mono" id="browse-count"></p>
+      <div class="browse-grid" id="browse-grid" role="listbox" aria-label="Icons" style="--tile-bg: {{ tile_bg }}"></div>
+      <div id="browse-more" class="more"></div>
+    </div>
+  </div>
+  <div class="browser-foot">
+    <span class="pick-preview" id="browse-pick-img" style="--tile-bg: {{ tile_bg }}"></span>
+    <span class="pick-info"><span id="browse-pick-name" class="mono">No icon chosen</span><br><span id="browse-pick-meta" class="hint"></span></span>
+    <button type="button" class="btn quiet" id="browse-cancel">Cancel</button>
+    <button type="button" class="btn primary" id="browse-use" disabled>Use icon</button>
+  </div>
+</dialog>
 </main>
 {% endblock %}

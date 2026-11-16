@@ -69,7 +69,7 @@ def test_zip_source_include_and_recolour_except(tmp_path):
 
 def test_builtin_zip_sources(library):
     fa = library.icons.source("fa")
-    assert len(fa.files) > 2800 and {"solid/cat", "regular/heart", "brands/github"} <= set(fa.files)
+    assert len(fa.files) > 2000 and {"solid/cat", "regular/heart", "brands/github"} <= set(fa.files)
     assert fa.info("solid/cat").label == "Cat" and "kitten" in fa.info("solid/cat").terms
     carbon = library.icons.source("carbon")
     assert len(carbon.files) > 2700 and carbon.info("boot").label == "Boot"
@@ -105,3 +105,37 @@ def test_render_icon(library):
     svg = render_icon(library, "40c3:citizens/blahaj")
     assert svg.startswith("<?xml") and "clipPath" in svg
     assert 'fill="#123456"' in render_icon(library, "carbon:boot", "#123456")
+
+
+def test_every_builtin_icon_normalises(library):
+    """All icons of all built-in sources can be placed (a few thousand)."""
+    from wyltkm.core.svg import normalise
+    bad = []
+    for src in library.icons.sources():
+        for icon in src.names():
+            try:
+                normalise(src.load(icon), where=f"{src.name}:{icon}")
+            except DataError as e:
+                bad.append(str(e))
+    assert not bad, bad[:5]
+
+
+def test_switch_draws_first_child():
+    from wyltkm.core.svg import normalise
+    n = normalise(b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><switch>'
+                  b'<foreignObject/><g><path d="M0 0H1V1Z"/></g><g><path d="M0 0H1Z"/></g>'
+                  b'</switch></svg>')
+    assert len(list(n.group.iter("path"))) == 1
+
+
+def test_folders_and_find(library):
+    fa = library.icons.source("fa")
+    assert set(fa.folders()) == {"brands", "regular", "solid"}
+    assert sum(fa.folders().values()) == len(fa.files)
+    assert library.icons.source("attraktor").folders() == {"": 2}
+    everything = library.icons.find()
+    assert len(everything) == sum(len(s.files) for s in library.icons.sources())
+    brands = library.icons.find("", "fa", "brands")
+    assert len(brands) == fa.folders()["brands"] and all("brands/" in h.name for h in brands)
+    assert all(h.label for h in brands)  # aliases without metadata are left out
+    assert "fa:solid/arrow-alt-circle-up" not in [h.name for h in library.icons.find("arrow")]
