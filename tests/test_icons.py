@@ -37,3 +37,71 @@ def test_broken_source(tmp_path):
     (tmp_path / "s.toml").write_text('name = "other"\ntype = "dir"\npath = "."\n')
     with pytest.raises(DataError):
         IconRegistry([tmp_path])
+
+
+SVG = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><path d="M0 0H1V1Z"/></svg>'
+
+
+def _zip_source(tmp_path, toml_extra=""):
+    import zipfile
+    with zipfile.ZipFile(tmp_path / "set.zip", "w") as z:
+        z.writestr("pkg/svgs/A/One_Icon.svg", SVG)
+        z.writestr("pkg/svgs/A/two.svg", SVG)
+        z.writestr("pkg/svgs/B/three.svg", SVG)
+        z.writestr("pkg/svgs/readme.txt", b"x")
+        z.writestr("other/four.svg", SVG)
+    (tmp_path / "z.toml").write_text('name = "z"\ntype = "zip"\npath = "set.zip"\n'
+                                     'prefix = "pkg/svgs/"\n' + toml_extra)
+    return IconRegistry([tmp_path]).source("z")
+
+
+def test_zip_source(tmp_path):
+    src = _zip_source(tmp_path)
+    assert src.names() == ["a/one-icon", "a/two", "b/three"]
+    assert src.load("a/two") == SVG
+
+
+def test_zip_source_include_and_recolour_except(tmp_path):
+    src = _zip_source(tmp_path, 'include = ["B/"]\nrecolour = false\nrecolour_except = ["b/"]\n')
+    assert src.names() == ["b/three"]
+    assert src.recolours("b/three")
+
+
+def test_builtin_zip_sources(library):
+    fa = library.icons.source("fa")
+    assert len(fa.files) > 2800 and {"solid/cat", "regular/heart", "brands/github"} <= set(fa.files)
+    assert fa.info("solid/cat").label == "Cat" and "kitten" in fa.info("solid/cat").terms
+    carbon = library.icons.source("carbon")
+    assert len(carbon.files) > 2700 and carbon.info("boot").label == "Boot"
+    forty = library.icons.source("40c3")
+    assert {"logos/40c3-logo-a", "citizens/blahaj", "icons-deco/icon-cat"} <= set(forty.files)
+    assert forty.recolours("logos/40c3-logo-a") and not forty.recolours("citizens/blahaj")
+    assert forty.licence.name == "CC0-1.0"
+
+
+def test_search_ranking(library):
+    names = [h.name for h in library.icons.search("cat", limit=10)]
+    assert names[0] == "fa:solid/cat"
+    hits = library.icons.search("kitten")  # only a search term of fa:solid/cat
+    assert "fa:solid/cat" in [h.name for h in hits]
+    assert [h.name for h in library.icons.search("arrow up", source="carbon", limit=3)] == [
+        "carbon:arrow--up", "carbon:arrow--up-left", "carbon:arrow--up-right"]
+    assert library.icons.search("zzzzqqq") == []
+    with pytest.raises(UnknownIcon):
+        library.icons.search("x", source="nope")
+
+
+def test_icon_cache_returns_copies(library):
+    _, a = library.icon("fa:solid/cat", "#ff0000")
+    a.group.clear()
+    _, b = library.icon("fa:solid/cat", "#ff0000")
+    assert len(b.group) > 0
+    _, c = library.icon("fa:solid/cat", "#00ff00")
+    assert next(c.group.iter("path")).get("fill") == "#00ff00"
+
+
+def test_render_icon(library):
+    from wyltkm.core import render_icon
+    svg = render_icon(library, "40c3:citizens/blahaj")
+    assert svg.startswith("<?xml") and "clipPath" in svg
+    assert 'fill="#123456"' in render_icon(library, "carbon:boot", "#123456")

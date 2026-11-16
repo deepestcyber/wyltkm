@@ -77,9 +77,7 @@ def _icon(library: Library, request: Request, design, colour: str, parts: _Parts
     name = request.icon if request.icon is not None else design.defaults.icon
     if name == NO_ICON:
         return None
-    src, icon = library.icons.lookup(name)
-    n = svgmod.normalise(src.load(icon), recolour=colour if src.recolours(icon) else None,
-                         id_prefix="icon-", where=f"icon {name}")
+    src, n = library.icon(name, colour)
     parts.licence(src.licence)
     parts.warnings.extend(n.warnings)
     return n
@@ -194,6 +192,19 @@ def render_svg(library: Library, request: Request) -> Result:
     svg = '<?xml version="1.0" encoding="UTF-8"?>\n' + svg + "\n"
     return Result(svg=svg, width=width, height=height, warnings=parts.warnings,
                   licences=parts.licences)
+
+
+def render_icon(library: Library, name: str, colour: str | None = None) -> str:
+    """A single icon as a standalone SVG (normalised, paths only), recoloured
+    with ``colour`` if given and the source recolours this icon."""
+    src, n = library.icon(name, colour)
+    vx, vy, vw, vh = n.viewbox
+    root = ET.Element("svg", {"xmlns": svgmod.SVG_NS,
+                              "viewBox": f"{num(vx)} {num(vy)} {num(vw)} {num(vh)}"})
+    root.append(n.group)
+    ET.indent(root, space="")
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            + ET.tostring(root, encoding="unicode") + "\n")
 
 
 def _png_text_chunk(png: bytes, keyword: str, text: str) -> bytes:

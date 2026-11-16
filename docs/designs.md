@@ -225,7 +225,7 @@ modules = "#3B5831"
 | `38c3` | | 38c3 style guide (CC0), Pilowlava |
 | `38c3-light` | `38c3` | Space Grotesk on top |
 | `38c3-lighter` | `38c3-light` | Space Grotesk on top and bottom |
-| `40c3` | | 40c3 "Model Citizens", Jersey 10, square modules. Twelve schemes, default `green` |
+| `40c3` | | 40c3 "Model Citizens", Jersey 10, square modules, the 40c3 logo as icon. Twelve schemes, default `green` |
 
 The 40c3 style guide (`40c3-styleguide-full-latest.zip`,
 [source](https://events.ccc.de/congress/2026/infos/styleguide/)) gives a

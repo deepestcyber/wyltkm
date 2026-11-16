@@ -40,7 +40,7 @@ DESIGNS = [("attraktor", None), ("attraktor-bw", None), ("38c3", None), ("38c3-l
 
 
 @pytest.mark.parametrize("design, scheme", DESIGNS)
-@pytest.mark.parametrize("icon", ["none", "fa:solid/cat"])
+@pytest.mark.parametrize("icon", [None, "none", "fa:solid/cat"])
 def test_codes_decode(library, design, scheme, icon):
     bg = library.design(design).colours(scheme)["background"]
     for content in CONTENTS:

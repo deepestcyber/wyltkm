@@ -41,7 +41,8 @@ Layout and visual design are worked out in the web plan.
 | `/designs/<name>/preview.svg?scheme=` | GET | Preview of a design (sample content, rendered on request, cached) |
 | `/api/licences?<render parameters>` | GET | Licences of the parts an image with these parameters uses, as JSON |
 | `/licences` | GET | Licences of all sources, designs and fonts |
-| `/api/icons?q=&source=&limit=` | GET | Icon search as JSON |
+| `/api/icons?q=&source=&limit=` | GET | Icon search as JSON (name, label, URL) |
+| `/api/icon-sources` | GET | Icon sources as JSON (name, title, number of icons, licence) |
 | `/icons/<source>/<name>.svg` | GET | Normalised icon, recoloured with `?colour=` |
 | `/help` | GET | Help page |
 

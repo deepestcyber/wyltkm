@@ -69,3 +69,30 @@ def test_broken_config(tmp_path, monkeypatch):
     monkeypatch.setenv("WYLTKM_CONFIG", str(path))
     r = CliRunner().invoke(main, ["designs"])
     assert r.exit_code == 4 and "unknown keys" in r.output
+
+
+def test_icon_commands(tmp_path):
+    runner = CliRunner()
+    r = runner.invoke(main, ["icons"])
+    assert {"fa", "carbon", "40c3", "attraktor"} <= {line.split()[0] for line in r.output.splitlines()}
+    r = runner.invoke(main, ["icons", "search", "cat", "-n", "3"])
+    assert r.output.splitlines()[0] == "fa:solid/cat  Cat"
+    r = runner.invoke(main, ["icons", "list", "40c3", "logos"])
+    assert r.exit_code == 0 and "40c3:logos/40c3-logo-a" in r.output and "citizens" not in r.output
+    assert runner.invoke(main, ["icons", "list", "nope"]).exit_code == 3
+    out = tmp_path / "i.svg"
+    r = runner.invoke(main, ["icons", "show", "fa:solid/cat", "-c", "#ff0000", "-o", str(out)])
+    assert r.exit_code == 0 and "#ff0000" in out.read_text() and "CC-BY-4.0" in r.stderr
+    assert runner.invoke(main, ["icons", "show", "fa:solid/cat", "-c", "red"]).exit_code == 1
+
+
+def test_icon_file(tmp_path):
+    icon = tmp_path / "i.svg"
+    icon.write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><path d="M0 0H1V1Z"/></svg>')
+    runner = CliRunner()
+    r = runner.invoke(main, ["render", "x", "--icon-file", str(icon), "--licences"])
+    assert r.exit_code == 0 and "uploaded by the user" in r.stderr
+    r = runner.invoke(main, ["render", "x", "--icon-file", str(icon), "-i", "fa:solid/cat"])
+    assert r.exit_code == 1
+    icon.write_text("<!DOCTYPE x [<!ENTITY a 'b'>]><svg>&a;</svg>")
+    assert runner.invoke(main, ["render", "x", "--icon-file", str(icon)]).exit_code == 1

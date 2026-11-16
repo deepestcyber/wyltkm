@@ -11,8 +11,10 @@ from flask import Flask, Response, abort, jsonify, render_template, request, sen
 from slugify import slugify
 
 from wyltkm import __version__
+import re
+
 from wyltkm.core import (InvalidRequest, Library, Request, UnknownDesign, UnknownIcon,
-                         WebConfig, WyltkmError, render_png, render_svg)
+                         WebConfig, WyltkmError, render_icon, render_png, render_svg)
 from wyltkm.core.request import DEFAULT_WIDTH, NO_ICON, preview_request
 
 APP_INFO = {
@@ -76,12 +78,14 @@ def create_app(library: Library | None = None) -> Flask:
         status = 404 if isinstance(e, (UnknownDesign, UnknownIcon)) else 400
         return Response(str(e) + "\n", status=status, mimetype="text/plain")
 
-    def icon_names() -> list[str]:
-        return [f"{s.name}:{n}" for s in lib.icons.sources() for n in s.names()]
-
     @app.route("/")
     def index():
         args = {k: v for k, v in request.args.items() if k in PARAMS and v != ""}
+        # the icon name field comes first, a picked search hit after it: the
+        # last value given wins
+        icons = [v for v in request.args.getlist("icon") if v]
+        if icons:
+            args["icon"] = icons[-1]
         args.setdefault("content", DEFAULT_CONTENT)
         result = error = None
         try:
@@ -92,9 +96,18 @@ def create_app(library: Library | None = None) -> Flask:
             error = str(e)
             design = None
         img_args = urllib.parse.urlencode(args)
+        icon_q = request.args.get("icon_q", "").strip()
+        icon_hits = lib.icons.search(icon_q, limit=60) if icon_q else []
+        icon_colour = "#000000"
+        if design is not None:
+            try:
+                icon_colour = design.colours(args.get("scheme"))["icon"]
+            except WyltkmError:
+                pass
         return render_template("index.html", APP_INFO=APP_INFO, args=args, result=result,
                                error=error, design=design, designs=lib.designs.all(),
-                               default_design=lib.default_design, icons=icon_names(),
+                               default_design=lib.default_design, icon_q=icon_q,
+                               icon_hits=icon_hits, icon_colour=icon_colour,
                                no_icon=NO_ICON, img_args=img_args, max_width=web.max_width)
 
     def render_route(fmt: str):
@@ -154,6 +167,40 @@ def create_app(library: Library | None = None) -> Flask:
                             "holder": d.licence.holder},
             })
         return jsonify(out)
+
+    @app.route("/api/icons")
+    def api_icons():
+        try:
+            limit = int(request.args.get("limit") or 60)
+        except ValueError:
+            return error_response(InvalidRequest("limit must be a whole number"))
+        limit = max(1, min(limit, 500))
+        try:
+            hits = lib.icons.search(request.args.get("q", ""), request.args.get("source") or None,
+                                    limit)
+        except WyltkmError as e:
+            return error_response(e)
+        return jsonify([{"name": h.name, "label": h.label,
+                         "url": f"/icons/{h.name.replace(':', '/', 1)}.svg"} for h in hits])
+
+    @app.route("/api/icon-sources")
+    def api_icon_sources():
+        return jsonify([{"name": s.name, "title": s.title, "count": len(s.files),
+                         "licence": {"name": s.licence.name, "url": s.licence.url}}
+                        for s in lib.icons.sources()])
+
+    @app.route("/icons/<source>/<path:name>.svg")
+    def icon_svg(source, name):
+        colour = request.args.get("colour") or None
+        if colour is not None and not re.match(r"^#[0-9a-fA-F]{6}$", colour):
+            return error_response(InvalidRequest("colour must be #rrggbb"))
+        try:
+            svg = render_icon(lib, f"{source}:{name}", colour)
+        except WyltkmError as e:
+            return error_response(e)
+        resp = Response(svg, mimetype="image/svg+xml")
+        resp.cache_control.max_age = 86400
+        return resp
 
     @app.route("/api/licences")
     def api_licences():

@@ -9,7 +9,7 @@ icon has a name of the form `source:name`.
 | --- | --- |
 | `fa:solid/cat`, `fa:regular/heart`, `fa:brands/github` | Font Awesome Free |
 | `carbon:boot` | IBM Carbon icons |
-| `40c3:icon-cat`, `40c3:citizen-blahaj` | 40c3 style guide assets |
+| `40c3:logos/40c3-logo-a`, `40c3:icons-deco/icon-cat`, `40c3:citizens/blahaj` | 40c3 style guide assets |
 | `attraktor:logo`, `attraktor:logo-mono` | Attraktor logos |
 | `<source>:<name>` | Sources configured by the install |
 
@@ -19,8 +19,9 @@ are validated before any file access, so no name can leave its source.
 File names are turned into icon names by a fixed rule: path below the
 source's prefix, extension `.svg` removed, lower-cased, `_` and spaces
 replaced by `-`. A source may add a `rename` table for nicer names (e.g.
-`"Icon_Cat" = "icon-cat"` for 40c3, `"attraktor" = "logo"`). Files whose
-name does not fit after that are skipped and logged at startup.
+`"attraktor" = "logo"`). Files whose name does not fit after that, or whose
+name is already taken by another file (Carbon has `3D-Cursor` and
+`3D-cursor`), are skipped and logged at startup.
 
 The request may also carry an uploaded icon instead of a name (see below), or
 `none` for no icon. Without either, the design's default icon is used.
@@ -40,11 +41,12 @@ name = "fa"
 title = "Font Awesome Free 7.3.1"
 type = "zip"
 path = "fontawesome-free-7.3.1-web.zip"   # relative to this file
-prefix = "fontawesome-free-7.3.1-web/svgs/"
+prefix = "fontawesome-free-7.3.1-web/svgs/"   # only files below it; names relative to it
+include = []                               # optional: only these folders below prefix
 recolour = true                            # fill all shapes with the design's icon colour
 recolour_except = []                       # icon names, or folders ending in "/", where
                                            # recolour is the other way round
-metadata = "fontawesome"                   # optional: reader for labels and search terms
+metadata = "fontawesome"                   # optional, zip only: "fontawesome" or "carbon"
 
 [licence]                                  # see licences.md
 name = "CC-BY-4.0"
@@ -67,10 +69,23 @@ name of a built-in one replaces it.
 
 | Name | Content | Licence |
 | --- | --- | --- |
-| `fa` | All of Font Awesome Free, read from its release zip. Updating means replacing the zip and the version in `fa.toml`. Labels and search terms come from `metadata/icons.json` inside the zip. | Icons CC BY 4.0 |
-| `carbon` | All IBM Carbon icons, from the SVGs of the npm package `@carbon/icons`, repacked into a zip by a small update script | Apache 2.0 |
-| `40c3` | Deco icons, citizens and logos from the 40c3 style guide zip | CC0 |
+| `fa` | All of Font Awesome Free (solid, regular, brands), read from its release zip. Labels and search terms come from `metadata/icons.json` inside the zip. | Icons CC BY 4.0 |
+| `carbon` | All IBM Carbon icons (32 px set), from the npm package `@carbon/icons`, repacked into a zip with labels and aliases | Apache 2.0 |
+| `40c3` | Deco icons (`icons-deco/`), citizens (`citizens/`) and logos (`logos/`) from the 40c3 style guide zip. The logos are one colour each and take the design's icon colour; deco icons and citizens keep their colours. | CC0 |
 | `attraktor` | Attraktor logo, colour and mono | unclear, holder Attraktor e.V. |
+
+### Updating
+
+- Font Awesome: download the "Free for Web" zip of a new version, put it into
+  `src/wyltkm/core/data/icons/`, and change `path`, `prefix` and `title` in
+  `fa.toml`. Remove the old zip. Icon names are those of the new version.
+- Carbon: `python tools/update_carbon_icons.py VERSION` downloads that
+  version of `@carbon/icons` and writes `carbon-icons-VERSION.zip`; then
+  change `path` and `title` in `carbon.toml` and remove the old zip.
+- 40c3: replace the style guide zip; names follow the file names.
+
+Then run the tests: golden files that use a changed icon must be rewritten
+(`UPDATE_GOLDEN=1 pytest`) after checking the new images.
 
 ## Colouring
 
@@ -129,5 +144,11 @@ plans now.
 
 ## Search
 
-The CLI and the web app can search icons by name, and for sources with
-metadata (Font Awesome) by label and search terms: `wyltkm icons search cat`.
+The CLI (`wyltkm icons search cat`) and the web app (`/api/icons?q=cat`, and
+the search field of the form) search icons by name, and for sources with
+metadata (Font Awesome, Carbon) by label and search terms. All words of the
+query must match. Best matches first: the name is the word, the name starts
+with the word, the name contains it, the label contains it, a search term
+starts with it.
+
+Normalised icons are cached per process (256 icon and colour pairs).

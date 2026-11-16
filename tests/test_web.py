@@ -77,3 +77,23 @@ def test_limits_from_config(tmp_path, monkeypatch):
     r = client.post("/render.svg", data={"content": "x", "icon_file": (io.BytesIO(big), "i.svg")},
                     content_type="multipart/form-data")
     assert r.status_code == 400 and b"larger" in r.data
+
+
+def test_icons_api_and_route(client):
+    hits = client.get("/api/icons?q=github&limit=2").get_json()
+    assert [h["name"] for h in hits] == ["fa:brands/github", "fa:brands/github-alt"]
+    assert client.get(hits[0]["url"]).status_code == 200
+    r = client.get("/icons/carbon/boot.svg?colour=%23123456")
+    assert r.status_code == 200 and b"#123456" in r.data
+    assert client.get("/icons/fa/solid/nope.svg").status_code == 404
+    assert client.get("/icons/fa/solid/cat.svg?colour=red").status_code == 400
+    assert client.get("/api/icons?limit=x").status_code == 400
+    sources = {s["name"] for s in client.get("/api/icon-sources").get_json()}
+    assert {"fa", "carbon", "40c3"} <= sources
+
+
+def test_icon_search_in_form(client):
+    r = client.get("/?icon_q=cat")
+    assert r.status_code == 200 and b'value="fa:solid/cat"' in r.data
+    r = client.get("/?icon=fa:solid/cat&icon=carbon:boot")
+    assert b'value="carbon:boot"' in r.data

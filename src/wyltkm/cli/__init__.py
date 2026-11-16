@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -9,7 +10,7 @@ import click
 
 from wyltkm import __version__
 from wyltkm.core import (DataError, InvalidRequest, Library, Request, UnknownDesign,
-                         UnknownIcon, WyltkmError, render_png, render_svg)
+                         UnknownIcon, WyltkmError, render_icon, render_png, render_svg)
 from wyltkm.core.fonts import BUNDLED_DIR, FALLBACK_LICENCE
 from wyltkm.core import licences as licmod
 from wyltkm.core.designs import MIN_CONTRAST, contrast
@@ -74,7 +75,10 @@ def main():
 @click.option("-s", "--scheme", help="Colour scheme of the design, for designs that have "
               "schemes. Default: the design's default scheme.")
 @click.option("-i", "--icon", help="Icon in the centre: source:name (e.g. fa:solid/cat), "
-              "or 'none'. Default: the design's default icon.")
+              "or 'none'. Default: the design's default icon. Find icons with "
+              "'wyltkm icons search'.")
+@click.option("--icon-file", type=click.File("rb"),
+              help="SVG file to use as icon (not together with --icon).")
 @click.option("-w", "--width", type=click.IntRange(MIN_WIDTH, MAX_WIDTH), default=DEFAULT_WIDTH,
               show_default=True, help="Width of the whole image in px.")
 @click.option("--border/--no-border", default=None,
@@ -90,8 +94,8 @@ def main():
               help="Print the licences of all parts of the image to stderr.")
 @click.option("--no-licence-metadata", is_flag=True,
               help="Leave the licence info out of the image file (SVG and PNG).")
-def render(content, texts, design, scheme, icon, width, border, background, fmt, output,
-           show_licences, no_licence_metadata):
+def render(content, texts, design, scheme, icon, icon_file, width, border, background, fmt,
+           output, show_licences, no_licence_metadata):
     """Render a QR code for CONTENT (usually a URL).
 
     Warnings (e.g. a missing font) go to stderr. When a part of the image
@@ -101,8 +105,9 @@ def render(content, texts, design, scheme, icon, width, border, background, fmt,
     if fmt is None:
         fmt = "png" if output != "-" and output.lower().endswith(".png") else "svg"
     try:
+        icon_svg = icon_file.read() if icon_file is not None else None
         request = Request(content=content, text="\n".join(texts), design=design, scheme=scheme,
-                          icon=icon, width=width, border=border, background=background,
+                          icon=icon, icon_svg=icon_svg, width=width, border=border, background=background,
                           licence_metadata=not no_licence_metadata)
         lib = _library()
         result = render_png(lib, request) if fmt == "png" else render_svg(lib, request)
@@ -231,13 +236,74 @@ def _font_line(lib: Library, role: str, fonts, d):
 @main.group(invoke_without_command=True)
 @click.pass_context
 def icons(ctx):
-    """List icon sources."""
+    """List icon sources; search, list and show icons.
+
+    Icons are named source:name, e.g. fa:solid/cat or carbon:boot.
+    """
     if ctx.invoked_subcommand is not None:
         return
     lib = _library()
     for src in lib.icons.sources():
         click.echo(f"{src.name:12} {src.title}: {len(src.files)} icons, "
                    f"licence {src.licence.name}")
+
+
+@icons.command("list")
+@click.argument("source")
+@click.argument("folder", required=False)
+def icons_list(source, folder):
+    """List the icons of SOURCE, optionally only those in FOLDER (e.g. solid)."""
+    lib = _library()
+    try:
+        src = lib.icons.source(source)
+    except WyltkmError as e:
+        raise _fail(e) from e
+    prefix = folder.strip("/") + "/" if folder else ""
+    for icon in src.names():
+        if icon.startswith(prefix):
+            label = src.info(icon).label
+            click.echo(f"{src.name}:{icon}" + (f"  {label}" if label else ""))
+
+
+@icons.command("search")
+@click.argument("query", nargs=-1, required=True)
+@click.option("-s", "--source", help="Only search this source.")
+@click.option("-n", "--limit", default=30, show_default=True, help="Show at most this many "
+              "hits; 0 for all.")
+def icons_search(query, source, limit):
+    """Search icons by name, label and search terms. All words must match;
+    best matches first."""
+    lib = _library()
+    try:
+        hits = lib.icons.search(" ".join(query), source, limit)
+    except WyltkmError as e:
+        raise _fail(e) from e
+    for h in hits:
+        click.echo(f"{h.name}" + (f"  {h.label}" if h.label else ""))
+    if not hits:
+        click.echo("no icons found", err=True)
+
+
+@icons.command("show")
+@click.argument("name")
+@click.option("-c", "--colour", help="Colour (#rrggbb) for icons that are recoloured.")
+@click.option("-o", "--output", type=click.Path(dir_okay=False, allow_dash=True), default="-",
+              show_default=True, help="Output file; '-' writes to stdout.")
+def icons_show(name, colour, output):
+    """Write the normalised icon NAME as SVG, as it is placed in the code."""
+    lib = _library()
+    if colour is not None and not re.match(r"^#[0-9a-fA-F]{6}$", colour):
+        raise _Fail("colour must be #rrggbb", EXIT_INVALID)
+    try:
+        svg = render_icon(lib, name, colour)
+        src, icon = lib.icons.lookup(name)
+    except WyltkmError as e:
+        raise _fail(e) from e
+    if output == "-":
+        click.echo(svg, nl=False)
+    else:
+        Path(output).write_text(svg, encoding="utf-8")
+    click.echo(f"licence: {src.licence.text()}", err=True)
 
 
 @main.command()

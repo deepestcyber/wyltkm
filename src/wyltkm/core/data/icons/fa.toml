@@ -1,8 +1,10 @@
 name = "fa"
-title = "Font Awesome Free (subset)"
-type = "dir"
-path = "fa"
+title = "Font Awesome Free 7.3.1"
+type = "zip"
+path = "fontawesome-free-7.3.1-web.zip"
+prefix = "fontawesome-free-7.3.1-web/svgs/"
 recolour = true
+metadata = "fontawesome"
 
 [licence]
 name = "CC-BY-4.0"

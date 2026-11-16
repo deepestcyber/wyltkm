@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import copy
+import threading
+from collections import OrderedDict
 from pathlib import Path
 
 from .designs import BUILTIN_DIR as BUILTIN_DESIGNS
 from .designs import Design, DesignRegistry
 from .fonts import BUNDLED_DIR, FontResolver
 from .icons import BUILTIN_DIR as BUILTIN_ICONS
-from .icons import IconRegistry
+from .icons import IconRegistry, IconSource
+from .svg import Normalised, normalise
 
 DEFAULT_DESIGN = "attraktor"
 
@@ -28,6 +32,30 @@ class Library:
         self.upload_max_depth = upload_max_depth
         self.config = None
         """The ``Config`` this library was made from, if any."""
+        self._icons: OrderedDict[tuple[str, str | None], Normalised] = OrderedDict()
+        self._icons_lock = threading.Lock()
+
+    ICON_CACHE_SIZE = 256
+
+    def icon(self, name: str, colour: str | None) -> tuple[IconSource, Normalised]:
+        """Source and normalised icon ``source:name``, recoloured with
+        ``colour`` if the source says so. Cached; the caller gets its own
+        copy."""
+        src, icon = self.icons.lookup(name)
+        colour = colour if src.recolours(icon) else None
+        key = (name, colour)
+        with self._icons_lock:
+            n = self._icons.get(key)
+            if n is not None:
+                self._icons.move_to_end(key)
+        if n is None:
+            n = normalise(src.load(icon), recolour=colour, id_prefix="icon-",
+                          where=f"icon {name}")
+            with self._icons_lock:
+                self._icons[key] = n
+                while len(self._icons) > self.ICON_CACHE_SIZE:
+                    self._icons.popitem(last=False)
+        return src, Normalised(copy.deepcopy(n.group), n.viewbox, list(n.warnings))
 
     @classmethod
     def builtin(cls, system_fonts: bool = True, default_design: str = DEFAULT_DESIGN,

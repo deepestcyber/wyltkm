@@ -18,3 +18,14 @@ p.error, p.warning {
 div.licences {
     font-size: small;
 }
+div.icon-hits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 40em;
+    margin-top: 0.5ex;
+}
+div.icon-hits label {
+    padding: 2px;
+    border: 1px solid #ccc;
+}

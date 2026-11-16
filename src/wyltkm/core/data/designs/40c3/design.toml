@@ -27,6 +27,9 @@ lines = ["WOULD YOU LIKE", "TO KNOW [MORE]?"]
 [side]
 fonts = ["Hack-Regular.ttf"]
 
+[defaults]
+icon = "40c3:logos/40c3-logo-a"
+
 [licence]
 name = "CC0-1.0"
 url = "https://events.ccc.de/congress/2026/infos/styleguide/"

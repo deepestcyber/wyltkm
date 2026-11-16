@@ -28,13 +28,19 @@
     {% endif %}
 
     <h4><label for="icon">Icon</label></h4>
-    <select id="icon" name="icon">
-        <option value=""{% if not args.icon %} selected{% endif %}>Design default</option>
-        <option value="{{ no_icon }}"{% if args.icon == no_icon %} selected{% endif %}>No icon</option>
-    {% for i in icons %}
-        <option value="{{ i }}"{% if args.icon == i %} selected{% endif %}>{{ i }}</option>
+    <input id="icon" name="icon" size="40" value="{{ args.icon or '' }}" placeholder="design default; none; or e.g. fa:solid/cat">
+    <br>
+    <label>Search icons: <input name="icon_q" value="{{ icon_q or '' }}" placeholder="e.g. cat"></label>
+    <button type="submit">Search</button>
+    {% if icon_q %}
+    <div class="icon-hits">
+    {% for h in icon_hits %}
+        <label title="{{ h.name }}{% if h.label %} – {{ h.label }}{% endif %}"><input type="radio" name="icon" value="{{ h.name }}"{% if args.icon == h.name %} checked{% endif %}><img src="/icons/{{ h.name.replace(':', '/', 1) }}.svg?colour={{ icon_colour|urlencode }}" width="24" height="24" alt="{{ h.name }}"></label>
+    {% else %}
+        <p>No icons found.</p>
     {% endfor %}
-    </select>
+    </div>
+    {% endif %}
 
     <h4>Background</h4>
     <label><input type="radio" name="background" value=""{% if not args.background %} checked{% endif %}>Design default</label>
