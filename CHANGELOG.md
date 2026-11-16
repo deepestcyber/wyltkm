@@ -6,24 +6,45 @@
   (`wyltkm`) and web app (`wyltkm.web`) as separate parts sharing one engine.
 - The SVG is built directly; everything is a filled path (QR modules, finder
   patterns, text, icons). reportlab and svglib are no longer used.
-- Designs are TOML files with inheritance, colour fallbacks and optional
-  colour schemes.
-- The bottom line is rendered from fonts as a justified text block instead of
-  pre-rendered graphics.
-- Icons are named `source:name` (e.g. `fa:solid/cat`, `carbon:boot`,
-  `attraktor:logo`). Clean break: old URL parameters and icon names are gone.
-- Packaging with `pyproject.toml` and uv; Python 3.12 or later.
+- Designs are TOML files with inheritance, colour fallbacks, an optional list
+  `order`, and optional schemes: variants of a design that change its
+  colours, fonts or default icon.
 - Design variants are schemes: the black and white Attraktor design is the
   scheme `bw` of `attraktor` (`-d attraktor -s bw`, with the mono logo), and
   38c3 light and lighter are the schemes `light` and `lighter` of `38c3`.
+- The bottom line is rendered from fonts as a justified text block instead of
+  pre-rendered graphics; text lines are as far apart as text and code.
+- QR codes always use error correction level H.
+- Icons are named `source:name` (e.g. `fa:solid/cat`, `carbon:boot`,
+  `attraktor:logo`). Clean break: old URL parameters and icon names are gone.
+- New web interface: form and live preview side by side, the code on a
+  cutting mat with its measures, design previews with scheme chips, dark and
+  light theme with a switch. Works without JavaScript as a plain form.
+- Packaging with `pyproject.toml` and uv; Python 3.12 or later.
 ### Added
-- Command line tool `wyltkm` (`render`, `designs`, `icons`, `licences`, `web`).
+- Design `40c3` after the 40c3 style guide: Jersey 10, the 40c3 logo as icon,
+  thirteen schemes (twelve colour combinations and black and white for
+  engraving).
+- All icons of Font Awesome Free 7.3.1, IBM Carbon and the 40c3 style guide,
+  read from zip files, with search by name, label and keywords, and an icon
+  browser in the web app. Own SVG icons can be uploaded (web) or given as a
+  file (`--icon-file`).
+- Readable side text: optionally, the content of the code is printed along
+  the right side, for people without a scanner (`--side-text`).
+- Config file and data directories, where installs add fonts, designs and
+  icon sources; system fonts can be switched off.
+- Command line tool `wyltkm` (`render`, `designs`, `icons`, `fonts`,
+  `licences`, `config`, `web`).
 - Licence records for designs, icon sources and fonts; each image lists the
   licences of its parts, and embeds them in the file unless switched off.
 - Free fonts bundled: Hack, Jersey 10, Pilowlava, Space Grotesk.
+- Cache headers (ETag) for rendered images, previews and icons.
+- Documentation in `docs/`, including deployment with a WSGI server or with
+  Apache and FastCGI.
 - Tests, including decoding of rendered codes and golden files.
 ### Removed
 - WTForms and flask-wtf; the "advanced parameters" page.
+- reportlab and svglib.
 
 ## 0.2.2 - 2024-11-26
 ### Added
