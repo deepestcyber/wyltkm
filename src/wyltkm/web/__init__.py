@@ -25,7 +25,9 @@ APP_INFO = {
 }
 DEFAULT_CONTENT = "https://wiki.attraktor.org"
 PARAMS = ("content", "text", "design", "scheme", "icon", "width", "border", "background",
-          "licence_metadata", "side", "side_font")
+          "licence_metadata", "side", "side_font", "bottom_mode", "bottom", "top_justify",
+          "bottom_justify")
+BOTTOM_MODES = ("", "design", "text", "none")
 UI_FONTS = {"SpaceGrotesk-Regular.otf", "Hack-Regular.ttf"}
 """Bundled fonts the web page itself uses."""
 CACHE_SECONDS = 3600
@@ -58,6 +60,14 @@ def request_from(values, files=None, default_content: str | None = None,
         if len(icon_svg) > web.max_upload_bytes:
             raise InvalidRequest(f"icon file is larger than {web.max_upload_bytes} bytes")
     metadata = _flag(values.get("licence_metadata"), "licence_metadata")
+    mode = values.get("bottom_mode") or ""
+    if mode not in BOTTOM_MODES:
+        raise InvalidRequest("bottom_mode must be design, text or none")
+    bottom = None
+    if mode == "none":
+        bottom = ""
+    elif mode == "text":
+        bottom = values.get("bottom", "")
     return Request(
         content=content,
         text=values.get("text", ""),
@@ -71,6 +81,9 @@ def request_from(values, files=None, default_content: str | None = None,
         licence_metadata=True if metadata is None else metadata,
         side=bool(_flag(values.get("side"), "side")),
         side_font=values.get("side_font") or None,
+        bottom=bottom,
+        top_justify=_flag(values.get("top_justify"), "top_justify"),
+        bottom_justify=_flag(values.get("bottom_justify"), "bottom_justify"),
     )
 
 

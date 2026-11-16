@@ -7,7 +7,9 @@
 
 One page, two columns (on phones the preview comes first):
 
-- **Form** in cards: link or text in the code and top text; design as small
+- **Form** in cards: link or text in the code, top text (with `[...]` for
+  the highlight colour), bottom line (design, own text or none), each text
+  justified or centred; design as small
   previews, with the design's schemes below as chips (colour dot and name); icon
   search over all sources with a source filter and a grid of hits drawn in
   the design's colours, "Design" and "None" choices, a "Browse" button for
@@ -73,7 +75,10 @@ Query parameters of `/render.*` and `/`:
 | Parameter | Meaning |
 | --- | --- |
 | `content` | Data in the QR code |
-| `text` | Top text; line breaks (`\n`, `%0A` in URLs) separate lines |
+| `text` | Top text; line breaks (`\n`, `%0A` in URLs) separate lines; `[...]` in the highlight colour |
+| `bottom_mode` | Bottom line: empty or `design` (the design's), `text` (own text from `bottom`), `none` |
+| `bottom` | Own bottom text, used with `bottom_mode=text`; lines and `[...]` as for `text` |
+| `top_justify`, `bottom_justify` | `0`: centre the lines of that text; `1` or empty: justified (the default) |
 | `design` | Design name |
 | `scheme` | Colour scheme of the design |
 | `icon` | Icon name or `none` |

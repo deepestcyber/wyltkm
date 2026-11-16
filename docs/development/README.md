@@ -40,3 +40,4 @@ docs in [../](../) in the same change.
 | 0004 | [Icon sources](0004-icon-sources-completed.md) | completed |
 | 0005 | [Readable side text](0005-side-text-completed.md) | completed |
 | 0006 | [Web rework](0006-web-rework-completed.md) | completed |
+| 0007 | [Text options](0007-text-options-active.md) | active |

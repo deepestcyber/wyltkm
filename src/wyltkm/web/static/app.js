@@ -69,6 +69,7 @@ function setupForm() {
     for (const [k, v] of new FormData(form)) {
       if (LOCAL.has(k) || v === "") continue;
       if (k === "side_font" && form.elements.side.value !== "1") continue;
+      if (k === "bottom" && form.elements.bottom_mode.value !== "text") continue;
       p.append(k, v);
     }
     return p;
@@ -442,6 +443,10 @@ function setupForm() {
     if (name === "scheme") { recolourIcons(); describeIcon(); }
     if (name === "icon") describeIcon();
     if (name === "side") sideChanged();
+    if (name === "bottom_mode") {
+      $("bottom").hidden = form.elements.bottom_mode.value !== "text";
+      $("bottom-opts").hidden = form.elements.bottom_mode.value === "none";
+    }
     later();
   });
   form.addEventListener("change", (e) => { if (e.target.name === "icon_source") search(); });

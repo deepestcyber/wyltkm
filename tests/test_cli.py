@@ -71,6 +71,18 @@ def test_broken_config(tmp_path, monkeypatch):
     assert r.exit_code == 4 and "unknown keys" in r.output
 
 
+def test_bottom_options():
+    runner = CliRunner()
+    r = runner.invoke(main, ["render", "x", "-t", "Laser [cutter]", "-b", "SCAN [ME]", "-b", "NOW"])
+    assert r.exit_code == 0, r.output
+    assert runner.invoke(main, ["render", "x", "--no-bottom"]).exit_code == 0
+    r = runner.invoke(main, ["render", "x", "-t", "A\nBB", "--top-center", "--bottom-center"])
+    assert r.exit_code == 0, r.output
+    assert runner.invoke(main, ["render", "x", "--no-bottom", "-b", "x"]).exit_code == 1
+    r = runner.invoke(main, ["render", "x", "-t", "a [b"])
+    assert r.exit_code == 1 and "[[ or ]]" in r.output
+
+
 def test_side_text_options():
     runner = CliRunner()
     r = runner.invoke(main, ["render", "https://example.org", "--side-text", "--side-font",

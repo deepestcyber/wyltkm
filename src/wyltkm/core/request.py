@@ -13,6 +13,8 @@ from dataclasses import dataclass
 import qrcode
 import qrcode.exceptions
 
+from .text import Run, parse_markers
+
 from .errors import InvalidRequest
 
 DEFAULT_WIDTH = 250
@@ -64,7 +66,8 @@ class Request:
     content: str
     """Data in the QR code, usually a URL."""
     text: str = ""
-    """Top text; ``\\n`` separates lines. Empty: no top text."""
+    """Top text; ``\\n`` separates lines, ``[...]`` is highlighted. Empty: no
+    top text."""
     design: str | None = None
     scheme: str | None = None
     icon: str | None = None
@@ -81,12 +84,30 @@ class Request:
     """Readable side text with the content."""
     side_font: str | None = None
     """Font file name for the side text; default from the design."""
+    top_justify: bool | None = None
+    """Justify the lines of the top text; ``False`` centres them. ``None``:
+    the design's setting."""
+    bottom_justify: bool | None = None
+    """The same for the bottom line."""
+    bottom: str | None = None
+    """Bottom line: ``None`` the design's, ``""`` none, otherwise this text
+    (``\\n`` separates lines, ``[...]`` is highlighted)."""
 
     def __post_init__(self):
         if not isinstance(self.content, str) or not self.content:
             raise InvalidRequest("content must not be empty")
         if not isinstance(self.text, str):
             raise InvalidRequest("text must be a string")
+        for name in ("top_justify", "bottom_justify"):
+            if getattr(self, name) not in (None, True, False):
+                raise InvalidRequest(f"{name} must be true, false or unset")
+        if self.bottom is not None and not isinstance(self.bottom, str):
+            raise InvalidRequest("bottom must be a string")
+        hint = "; write [[ or ]] for a bracket"
+        for line in self.lines:
+            parse_markers(line, "top text", InvalidRequest, hint)
+        for line in _lines(self.bottom or ""):
+            parse_markers(line, "bottom text", InvalidRequest, hint)
         if self.design is not None and not valid_name(self.design):
             raise InvalidRequest(f"invalid design name: {self.design!r}")
         if self.scheme is not None and not valid_name(self.scheme):
@@ -112,10 +133,27 @@ class Request:
 
     @property
     def lines(self) -> list[str]:
-        """Top text lines; trailing empty lines removed."""
-        lines = self.text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-        while lines and not lines[-1].strip():
-            lines.pop()
-        while lines and not lines[0].strip():
-            lines.pop(0)
-        return lines
+        """Top text lines; empty lines at start and end removed."""
+        return _lines(self.text)
+
+    @property
+    def top_runs(self) -> list[list[Run]]:
+        """Top text lines split into normal and highlighted runs."""
+        return [parse_markers(line, "top text", InvalidRequest) for line in self.lines]
+
+    @property
+    def bottom_runs(self) -> list[list[Run]] | None:
+        """Own bottom lines as runs; ``None`` for the design's bottom line,
+        ``[]`` for no bottom line."""
+        if self.bottom is None:
+            return None
+        return [parse_markers(line, "bottom text", InvalidRequest) for line in _lines(self.bottom)]
+
+
+def _lines(text: str) -> list[str]:
+    lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    while lines and not lines[-1].strip():
+        lines.pop()
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    return lines

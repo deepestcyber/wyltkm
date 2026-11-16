@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+### Added
+- `[...]` in the top text is drawn in the design's highlight colour, as in the
+  bottom line; `[[` and `]]` give a bracket.
+- Own bottom line instead of the design's, with `[...]` (CLI `--bottom`, web
+  "Bottom line: Own text"), or no bottom line at all (`--no-bottom`, "None").
+- Top text and bottom line can each be justified or centred
+  (`--top-center`, `--bottom-center`, web switches).
+### Changed
+- The top text is justified by default, like the bottom line (one line looks
+  the same as before; several lines now fill the width).
+
 ## 0.3.1 - 2026-11-16
 ### Fixed
 - Icon previews and the icon browser page work behind Apache on Debian and

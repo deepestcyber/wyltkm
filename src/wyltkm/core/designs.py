@@ -55,7 +55,7 @@ ALIGNS = {"center", "justify"}
 @dataclass(frozen=True)
 class TextStyle:
     fonts: tuple[str, ...] = ()
-    align: str = "center"
+    align: str = "justify"
     gap: float = 2.0
     """Space between this text (or graphic) and the QR code, in modules."""
     line_gap: float = 2.0
@@ -389,7 +389,7 @@ def _build(raw: dict, dirs: list[Path]) -> Design:
                                   f"{where}: qr.finder_centre_radius", 1.0, 0, 1.5),
     )
 
-    top = _text_style(raw.get("top") or {}, f"{where}: top", "center")
+    top = _text_style(raw.get("top") or {}, f"{where}: top", "justify")
 
     b = raw.get("bottom") or {}
     btype = _choice(b.get("type"), f"{where}: bottom.type", {"text", "svg", "none"}, "none")

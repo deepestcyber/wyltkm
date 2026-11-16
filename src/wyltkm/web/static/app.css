@@ -70,7 +70,11 @@ main.app { display: grid; grid-template-columns: minmax(340px, 520px) minmax(0, 
 .row { display: flex; gap: 8px; align-items: center; }
 
 /* controls */
-label.field { display: block; margin: 0 0 4px; font-size: 13px; color: var(--text-2); }
+label.field, span.field { display: block; margin: 0 0 4px; font-size: 13px; color: var(--text-2); }
+#bottom { margin-top: 8px; }
+.stack .hint { margin: 4px 0 0; }
+.text-opts { margin-top: 8px; flex-wrap: wrap; }
+.text-opts .hint { margin: 0; }
 input[type=text], input[type=search], input[type=number], textarea, select {
   width: 100%; min-height: 36px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--r-control);
   background: var(--raised); color: var(--text); font: inherit; transition: border-color .15s var(--ease); }

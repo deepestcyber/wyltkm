@@ -17,6 +17,18 @@
     <div>
       <label class="field" for="text">Top text</label>
       <textarea id="text" name="text" rows="2">{{ args.text or '' }}</textarea>
+      <div class="row text-opts">
+        {{ seg('top_justify', [('', 'Justified'), ('0', 'Centred')], args.top_justify) }}
+        <span class="hint">Put words in [brackets] for the highlight colour.</span>
+      </div>
+    </div>
+    <div>
+      <span class="field">Bottom line</span>
+      {{ seg('bottom_mode', [('', 'Design'), ('text', 'Own text'), ('none', 'None')], args.bottom_mode) }}
+      <textarea id="bottom" name="bottom" rows="2" placeholder="WOULD YOU LIKE&#10;TO KNOW [MORE]?"{% if args.bottom_mode != 'text' %} hidden{% endif %}>{{ args.bottom or '' }}</textarea>
+      <div class="row text-opts" id="bottom-opts"{% if args.bottom_mode == 'none' %} hidden{% endif %}>
+        {{ seg('bottom_justify', [('', 'Justified'), ('0', 'Centred')], args.bottom_justify) }}
+      </div>
     </div>
   </section>
 

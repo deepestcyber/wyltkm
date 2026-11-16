@@ -24,6 +24,10 @@ CASES = {
                                  text="Boot", icon="carbon:boot", background=False),
     "38c3-lighter": Request(content="x", design="38c3", scheme="lighter", text="Lighter",
                             icon="none"),
+    "own-bottom-highlight": Request(content="https://example.org", text="Laser [cutter]",
+                                    bottom="SCAN [ME]"),
+    "no-bottom": Request(content="https://example.org", design="38c3", text="Hello",
+                         bottom=""),
     "side-up-attraktor": Request(content="https://wiki.attraktor.org/Laser", text="Laser",
                                  side=True),
     "side-long-40c3": Request(content="https://example.org/" + "/".join(["segment"] * 12),
@@ -125,3 +129,31 @@ def test_upload(library):
     svg = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 1"><rect width="2" height="1"/></svg>'
     r = render_svg(library, Request(content="x", icon_svg=svg))
     assert any(lic.part == "Icon (uploaded)" for lic in r.licences)
+
+
+def test_top_highlight_and_bottom_override(library):
+    blue = library.design("attraktor").colours()["highlight"]  # also the finder rings
+
+    def blue_paths(req):
+        svg = render_svg(library, req).svg
+        return svg.split("</metadata>")[1].count(f'fill="{blue}"')
+
+    # rings only; rings plus the highlighted word in the top text
+    assert blue_paths(Request(content="x", text="Laser cutter", bottom="")) == 1
+    assert blue_paths(Request(content="x", text="Laser [cutter]", bottom="")) == 2
+    none = ET.fromstring(render_svg(library, Request(content="x", bottom="")).svg.encode())
+    design = ET.fromstring(render_svg(library, Request(content="x")).svg.encode())
+    own = ET.fromstring(render_svg(library, Request(content="x", bottom="ONE\nTWO\nTHREE")).svg.encode())
+    heights = [float(r.get("viewBox").split()[3]) for r in (none, design, own)]
+    assert heights[0] == 21 and heights[0] < heights[1] < heights[2]
+
+
+def test_justify_switches(library):
+    def svg(**kw):
+        return render_svg(library, Request(content="x", text="Laser cutter\nfor acrylic",
+                                           bottom="SCAN\nHERE FOR MORE", **kw)).svg
+    default = svg()
+    assert default == svg(top_justify=True, bottom_justify=True)  # justified by default
+    assert svg(top_justify=False) != default
+    assert svg(bottom_justify=False) != default
+    assert library.design("attraktor").top_style().align == "justify"

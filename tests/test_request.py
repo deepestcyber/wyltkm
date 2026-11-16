@@ -36,3 +36,22 @@ def test_icon_names():
 def test_lines():
     assert Request(content="x", text="\nA\r\nB\n\n").lines == ["A", "B"]
     assert Request(content="x").lines == []
+
+
+def test_markers_in_top_and_bottom_text():
+    from wyltkm.core.text import Run
+    r = Request(content="x", text="Laser [cutter]\na [[b]]", bottom="SCAN [ME]")
+    assert r.top_runs == [[Run("Laser "), Run("cutter", True)], [Run("a [b]")]]
+    assert r.bottom_runs == [[Run("SCAN "), Run("ME", True)]]
+    assert Request(content="x").bottom_runs is None
+    assert Request(content="x", bottom="").bottom_runs == []
+    assert Request(content="x", bottom="\n  \n").bottom_runs == []
+    for kwargs in ({"text": "a [b"}, {"text": "a]"}, {"bottom": "[a [b]]"}):
+        with pytest.raises(InvalidRequest, match=r"\[\[ or \]\]"):
+            Request(content="x", **kwargs)
+
+
+def test_justify_values():
+    assert Request(content="x", top_justify=False, bottom_justify=True).top_justify is False
+    with pytest.raises(InvalidRequest):
+        Request(content="x", top_justify="yes")

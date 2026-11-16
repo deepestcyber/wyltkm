@@ -50,7 +50,7 @@ finder_centre_radius = 1.0
 
 [top]                         # text block; the text comes from the request
 fonts = ["AgencyFB-Bold.ttf"]
-align = "center"
+align = "justify"
 gap = 2                       # to the QR code, in modules
 line_gap = 2                  # between lines; default: gap
 
@@ -97,7 +97,7 @@ Lengths are in modules (the size of one QR module) unless stated otherwise.
 | `colours.icon` | no | `modules` | Used when an icon is recoloured |
 | `colours.top` | no | `modules` | Top text |
 | `colours.bottom` | no | `top` | Bottom text, or a recoloured bottom SVG |
-| `colours.highlight` | no | `bottom` | `[...]` in bottom text |
+| `colours.highlight` | no | `bottom` | `[...]` in top and bottom text |
 | `colours.side` | no | `top` | Readable side text |
 | `qr.module_shape` | no | `square` | `square`, `rounded`, `dot` |
 | `qr.module_radius` | no | `0.3` | Corner radius for `rounded` |
@@ -106,7 +106,7 @@ Lengths are in modules (the size of one QR module) unless stated otherwise.
 | `qr.finder_centre_shape` | no | `square` | `square`, `rounded`, `circle` |
 | `qr.finder_centre_radius` | no | `1.0` | Corner radius for `rounded` |
 | `top.fonts` | no | `[]` | Font file names, first one found is used; empty: ziafont's built-in font |
-| `top.align` | no | `center` | `center`, `justify` |
+| `top.align` | no | `justify` | `justify`, `center`; the request can switch it |
 | `top.gap` | no | `2` | Space between top text and QR code |
 | `top.line_gap` | no | `gap` | Space between lines, from the ink of one line to the ink of the next |
 | `bottom.type` | no | `none` | `text`, `svg`, `none` |
@@ -145,9 +145,13 @@ the font as glyph outlines:
   words alike). This is how the "WOULD YOU LIKE / TO KNOW MORE?" line looks
   in the built-in designs.
 - `align = "center"`: shorter lines keep normal spacing and are centred.
-- `[...]` in `lines` marks text drawn in `colours.highlight`; the brackets
-  are not drawn. `[[` and `]]` give a literal bracket. Text from the request
-  (top text) is never parsed for markers.
+- Both texts are justified by default. A request can switch each to centred
+  or back (`top_justify`, `bottom_justify`); very short lines spread wide
+  when justified, so centring suits them better.
+- `[...]` marks text drawn in `colours.highlight`; the brackets are not
+  drawn. `[[` and `]]` give a literal bracket. This works in the design's
+  `lines`, in the top text of the request, and in an own bottom text of the
+  request. Unbalanced brackets are an error.
 - Lines are spaced by the ink: `line_gap` is the space from the lowest point
   of one line to the highest point of the next, the same way `gap` is
   measured to the QR code. With the default (`line_gap` = `gap`), the space

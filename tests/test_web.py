@@ -95,6 +95,31 @@ def test_icons_api_and_route(client):
     assert {"fa", "carbon", "40c3"} <= sources
 
 
+@pytest.mark.parametrize("query, height", [
+    ("bottom_mode=none", 250), ("bottom_mode=text&bottom=", 250), ("bottom=ignored", None),
+])
+def test_bottom_mode(client, query, height):
+    info = client.get("/api/render-info?content=x&" + query).get_json()
+    plain = client.get("/api/render-info?content=x").get_json()
+    assert info["height"] == (height if height is not None else plain["height"])
+
+
+def test_justify_params(client):
+    base = "/render.svg?content=x&text=Laser+cutter%0Afor+acrylic"
+    assert client.get(base).data != client.get(base + "&top_justify=0").data
+    assert client.get(base + "&top_justify=2").status_code == 400
+    page = client.get("/?top_justify=0&bottom_justify=0").data
+    assert b'name="top_justify" value="0" checked' in page
+    assert b'name="bottom_justify" value="0" checked' in page
+
+
+def test_bottom_mode_errors_and_form(client):
+    assert client.get("/render.svg?content=x&bottom_mode=bogus").status_code == 400
+    assert client.get("/render.svg?content=x&text=a+%5Bb").status_code == 400
+    page = client.get("/?bottom_mode=text&bottom=SCAN+%5BME%5D").data
+    assert b'name="bottom_mode" value="text" checked' in page and b"SCAN [ME]</textarea>" in page
+
+
 def test_side_text(client):
     r = client.get("/render.svg?content=x&side=1&side_font=Hack-Regular.ttf")
     assert r.status_code == 200 and b"rotate(-90)" in r.data

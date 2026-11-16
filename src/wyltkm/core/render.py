@@ -5,7 +5,7 @@ from __future__ import annotations
 import struct
 import xml.etree.ElementTree as ET
 import zlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import cairosvg
 
@@ -57,6 +57,13 @@ def _text_block(library: Library, design, style, lines, width, parts: _Parts):
     if blk is not None:
         parts.licence(font.licence)
     return blk
+
+
+def _aligned(style, justify: bool | None):
+    """The text style with the request's choice of justifying, if it made one."""
+    if justify is None:
+        return style
+    return replace(style, align="justify" if justify else "center")
 
 
 def _paths_group(blk: textmod.TextBlock, x: float, y: float, normal: str,
@@ -121,14 +128,22 @@ def render_svg(library: Library, request: Request) -> Result:
     q = qrmod.paths(request.content, design.qr, with_hole=icon is not None)
     n = q.size
 
+    top_style = _aligned(design.top_style(request.scheme), request.top_justify)
+    bottom_style = _aligned(design.bottom_style(request.scheme), request.bottom_justify)
+
     top = None
     if request.lines:
-        lines = [[textmod.Run(line)] for line in request.lines]
-        top = _text_block(library, design, design.top_style(request.scheme), lines, n, parts)
+        top = _text_block(library, design, top_style, request.top_runs,
+                          n, parts)
 
     bottom_text = bottom_svg = None
-    if design.bottom.type == "text":
-        bottom_text = _text_block(library, design, design.bottom_style(request.scheme),
+    own_bottom = request.bottom_runs
+    if own_bottom is not None:
+        if own_bottom:  # own text in the design's bottom font; [] means no bottom line
+            bottom_text = _text_block(library, design, bottom_style,
+                                      own_bottom, n, parts)
+    elif design.bottom.type == "text":
+        bottom_text = _text_block(library, design, bottom_style,
                                   [list(line) for line in design.bottom.lines], n, parts)
     elif design.bottom.type == "svg":
         bottom_svg = svgmod.normalise(
@@ -146,8 +161,8 @@ def render_svg(library: Library, request: Request) -> Result:
     body: list[ET.Element] = []
     y = float(border)
     if top is not None:
-        body.append(_paths_group(top, border, y, colours["top"], colours["top"]))
-        y += top.height + design.top_style(request.scheme).gap
+        body.append(_paths_group(top, border, y, colours["top"], colours["highlight"]))
+        y += top.height + top_style.gap
     qr_y = y
     g = ET.Element("g", transform=f"translate({num(border)} {num(qr_y)})")
     if q.modules:
@@ -162,12 +177,12 @@ def render_svg(library: Library, request: Request) -> Result:
     body.append(g)
     y += n
     if bottom_text is not None:
-        y += design.bottom_style(request.scheme).gap
+        y += bottom_style.gap
         body.append(_paths_group(bottom_text, border, y, colours["bottom"],
                                  colours["highlight"]))
         y += bottom_text.height
     elif bottom_svg is not None:
-        y += design.bottom_style(request.scheme).gap
+        y += bottom_style.gap
         h = n * bottom_svg.aspect
         body.append(svgmod.place(bottom_svg, border, y, n, h))
         y += h

@@ -20,9 +20,11 @@ class Run:
     highlight: bool = False
 
 
-def parse_markers(line: str, where: str = "text") -> list[Run]:
-    """Split design text into runs; ``[...]`` is highlighted, ``[[``/``]]``
-    are literal brackets."""
+def parse_markers(line: str, where: str = "text", error: type[Exception] = DataError,
+                  hint: str = "") -> list[Run]:
+    """Split text into runs; ``[...]`` is highlighted, ``[[``/``]]`` are
+    literal brackets. Unbalanced brackets raise ``error`` (message plus
+    ``hint``)."""
     runs: list[Run] = []
     buf = ""
     highlight = False
@@ -35,13 +37,13 @@ def parse_markers(line: str, where: str = "text") -> list[Run]:
             continue
         if c == "[":
             if highlight:
-                raise DataError(f"{where}: nested '[' in {line!r}")
+                raise error(f"{where}: nested '[' in {line!r}{hint}")
             if buf:
                 runs.append(Run(buf, False))
             buf, highlight = "", True
         elif c == "]":
             if not highlight:
-                raise DataError(f"{where}: ']' without '[' in {line!r}")
+                raise error(f"{where}: ']' without '[' in {line!r}{hint}")
             if buf:
                 runs.append(Run(buf, True))
             buf, highlight = "", False
@@ -49,7 +51,7 @@ def parse_markers(line: str, where: str = "text") -> list[Run]:
             buf += c
         i += 1
     if highlight:
-        raise DataError(f"{where}: '[' without ']' in {line!r}")
+        raise error(f"{where}: '[' without ']' in {line!r}{hint}")
     if buf:
         runs.append(Run(buf, False))
     return runs

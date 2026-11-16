@@ -19,7 +19,11 @@ wyltkm render https://wiki.attraktor.org/Laser \
 | Option | Meaning |
 | --- | --- |
 | `CONTENT` | Data in the QR code, usually a URL (positional) |
-| `-t`, `--text` | Top text; several `--text` give several lines |
+| `-t`, `--text` | Top text; several `--text` give several lines; `[...]` in the highlight colour, `[[`/`]]` for a bracket |
+| `-b`, `--bottom` | Own bottom line instead of the design's, e.g. `"SCAN [ME]"`; several give several lines |
+| `--no-bottom` | No bottom line at all |
+| `--top-justify` / `--top-center` | Justify the top text lines to full width, or centre them (default from the design: justified) |
+| `--bottom-justify` / `--bottom-center` | The same for the bottom line |
 | `-d`, `--design` | Design name (default from config, else `attraktor`) |
 | `-s`, `--scheme` | Colour scheme of the design (default: its main colours) |
 | `-i`, `--icon` | Icon name `source:name`, or `none` |

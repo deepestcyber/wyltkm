@@ -69,7 +69,17 @@ def main():
 @main.command()
 @click.argument("content")
 @click.option("-t", "--text", "texts", multiple=True, metavar="TEXT",
-              help="Top text. Repeat for several lines.")
+              help="Top text. Repeat for several lines. [...] is drawn in the highlight "
+              "colour; [[ and ]] give a bracket.")
+@click.option("-b", "--bottom", "bottoms", multiple=True, metavar="TEXT",
+              help="Own bottom line instead of the design's (e.g. \"SCAN [ME]\"). Repeat "
+              "for several lines; [...] as for --text.")
+@click.option("--no-bottom", is_flag=True, help="No bottom line at all.")
+@click.option("--top-justify/--top-center", "top_justify", default=None,
+              help="Justify the lines of the top text to full width, or centre them. "
+              "Default: from the design (justified).")
+@click.option("--bottom-justify/--bottom-center", "bottom_justify", default=None,
+              help="The same for the bottom line.")
 @click.option("-d", "--design", help="Design name (see 'wyltkm designs'). "
               "Default: the configured default design.")
 @click.option("-s", "--scheme", help="Colour scheme of the design, for designs that have "
@@ -99,14 +109,17 @@ def main():
               help="Print the licences of all parts of the image to stderr.")
 @click.option("--no-licence-metadata", is_flag=True,
               help="Leave the licence info out of the image file (SVG and PNG).")
-def render(content, texts, design, scheme, icon, icon_file, width, border, background, side,
-           side_font, fmt, output, show_licences, no_licence_metadata):
+def render(content, texts, bottoms, no_bottom, top_justify, bottom_justify, design, scheme, icon, icon_file, width, border,
+           background, side, side_font, fmt, output, show_licences, no_licence_metadata):
     """Render a QR code for CONTENT (usually a URL).
 
     Warnings (e.g. a missing font) go to stderr. When a part of the image
     requires attribution or has an unclear licence, a short note goes to
     stderr as well; --licences prints the full list.
     """
+    if no_bottom and bottoms:
+        raise _Fail("give either --bottom or --no-bottom, not both", EXIT_INVALID)
+    bottom = "" if no_bottom else ("\n".join(bottoms) if bottoms else None)
     if fmt is None:
         fmt = "png" if output != "-" and output.lower().endswith(".png") else "svg"
     try:
@@ -114,7 +127,8 @@ def render(content, texts, design, scheme, icon, icon_file, width, border, backg
         request = Request(content=content, text="\n".join(texts), design=design, scheme=scheme,
                           icon=icon, icon_svg=icon_svg, width=width, border=border, background=background,
                           licence_metadata=not no_licence_metadata, side=side,
-                          side_font=side_font)
+                          side_font=side_font, bottom=bottom, top_justify=top_justify,
+                          bottom_justify=bottom_justify)
         lib = _library()
         result = render_png(lib, request) if fmt == "png" else render_svg(lib, request)
     except WyltkmError as e:
