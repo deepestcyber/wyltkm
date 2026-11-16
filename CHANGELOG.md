@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 - unreleased
+## 0.3.0 - 2026-11-16
 ### Changed
 - Complete rewrite: core library (`wyltkm.core`), command line tool
   (`wyltkm`) and web app (`wyltkm.web`) as separate parts sharing one engine.
