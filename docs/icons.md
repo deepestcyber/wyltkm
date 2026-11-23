@@ -73,7 +73,7 @@ name of a built-in one replaces it.
 | `carbon` | All IBM Carbon icons (32 px set), from the npm package `@carbon/icons`, repacked into a zip with labels and aliases | Apache 2.0 |
 | `40c3` | Deco icons (`icons-deco/`), citizens (`citizens/`) and logos (`logos/`) from the 40c3 style guide zip. The logos are one colour each and take the design's icon colour; deco icons and citizens keep their colours. | CC0 |
 | `attraktor` | Attraktor logo, colour and mono | unclear, holder Attraktor e.V. |
-| `fednet` | `emblem`: the Federation eagle of *Starship Troopers*, one filled path, takes the design's icon colour; default icon of the `fednet` design | unclear |
+| `fednet` | `emblem`: the Federation eagle of *Starship Troopers*, one filled path, takes the design's icon colour | unclear |
 
 ### Updating
 

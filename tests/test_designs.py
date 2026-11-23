@@ -194,7 +194,7 @@ def test_fednet(library):
     assert set(d.schemes) == {"night", "night-subtle", "light", "light-subtle", "bw"}
     assert d.colours("bw")["finder_ring"] == d.colours("bw")["finder_centre"] == "#000000"
     assert d.top_style().fonts[0] == "PhutureODC-Black.ttf"
-    assert d.default_icon() == "fednet:emblem"
+    assert d.default_icon() == "fa:solid/jet-fighter"
     src, icon = library.icons.lookup("fednet:emblem")
     assert src.recolours(icon)
     from wyltkm.core.designs import contrast

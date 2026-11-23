@@ -1,5 +1,5 @@
 name = "40c3"
-title = "40c3"
+title = "40C3"
 description = "40th Chaos Communication Congress: Model Citizens. Tricolore of A, B and one colour; Jersey 10"
 order = 10                    # position in lists, lower first
 default_scheme = "green"
@@ -10,6 +10,7 @@ background = "#031202"
 modules = "#75B54B"
 finder_centre = "#DFEED5"
 icon = "#DFEED5"
+top = "#DFEED5"
 bottom = "#DFEED5"
 
 [qr]
@@ -40,70 +41,60 @@ holder = "Chaos Computer Club"
 title = "Green (main)"
 modules = "#75B54B"
 finder_ring = "#75B54B"
-top = "#75B54B"
 highlight = "#75B54B"
 
 [schemes.teal]
 title = "Teal"
 modules = "#13AEA3"
 finder_ring = "#13AEA3"
-top = "#13AEA3"
 highlight = "#13AEA3"
 
 [schemes.lavender]
 title = "Lavender"
 modules = "#999FCD"
 finder_ring = "#999FCD"
-top = "#999FCD"
 highlight = "#999FCD"
 
 [schemes.lilac]
 title = "Lilac"
 modules = "#B78FBF"
 finder_ring = "#B78FBF"
-top = "#B78FBF"
 highlight = "#B78FBF"
 
 [schemes.pink]
 title = "Pink"
 modules = "#EB5D9D"
 finder_ring = "#EB5D9D"
-top = "#EB5D9D"
 highlight = "#EB5D9D"
 
 [schemes.rose]
 title = "Rose"
 modules = "#EB6F83"
 finder_ring = "#EB6F83"
-top = "#EB6F83"
 highlight = "#EB6F83"
 
 [schemes.orange]
 title = "Orange"
 modules = "#F28931"
 finder_ring = "#F28931"
-top = "#F28931"
 highlight = "#F28931"
 
 [schemes.yellow]
 title = "Yellow"
 modules = "#FAB93E"
 finder_ring = "#FAB93E"
-top = "#FAB93E"
 highlight = "#FAB93E"
 
 [schemes.sage]
 title = "Sage"
 modules = "#7EAE83"
 finder_ring = "#7EAE83"
-top = "#7EAE83"
 highlight = "#7EAE83"
 
 [schemes.taupe]
 title = "Taupe"
 modules = "#B69D93"
 finder_ring = "#B69D93"
-top = "#B69D93"
 highlight = "#B69D93"
 
 # Light: A background, dark green (9) and B.
@@ -114,7 +105,7 @@ modules = "#3B5831"
 finder_ring = "#031202"
 finder_centre = "#3B5831"
 icon = "#031202"
-top = "#3B5831"
+top = "#031202"
 bottom = "#031202"
 highlight = "#3B5831"
 
@@ -126,7 +117,7 @@ modules = "#584744"
 finder_ring = "#031202"
 finder_centre = "#584744"
 icon = "#031202"
-top = "#584744"
+top = "#031202"
 bottom = "#031202"
 highlight = "#584744"
 

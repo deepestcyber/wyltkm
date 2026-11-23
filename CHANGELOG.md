@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+### Changed
+- FedNet uses the fighter jet (`fa:solid/jet-fighter`) as default icon again;
+  the Federation emblem stays available as `fednet:emblem`.
+- 40c3: the top text has the same colour as the bottom line (A on the dark
+  schemes, B on the light ones) instead of the scheme colour, so `[...]` in
+  the top text now stands out in the scheme colour, like "MORE". The readable
+  side text follows the top text colour.
+
 ## 0.4.1 - 2026-11-16
 ### Fixed
 - Icons that draw outside their own viewBox (389 Font Awesome icons, e.g.

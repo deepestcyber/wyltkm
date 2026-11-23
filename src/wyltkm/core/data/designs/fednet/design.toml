@@ -71,7 +71,7 @@ fonts = ["PhutureODC-Black.ttf", "PhutureODCBlack.ttf"]
 lines = ["WOULD YOU LIKE", "TO KNOW [MORE]?"]
 
 [defaults]
-icon = "fednet:emblem"
+icon = "fa:solid/jet-fighter"   # the Federation emblem is available as fednet:emblem
 
 [licence]
 name = "unclear"

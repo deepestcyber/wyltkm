@@ -241,7 +241,7 @@ modules = "#3B5831"
 | --- | --- | --- |
 | `attraktor` | | Default design out of the box. Agency FB (not bundled, install it). Schemes `colour` (default: Attraktor blue and greys, colour logo) and `bw` (black on white, mono logo). Licence of the design unclear, marked as such. |
 | `38c3` | | 38c3 style guide (CC0). Schemes with the same colours and different fonts: `pilowlava` (default, Pilowlava everywhere), `light` (Space Grotesk on top), `lighter` (Space Grotesk on top and bottom) |
-| `fednet` | | Homage to the "Would you like to know more?" broadcast banner of *Starship Troopers* (1997): Phuture ODC (commercial, not bundled, install it as `PhutureODC-Black.ttf`), off-white code and text, "MORE" in cyan, the Federation emblem (`fednet:emblem`) as icon. Schemes `night` (default: dark, cyan finder patterns, orange emblem), `night-subtle` (the emblem in a muted blue-grey), `light`, `light-subtle` (the same on light), `bw` |
+| `fednet` | | Homage to the "Would you like to know more?" broadcast banner of *Starship Troopers* (1997): Phuture ODC (commercial, not bundled, install it as `PhutureODC-Black.ttf`), off-white code and text, "MORE" in cyan, a fighter jet (`fa:solid/jet-fighter`) as icon; the Federation emblem is available as `fednet:emblem`. Schemes `night` (default: dark, cyan finder patterns, orange icon), `night-subtle` (the icon in a muted blue-grey), `light`, `light-subtle` (the same on light), `bw` |
 | `40c3` | | 40c3 "Model Citizens", Jersey 10, square modules, the 40c3 logo as icon. Thirteen schemes (including `bw` for engraving), default `green` |
 
 The 40c3 style guide (`40c3-styleguide-full-latest.zip`,
@@ -258,10 +258,11 @@ follows that:
 - Dark schemes on B, one per palette colour that stands out on B: `green`
   (0, the main version), `teal` (1), `lavender` (2), `lilac` (3), `pink`
   (4), `rose` (5), `orange` (6), `yellow` (7), `sage` (8), `taupe` (10). The
-  colour is used for modules, finder rings, top text and the highlighted
-  "MORE"; A for finder centres, icon and the bottom line.
+  colour is used for modules, finder rings and highlighted text (`[...]`,
+  "MORE"); A for finder centres, icon, top text and bottom line.
 - Light schemes on A: `light` with dark green (9) and B, `light-brown` with
-  brown (11) and B. Colours 9 and 11 are too dark for the dark schemes.
+  brown (11) and B; top text and bottom line in B. Colours 9 and 11 are too
+  dark for the dark schemes.
 - `bw`: black on white, for engraving and plain print; the logo turns black
   too.
 - Headings in the style guide are Jersey 10, so are top text and bottom

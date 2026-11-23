@@ -1,5 +1,5 @@
 name = "38c3"
-title = "38c3"
+title = "38C3"
 description = "38th Chaos Communication Congress style; Pilowlava, or lighter with Space Grotesk"
 order = 20                    # position in lists, lower first
 default_scheme = "pilowlava"
