@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.2 - 2026-11-23
 ### Changed
 - FedNet uses the fighter jet (`fa:solid/jet-fighter`) as default icon again;
   the Federation emblem stays available as `fednet:emblem`.
